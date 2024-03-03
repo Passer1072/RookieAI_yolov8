@@ -1,0 +1,11 @@
+{
+    "aimbot": true,
+    "arduinoMode": false,
+    "closest_mouse_dist": 100,
+    "confidence": 0.36,
+    "lockKey": "\u53f3\u952e",
+    "lockSpeed": 0.45,
+    "screen_height": 820,
+    "screen_width": 820,
+    "triggerType": "\u6309\u4e0b"
+}
