@@ -1,11 +1,12 @@
 {
-    "aimbot": true,
+    "aimbot": false,
     "arduinoMode": false,
     "closest_mouse_dist": 100,
-    "confidence": 0.36,
+    "confidence": 0.04,
     "lockKey": "\u53f3\u952e",
     "lockSpeed": 0.45,
-    "screen_height": 820,
-    "screen_width": 820,
+    "model_file": "E:/My PycharmProjects/Yolov8_text/Model/Game_model/Apex_0202_yolov8.pt",
+    "screen_height": 640,
+    "screen_width": 640,
     "triggerType": "\u6309\u4e0b"
 }
