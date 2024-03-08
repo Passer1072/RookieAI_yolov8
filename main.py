@@ -11,12 +11,14 @@ import win32api
 import win32con
 import tkinter as tk
 import threading
-import serial
 from tkinter import ttk
 import PySimpleGUI as sg
 import json
 from tkinter import filedialog
 import os
+import random
+from threading import Thread
+
 
 ###------------------------------------------全局变量---------------------------------------------------------------------
 
@@ -44,6 +46,9 @@ closest_mouse_dist = 100
 # 置信度设置
 confidence = 0.65
 
+# 垂直瞄准偏移
+aimOffset = 5
+
 # 初始化Arduino设备
 # arduino = serial.Serial(port='COM3', baudrate=9600, timeout=.1)
 
@@ -60,6 +65,7 @@ closest_mouse_dist_scale = None
 screen_width_scale = None
 screen_height_scale = None
 root = None
+aimOffset_scale = None
 
 
 # 其他全局变量
@@ -187,16 +193,18 @@ def load_model_file():  # 加载模型文件
 
 def create_gui_tkinter():  # 软件主题GUI界面
     global aimbot_var, lockSpeed_scale, triggerType_var, arduinoMode_var, lockKey_var, confidence_scale\
-        , closest_mouse_dist_scale, screen_width_scale, screen_height_scale, root, model_file, model_file_label
+        , closest_mouse_dist_scale, screen_width_scale, screen_height_scale, root, model_file, model_file_label, aimOffset_scale
 
     root = tk.Tk()
     root.wm_title("RookieAI")  # 软件名称
 
+
     # 使用特定的样式
     style = ttk.Style(root)
-    style.theme_use('clam')
-
-    root.configure(background='white')
+    style.theme_use('clam')  # UI风格
+    root.attributes('-topmost', 1)  # 窗口置顶
+    root.attributes('-alpha', 0.45)  # Sets the entire window transparency. 0.0=transparent, 1.0=no transparency 半透明
+    root.configure(background='white')  # 背景颜色
 
     # 添加一个大标题
     title_label = tk.Label(root, text="RookieAI-yolov8版本", font=('Helvetica', 24), bg='white')
@@ -253,47 +261,51 @@ def create_gui_tkinter():  # 软件主题GUI界面
     lockSpeed_scale.set(lockSpeed)
     lockSpeed_scale.grid(row=5, column=0)
 
-
-
     # 置信度调整滑块：创建一个名为 'Confidence' 的滑动条
     confidence_scale = tk.Scale(root, from_=0.0, to=1.0, resolution=0.01, label='置信度调整', orient='horizontal',
                                 sliderlength=20, length=400, command=update_values)
     confidence_scale.set(confidence)
     confidence_scale.grid(row=6, column=0)  # Adjust row number as per your needs
 
-    # 创建一个名为 'Closest Mouse Distance' 的滑动条
+    # 自瞄范围调整
     closest_mouse_dist_scale = tk.Scale(root, from_=0, to=300, resolution=1, label='自瞄范围', orient='horizontal',
                                         sliderlength=20, length=400, command=update_values)
     closest_mouse_dist_scale.set(closest_mouse_dist)
     closest_mouse_dist_scale.grid(row=7, column=0)
 
+    # 瞄准偏移（数值越大越靠上）
+    aimOffset_scale = tk.Scale(root, from_=0, to=50, resolution=0.1, label='瞄准偏移（数值越大越靠上）', orient='horizontal',
+                                        sliderlength=20, length=400, command=update_values)
+    aimOffset_scale.set(aimOffset)
+    aimOffset_scale.grid(row=8, column=0)
+
     # 创建一个屏幕宽度滑块
     screen_width_scale = tk.Scale(root, from_=100, to=2000, resolution=10, label='*截图区域宽度',
                                   orient='horizontal', sliderlength=20, length=400, command=update_values)
     screen_width_scale.set(screen_width)  # 初始值
-    screen_width_scale.grid(row=8, column=0)  # 行号
+    screen_width_scale.grid(row=9, column=0)  # 行号
 
     # 创建一个屏幕高度滑块
     screen_height_scale = tk.Scale(root, from_=100, to=2000, resolution=10, label='*截图区域高度',
                                    orient='horizontal', sliderlength=20, length=400, command=update_values)
     screen_height_scale.set(screen_height)  # 初始值
-    screen_height_scale.grid(row=9, column=0)  # 行号
+    screen_height_scale.grid(row=10, column=0)  # 行号
 
     # 显示所选文件路径的标签
-    model_file_label = tk.Label(root, text="还未选择模型文件")  # 初始化时显示的文本
-    model_file_label.grid(row=10, column=0, sticky="w")  # 使用grid布局并靠左对齐
+    model_file_label = tk.Label(root, text="还未选择模型文件", width=30)  # 初始化时显示的文本
+    model_file_label.grid(row=11, column=0, sticky="w")  # 使用grid布局并靠左对齐
 
     # 用户选择模型文件的按钮
     model_file_button = tk.Button(root, text="选择模型文件", command=choose_model)  # 点击此按钮时，将调用choose_model函数
-    model_file_button.grid(row=11, column=0, sticky="w")  # 使用grid布局并靠左对齐
+    model_file_button.grid(row=12, column=0, sticky="w")  # 使用grid布局并靠左对齐
 
     # 创建 '保存' 按钮
     save_button = ttk.Button(root, text='保存设置', command=save_settings)
-    save_button.grid(row=11, column=0, padx=0, sticky='e')  # 根据你的需要调整行号
+    save_button.grid(row=13, column=0, padx=0)  # 根据你的需要调整行号
 
     # 创建 '加载' 按钮
     load_button = ttk.Button(root, text='加载设置', command=load_settings)
-    load_button.grid(row=11, column=1, padx=10)
+    load_button.grid(row=14, column=1, padx=10)
 
     # 创建按钮样式(红色背景样式)
     style = ttk.Style()
@@ -301,7 +313,7 @@ def create_gui_tkinter():  # 软件主题GUI界面
     # 创建 '关闭' 按钮
     close_button = ttk.Button(root, text='关闭', command=stop_program, style="Close.TButton")
     # 改变按钮行间距和字体大小
-    close_button.grid(row=12, column=0, padx=5, pady=5, sticky='w')
+    close_button.grid(row=13, column=0, padx=5, pady=5, sticky='w')
 
     # 从文件加载设置
     load_settings()
@@ -314,7 +326,7 @@ def create_gui_tkinter():  # 软件主题GUI界面
 
 def update_values(*args):
     global aimbot, lockSpeed, triggerType, arduinoMode, lockKey, lockKey_var, confidence, closest_mouse_dist\
-        , closest_mouse_dist_scale, screen_width, screen_height, model_file
+        , closest_mouse_dist_scale, screen_width, screen_height, model_file , aimOffset
     print("update_values function was called")  # 添加
     aimbot = aimbot_var.get()
     lockSpeed = lockSpeed_scale.get()
@@ -325,6 +337,7 @@ def update_values(*args):
     closest_mouse_dist = closest_mouse_dist_scale.get()
     screen_width = screen_width_scale.get()
     screen_height = screen_height_scale.get()
+    aimOffset = aimOffset_scale.get()
 
     print('状态1：aimbot_var:', aimbot_var.get(), '状态2：aimbot:', aimbot)
 
@@ -350,6 +363,7 @@ def save_settings():  # 保存设置
         'closest_mouse_dist': closest_mouse_dist_scale.get(),
         'screen_width': screen_width_scale.get(),
         'screen_height': screen_height_scale.get(),
+        'aimOffset': aimOffset_scale.get(),
         'model_file': model_file,
     }
 
@@ -372,6 +386,7 @@ def load_settings():  # 加载参数设置
         closest_mouse_dist_scale.set(settings['closest_mouse_dist'])
         screen_width_scale.set(settings['screen_width'])
         screen_height_scale.set(settings['screen_height'])
+        aimOffset_scale.set(settings['aimOffset'])
         model_file = settings.get('model_file', None)  # 从文件中加载model_file
         model_file_label.config(text=model_file or "还未选择模型文件")  # 更新标签上的文本为加载的文件路径或默认文本
         print("设置加载成功！")
@@ -386,7 +401,8 @@ def calculate_distances(monitor, results, frame_, aimbot, lockSpeed, arduinoMode
     minBox = None  # 初始最小框设置为None
 
     for r in results:
-        boxes = r.boxes.xyxy.cpu().numpy()
+        boxes = r.boxes.xyxy.cpu().numpy()  # 获取框坐标
+        print(aimOffset)  # 打印框坐标
 
     for box in boxes:
         x1, y1, x2, y2 = box
@@ -422,7 +438,7 @@ def calculate_distances(monitor, results, frame_, aimbot, lockSpeed, arduinoMode
 
         # 计算光标应当从当前位置移动多大的距离以便到达目标位置
         centerx = (center_text_x - cWidth) * lockSpeed
-        centery = (center_text_y - cHeight) * lockSpeed
+        centery = (center_text_y - cHeight - aimOffset) * lockSpeed
 
         # 将鼠标光标移动到检测到的框的中心
         # 第一种：切换触发
@@ -504,8 +520,13 @@ def main_program_loop():  # 主程序流程代码
 
         # 绘制结果
         frame_ = results[0].plot()
+
         # 计算距离 并 将最近的目标绘制为绿色边框
-        frame_ = calculate_distances(monitor, results, frame_, aimbot, lockSpeed, arduinoMode, lockKey, triggerType)
+        try:
+            frame_ = calculate_distances(monitor, results, frame_, aimbot, lockSpeed, arduinoMode, lockKey, triggerType)
+        except TypeError:
+            # 当 TypeError 出现时，执行这部分代码
+            print('lockKey 值发生错误。但是无关紧要')
 
         # 获取并显示帧率
         end_time = time.time()
@@ -516,8 +537,8 @@ def main_program_loop():  # 主程序流程代码
         if should_break:
             break
 
-        # 每秒进行一次gc
-        if time.time() - gc_time >= 1:
+        # 每60秒进行一次gc
+        if time.time() - gc_time >= 120:
             gc.collect()
             gc_time = time.time()
     pass
@@ -531,6 +552,16 @@ def stop_program():  # 停止子线程
         root.quit()
         root.destroy()  # 销毁窗口
 
+def capture_boxed_image(boxes, frame, save_dir):  # 每秒根据框坐标进行截图
+    for box in boxes:
+        x1, y1, x2, y2 = map(int, box)
+        # 提取并保存框选图像
+        img_boxed = frame[y1:y2, x1:x2]
+        img_name = f"{random.randint(1, 10000)}.jpg"  # 随机命名图片
+        img_path = os.path.join(save_dir, img_name)
+        cv2.imwrite(img_path, img_boxed)
+
+
 
 
 ### ---------------------------------------main--------------------------------------------------------------------------
@@ -543,6 +574,7 @@ if __name__ == "__main__":
     arduinoMode = False
     triggerType = "按下"
     lockKey = 0x02  # 假设lockKey是鼠标右键
+    aimOffset = 25  # 瞄准偏移
     screen_width = 640  # 设置默认截图区域宽度
     screen_height = 640  # 设置默认截图区域高度
 
