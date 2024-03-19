@@ -17,14 +17,14 @@ import json
 from tkinter import filedialog
 import os
 import random
-from threading import Thread
-
+from pynput.mouse import Listener, Button
+import def_recoilless
+from tkinter import PhotoImage, Label
 
 ###------------------------------------------全局变量---------------------------------------------------------------------
 
 # 选择模型
 model_file = "yolov8n.pt"
-
 
 # 新建一个 MSS 对象（获取截图）
 sct = mss()
@@ -67,11 +67,22 @@ screen_height_scale = None
 root = None
 aimOffset_scale = None
 
-
 # 其他全局变量
 Thread_to_join = None
 restart_thread = False
 run_threads = True
+
+# 压枪模块参数
+left_pressed = False
+right_pressed = False  # 用于标记鼠标的左键和右键状态的全局变量
+mouse_start_time = None  # 初始化压枪计时
+
+mouse_move1 = None  # 第一阶段移动的距离（压枪力度）
+mouse_move2 = None  # 第二阶段移动的距离
+mouse_move3 = None  # 第三阶段移动的距离
+
+phase1_duration = None  # 第一阶段持续时间，单位：秒
+phase2_duration = None  # 第二阶段持续时间
 
 
 ###------------------------------------------def部分---------------------------------------------------------------------
@@ -117,6 +128,7 @@ def capture_screen(monitor, sct):  # mss截图方式
     screenshot = sct.grab(monitor)
     # 把 PIL/Pillow Image 转为 OpenCV ndarray 对象，然后从 BGR 转换为 RGB
     frame = np.array(screenshot)[:, :, :3]
+
     return frame
 
 
@@ -133,7 +145,7 @@ def display_debug_window(frame):  # 调试窗口
     # 在主循环中显示图像
     cv2.imshow('frame', frame)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if cv2.waitKey(1) & 0xFF == ord('.'):
         cv2.destroyAllWindows()
         return True
     else:
@@ -192,19 +204,23 @@ def load_model_file():  # 加载模型文件
 
 
 def create_gui_tkinter():  # 软件主题GUI界面
-    global aimbot_var, lockSpeed_scale, triggerType_var, arduinoMode_var, lockKey_var, confidence_scale\
-        , closest_mouse_dist_scale, screen_width_scale, screen_height_scale, root, model_file, model_file_label, aimOffset_scale
+    global aimbot_var, lockSpeed_scale, triggerType_var, arduinoMode_var, lockKey_var, confidence_scale \
+        , closest_mouse_dist_scale, screen_width_scale, screen_height_scale, root, model_file, model_file_label, aimOffset_scale \
+        , draw_center_var
 
     root = tk.Tk()
     root.wm_title("RookieAI")  # 软件名称
-
 
     # 使用特定的样式
     style = ttk.Style(root)
     style.theme_use('clam')  # UI风格
     root.attributes('-topmost', 1)  # 窗口置顶
-    root.attributes('-alpha', 0.45)  # Sets the entire window transparency. 0.0=transparent, 1.0=no transparency 半透明
+    root.attributes('-alpha', 0.75)  # Sets the entire window transparency. 0.0=transparent, 1.0=no transparency 半透明
     root.configure(background='white')  # 背景颜色
+    # 背景
+    background_image = PhotoImage(file="Apex_logo.png")  # 指定图片文件路径
+    background_label = Label(root, image=background_image)
+    background_label.place(x=0, y=0, relwidth=1, relheight=1)  # 使图片填充整个窗口
 
     # 添加一个大标题
     title_label = tk.Label(root, text="RookieAI-yolov8版本", font=('Helvetica', 24), bg='white')
@@ -215,9 +231,16 @@ def create_gui_tkinter():  # 软件主题GUI界面
     aimbot_check = ttk.Checkbutton(root, text='Aimbot(自瞄开关)', variable=aimbot_var, command=update_values)
     aimbot_check.grid(row=1, column=0, sticky="w")  # 使用grid布局并靠左对齐
 
+    # 是否显示瞄准范围的开关
+    draw_center_var = tk.BooleanVar(value=False)  # 默认值为False
+    draw_center_check = ttk.Checkbutton(root, text='Draw center(画中心点开关)', variable=draw_center_var,
+                                        command=update_values)
+    draw_center_check.grid(row=1, column=0, padx=20, pady=10)
+
     # 创建一个名为 'Arduino Mode(未启用)' 的复选框
     arduinoMode_var = tk.BooleanVar(value=arduinoMode)
-    arduinoMode_check = ttk.Checkbutton(root, text='Arduino Mode(待开发)', variable=arduinoMode_var, command=update_values)
+    arduinoMode_check = ttk.Checkbutton(root, text='Arduino Mode(待开发)', variable=arduinoMode_var,
+                                        command=update_values)
     arduinoMode_check.grid(row=2, column=0, sticky="w")  # 使用grid布局并靠左对齐
 
     triggerType_var = tk.StringVar(value=triggerType)
@@ -255,9 +278,9 @@ def create_gui_tkinter():  # 软件主题GUI界面
     # 将OptionMenu插入到frame中，并确保它与标签在同一行
     lockKey_menu.grid(row=0, column=1)  # OptionMenu在frame部件中的位置
 
-
     # 创建一个名为 'Lock Speed' 的滑动条
-    lockSpeed_scale = tk.Scale(root, from_=0.00, to=1.00, resolution=0.01, label='锁定速度', orient='horizontal', sliderlength=20, length=400, command=update_values)
+    lockSpeed_scale = tk.Scale(root, from_=0.00, to=1.00, resolution=0.01, label='锁定速度', orient='horizontal',
+                               sliderlength=20, length=400, command=update_values)
     lockSpeed_scale.set(lockSpeed)
     lockSpeed_scale.grid(row=5, column=0)
 
@@ -274,8 +297,9 @@ def create_gui_tkinter():  # 软件主题GUI界面
     closest_mouse_dist_scale.grid(row=7, column=0)
 
     # 瞄准偏移（数值越大越靠上）
-    aimOffset_scale = tk.Scale(root, from_=0, to=50, resolution=0.1, label='瞄准偏移（数值越大越靠上）', orient='horizontal',
-                                        sliderlength=20, length=400, command=update_values)
+    aimOffset_scale = tk.Scale(root, from_=0, to=50, resolution=0.1, label='瞄准偏移（数值越大越靠上）',
+                               orient='horizontal',
+                               sliderlength=20, length=400, command=update_values)
     aimOffset_scale.set(aimOffset)
     aimOffset_scale.grid(row=8, column=0)
 
@@ -325,9 +349,9 @@ def create_gui_tkinter():  # 软件主题GUI界面
 
 
 def update_values(*args):
-    global aimbot, lockSpeed, triggerType, arduinoMode, lockKey, lockKey_var, confidence, closest_mouse_dist\
-        , closest_mouse_dist_scale, screen_width, screen_height, model_file , aimOffset
-    print("update_values function was called")  # 添加
+    global aimbot, lockSpeed, triggerType, arduinoMode, lockKey, lockKey_var, confidence, closest_mouse_dist \
+        , closest_mouse_dist_scale, screen_width, screen_height, model_file, aimOffset, draw_center
+    print("update_values function was called")
     aimbot = aimbot_var.get()
     lockSpeed = lockSpeed_scale.get()
     triggerType = triggerType_var.get()
@@ -338,6 +362,7 @@ def update_values(*args):
     screen_width = screen_width_scale.get()
     screen_height = screen_height_scale.get()
     aimOffset = aimOffset_scale.get()
+    draw_center = draw_center_var.get()
 
     print('状态1：aimbot_var:', aimbot_var.get(), '状态2：aimbot:', aimbot)
 
@@ -371,8 +396,9 @@ def save_settings():  # 保存设置
         json.dump(settings, f, sort_keys=True, indent=4)
 
 
-def load_settings():  # 加载参数设置
+def load_settings():  # 加载主程序参数设置
     global model_file
+    print('Loading settings...')
     try:
         with open('settings.json', 'r') as f:
             settings = json.load(f)
@@ -394,11 +420,37 @@ def load_settings():  # 加载参数设置
         print('[ERROR] 没有找到设置文件; 跳过加载设置')
         pass
 
+def load_recoilless_config():  # 加载压枪参数
+    global mouse_move1, mouse_move2 , mouse_move3, phase1_duration, phase2_duration
+    print('[INFO] Loading压枪参数...')
+    try:
+        with open('recoilless_config.json', 'r') as f:
+            config = json.load(f)
+
+        mouse_move1 = config['mouse_move1']
+        mouse_move2 = config['mouse_move2']
+        mouse_move3 = config['mouse_move3']
+        phase1_duration = config['phase1_duration']
+        phase2_duration = config['phase2_duration']
+        print("压强参数加载成功")
+    except FileNotFoundError:
+        print('[ERROR] 没有找到设置文件; 跳过加载设置')
+        pass
+    return mouse_move1, mouse_move2, mouse_move3, phase1_duration , phase2_duration
+
 
 def calculate_distances(monitor, results, frame_, aimbot, lockSpeed, arduinoMode, lockKey, triggerType):  # 目标选择逻辑与标识
     global boxes, cWidth, cHeight
     minDist = float('inf')  # 初始最小距离设置为无限大
     minBox = None  # 初始最小框设置为None
+
+    # 计算屏幕的中点
+    cWidth = monitor["width"] / 2
+    cHeight = monitor["height"] / 2
+
+    # 绘制自瞄范围框
+    if draw_center:
+        cv2.circle(frame_, (int(cWidth), int(cHeight)), closest_mouse_dist, (0, 255, 0), 2)
 
     for r in results:
         boxes = r.boxes.xyxy.cpu().numpy()  # 获取框坐标
@@ -407,11 +459,13 @@ def calculate_distances(monitor, results, frame_, aimbot, lockSpeed, arduinoMode
     for box in boxes:
         x1, y1, x2, y2 = box
 
+        # 计算检测到的物体框（BoundingBox）的中心点。
         centerx = (x1 + x2) / 2
         centery = (y1 + y2) / 2
 
-        cWidth = monitor["width"] / 2
-        cHeight = monitor["height"] / 2
+        # 绘制目标中心点
+
+        cv2.circle(frame_, (int(centerx), int(centery)), 5, (0, 255, 255), -1)
 
         dist = sqrt((cWidth - centerx) ** 2 + (cHeight - centery) ** 2)
         dist = round(dist, 1)
@@ -429,7 +483,6 @@ def calculate_distances(monitor, results, frame_, aimbot, lockSpeed, arduinoMode
 
         print('自瞄状态：', aimbot)
 
-
         cv2.rectangle(frame_, (int(minBox[0]), int(minBox[1])), (int(minBox[2]), int(minBox[3])), (0, 255, 0), 2)
         center_text_x = int((minBox[0] + minBox[2]) / 2)
         center_text_y = int((minBox[1] + minBox[3]) / 2)
@@ -445,7 +498,8 @@ def calculate_distances(monitor, results, frame_, aimbot, lockSpeed, arduinoMode
         if triggerType == "切换":
             print(101)
             if aimbot == True and win32api.GetKeyState(lockKey) and arduinoMode == False:
-                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0, 0)
+                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0,
+                                     0)
             elif aimbot == True and win32api.GetKeyState(lockKey) and arduinoMode == True:
                 centerx = centerx - 960
                 centery = centery - 540
@@ -466,30 +520,38 @@ def calculate_distances(monitor, results, frame_, aimbot, lockSpeed, arduinoMode
         # 第三种：shift+按下触发
         elif triggerType == "shift+按下":
             print(104)
-            if aimbot and win32api.GetKeyState(lockKey) & 0x8000:
-                # 检查 Shift 键是否按下
-                shift_pressed = win32api.GetKeyState(win32con.VK_SHIFT) & 0x8000
-                if shift_pressed and not arduinoMode:
-                    win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0, 0)
-                elif not shift_pressed and not arduinoMode:
-                    # 停止代码
-                    pass
-                elif shift_pressed and arduinoMode:
-                    centerx -= 960
-                    centery -= 540
-                    arduino.write(f"{int(centerx * lockSpeed)}:{int(centery * lockSpeed)}x".encode())
+            # 检查 locker 键、Shift 键和鼠标下侧键是否按下
+            lockKey_pressed = win32api.GetKeyState(lockKey) & 0x8000
+            shift_pressed = win32api.GetKeyState(win32con.VK_SHIFT) & 0x8000
+            xbutton2_pressed = win32api.GetKeyState(0x05) & 0x8000
+
+            print('aimbot:', aimbot)
+            print('lockKey_pressed:', lockKey_pressed)
+            print('shift_pressed:', shift_pressed)
+            print('xbutton2_pressed:', xbutton2_pressed)
+            print('arduinoMode:', arduinoMode)
+
+            if aimbot and ((lockKey_pressed and shift_pressed) or xbutton2_pressed) and not arduinoMode:
+                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0,
+                                     0)
+            elif not ((lockKey_pressed and shift_pressed) or xbutton2_pressed) and not arduinoMode:
+                # 停止代码
+                pass
+            elif shift_pressed and arduinoMode:
+                centerx -= 960
+                centery -= 540
+                arduino.write(f"{int(centerx * lockSpeed)}:{int(centery * lockSpeed)}x".encode())
 
     return frame_
-
-
 
 
 if __name__ == "__main__":
     # 直接使用 load_model_file 函数来获取模型
     model = load_model_file()
 
+
 def main_program_loop():  # 主程序流程代码
-    global start_time, gc_time, closest_mouse_dist, lockSpeed, triggerType, arduinoMode, lockKey, confidence\
+    global start_time, gc_time, closest_mouse_dist, lockSpeed, triggerType, arduinoMode, lockKey, confidence \
         , run_threads, aimbot
 
     # 初始化帧数计时器（帧数计算）
@@ -497,7 +559,7 @@ def main_program_loop():  # 主程序流程代码
     start_time = time.time()
 
     # 截图区域大小
-    monitor = calculate_screen_monitor(screen_width, screen_height)    # 在这里修改截图区域大小
+    monitor = calculate_screen_monitor(screen_width, screen_height)  # 在这里修改截图区域大小
 
     # 创建窗口并设置 flag 为 cv2.WINDOW_NORMAL
     cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
@@ -537,11 +599,12 @@ def main_program_loop():  # 主程序流程代码
         if should_break:
             break
 
-        # 每60秒进行一次gc
+        # 每120秒进行一次gc
         if time.time() - gc_time >= 120:
             gc.collect()
             gc_time = time.time()
     pass
+
 
 def stop_program():  # 停止子线程
     global run_threads, Thread_to_join, root
@@ -551,6 +614,9 @@ def stop_program():  # 停止子线程
     if root is not None:
         root.quit()
         root.destroy()  # 销毁窗口
+
+    os._exit(0)  # 强制结束进程
+
 
 def capture_boxed_image(boxes, frame, save_dir):  # 每秒根据框坐标进行截图
     for box in boxes:
@@ -562,32 +628,51 @@ def capture_boxed_image(boxes, frame, save_dir):  # 每秒根据框坐标进行�
         cv2.imwrite(img_path, img_boxed)
 
 
+def on_click(x, y, button, pressed):  # 创建并启动一个鼠标监听器
+    global left_pressed, right_pressed
+
+    # 检查是否按下了左键或右键
+    if button == Button.left:
+        left_pressed = pressed
+    elif button == Button.right:
+        right_pressed = pressed
 
 
-### ---------------------------------------main--------------------------------------------------------------------------
-if __name__ == "__main__":
-    # 使用 load_model_file 函数来获取模型
+
+def Initialization_parameters():  # 初始化参数
     model = load_model_file()
-
     aimbot = True
     lockSpeed = 1
     arduinoMode = False
     triggerType = "按下"
-    lockKey = 0x02  # 假设lockKey是鼠标右键
-    aimOffset = 25  # 瞄准偏移
-    screen_width = 640  # 设置默认截图区域宽度
-    screen_height = 640  # 设置默认截图区域高度
+    lockKey = 0x02
+    aimOffset = 25
+    screen_width = 640
+    screen_height = 640
+    return model, aimbot, lockSpeed, arduinoMode, triggerType, lockKey, aimOffset, screen_width, screen_height
+
+
+### ---------------------------------------main--------------------------------------------------------------------------
+if __name__ == "__main__":
+    model, aimbot, lockSpeed, arduinoMode, triggerType, lockKey, aimOffset, screen_width, screen_height \
+        = Initialization_parameters()
 
     print('当前自瞄开启状态：', aimbot)
 
-    # 创建并启动子线程运行主程序
-    thread = threading.Thread(target=main_program_loop)
-    thread.start()
+    # 创建并启动子线程1用于运行main_program_loop
+    thread1 = threading.Thread(target=main_program_loop)
+    thread1.start()
 
-    # 启动 GUI
+    # 创建并启动子线程2用于运行moving_mouse
+    mouse_move1, mouse_move2, mouse_move3, phase1_duration, phase2_duration = load_recoilless_config()
+    thread2 = threading.Thread(target=def_recoilless.mouse_move, args=(mouse_move1, mouse_move2, mouse_move3, phase1_duration, phase2_duration))
+    thread2.start()
+
+    # 启动 GUI(运行主程序)
     create_gui_tkinter()
-    # create_gui_PySimpleGUI()
 
-    # 等待 main_program_loop 线程结束，然后才会完全退出
-    Thread_to_join = threading.Thread(target=main_program_loop)
-    Thread_to_join.start()
+    # 等待main_program_loop线程结束后再完全退出。
+    thread1.join()
+
+    # 等待 def_recoilless.moving_mouse线程结束后再完全退出。
+    thread2.join()
