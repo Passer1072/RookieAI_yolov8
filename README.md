@@ -2,14 +2,14 @@
 ## 使用方法：  
 为维护环境作者不提供直接打包成型的软件，但我开源代码鼓励自学。  
 
-### 针对开发者：
-1. #### 使用以下代码获取本代码需要的包：  
+### 针对开发者：  
+1. ### 使用以下代码获取本代码需要的包：  
 `pip install -r requirements.txt`   
-2. #### 你还需要一个自己的模型（目前只支持.pt模型），如果没有可暂时使用ultralytics官方模型。  
+2. ### 你还需要一个自己的模型（目前只支持.pt模型），如果没有可暂时使用ultralytics官方模型。  
 **当未找到模型时会自动下载YOLOv8n模型，你也可以 ⬇️**  
 _访问[YOLOv8 GitHub界面](https://docs.ultralytics.com/)获取更多官方yolov8模型以快速开始  
 访问[ultralytics官网](https://docs.ultralytics.com/)查看官方网站帮助文档_  
-3. #### 使用你的模型  
+3. ### 使用你的模型  
 打开软件---选择模型文件---保存设置---点击左下角关闭软件，重启软件。  
 即可加载上选择的模型文件  
 或者：  
@@ -17,15 +17,20 @@ _访问[YOLOv8 GitHub界面](https://docs.ultralytics.com/)获取更多官方yol
 `# 默认的模型文件地址`  
 `default_model_file = "yolov8n.pt"`  
 
-1. #### 使用以下代码获取本代码需要的包：  
-`pip install -r requirements.txt` 
-2. #### 下载pyinstaller包
-`pip install pyinstaller`
-3. #### 使用pyinstaller打包代码
-`pyinstaller xxxxx.py`  
+### 针对想直接使用者：  
+1. ### 使用以下代码获取本代码需要的包：  
+`pip install -r requirements.txt`   
+2. ### 下载pyinstaller包  
+`pip install pyinstaller`  
+3. ### 使用pyinstaller打包代码  
+`pyinstaller xxxxx.py`    
 将xxxxx替换为代码实际名称。  
 更多打包参数介绍：[Python pyinstaller打包exe最完整教程](https://blog.csdn.net/qq_48979387/article/details/132359366)  
-4. #### 文件整理
+5. ### 关于模型文件  
+建议自行训练  
+前往bilibili学习：[B站](https://search.bilibili.com/all?keyword=%E5%A6%82%E4%BD%95%E8%AE%AD%E7%BB%83%E6%A8%A1%E5%9E%8B&from_source=webtop_search&spm_id_from=333.1007&search_source=5)  
+前往YouTube学习：[油管](https://www.youtube.com/results?search_query=how+to+train+yolov8+model)  
+4. ### 文件整理  
 将  
 '_internal'(包含软件环境)  
 'Apex_logo.png'（软件背景图片）  
@@ -43,9 +48,9 @@ _访问[YOLOv8 GitHub界面](https://docs.ultralytics.com/)获取更多官方yol
 更新日志：
  -------------------------------------------------------------  
  4/1/2024更新：  
- ✨改进：自瞄偏差。（之前只使用固定像素偏移达到垂直瞄准位置的效果，没有考虑敌人的远近距造成的影响， 近距离偏移过低，远距离偏移过高。
+ ✨改进：自瞄偏差。（之前只使用固定像素偏移达到垂直瞄准位置的效果，没有考虑敌人的远近距造成的影响， 近距离偏移过低，远距离偏移过高。  
  现改为计算目标中心点到上边框的距离乘以用户设置倍数的方式使远近距离偏移量都能在合适位置）。   
- 🛠️优化：优化代码量，去除暂时未启用功能代码，加入更多批注方便阅读。
+ 🛠️优化：优化代码量，去除暂时未启用功能代码，加入更多批注方便阅读。  
  ➖移除：暂时移除压枪功能，测试不出意外中断原因，考虑独立出来。  
  🕳️未来计划：1.支持其他格式文件，例如ONNX。2.独立出"侧键触发"开关。  
  -------------------------------------------------------------  
