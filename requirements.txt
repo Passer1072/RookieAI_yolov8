@@ -1,0 +1,12 @@
+# pip install -r requirements.txt 
+
+
+
+#--------------------------------------pak----------------------------------------------------
+opencv-python
+numpy
+pyautogui
+pywin32
+mss
+ultralytics
+

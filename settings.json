@@ -1,13 +1,13 @@
 {
-    "aimOffset": 40.6,
+    "aimOffset": 0.35,
     "aimbot": true,
     "arduinoMode": false,
-    "closest_mouse_dist": 100,
-    "confidence": 0.45,
+    "closest_mouse_dist": 133,
+    "confidence": 0.5,
     "lockKey": "\u53f3\u952e",
-    "lockSpeed": 0.45,
+    "lockSpeed": 0.77,
     "model_file": "E:/My PycharmProjects/Yolov8_text/Model/Game_model/Apex_0203_yolov8.pt",
-    "screen_height": 640,
-    "screen_width": 640,
-    "triggerType": "\u6309\u4e0b"
+    "screen_height": 360,
+    "screen_width": 360,
+    "triggerType": "shift+\u6309\u4e0b"
 }
