@@ -44,7 +44,7 @@ closest_mouse_dist = 100
 confidence = 0.65
 
 # 垂直瞄准偏移
-aimOffset = 0.3
+aimOffset = 5
 
 # 定义触发器类型和其他参数
 # 在全局范围声明 GUI 控件的变量
@@ -60,6 +60,7 @@ screen_width_scale = None
 screen_height_scale = None
 root = None
 aimOffset_scale = None
+mouse_Side_Button_Witch_var = None
 
 # 其他全局变量
 Thread_to_join = None
@@ -155,7 +156,7 @@ def load_model_file():  # 加载模型文件
 def create_gui_tkinter():  # 软件主题GUI界面
     global aimbot_var, lockSpeed_scale, triggerType_var, arduinoMode_var, lockKey_var, confidence_scale \
         , closest_mouse_dist_scale, screen_width_scale, screen_height_scale, root, model_file, model_file_label, aimOffset_scale \
-        , draw_center_var
+        , draw_center_var, mouse_Side_Button_Witch_var
 
     root = tk.Tk()
     root.wm_title("RookieAI")  # 软件名称
@@ -227,58 +228,64 @@ def create_gui_tkinter():  # 软件主题GUI界面
     # 将OptionMenu插入到frame中，并确保它与标签在同一行
     lockKey_menu.grid(row=0, column=1)  # OptionMenu在frame部件中的位置
 
+    # 创建一个名为 '鼠标侧键瞄准开关' 的复选框
+    mouse_Side_Button_Witch_var = tk.BooleanVar(value=False)
+    mouse_Side_Button_Witch_check = ttk.Checkbutton(root, text='鼠标侧键瞄准开关', variable=mouse_Side_Button_Witch_var,
+                                        command=update_values)
+    mouse_Side_Button_Witch_check.grid(row=5, column=0, sticky="w")  # 使用grid布局并靠左对齐
+
     # 创建一个名为 'Lock Speed' 的滑动条
     lockSpeed_scale = tk.Scale(root, from_=0.00, to=1.00, resolution=0.01, label='锁定速度', orient='horizontal',
                                sliderlength=20, length=400, command=update_values)
     lockSpeed_scale.set(lockSpeed)
-    lockSpeed_scale.grid(row=5, column=0)
+    lockSpeed_scale.grid(row=6, column=0)
 
     # 置信度调整滑块：创建一个名为 'Confidence' 的滑动条
     confidence_scale = tk.Scale(root, from_=0.0, to=1.0, resolution=0.01, label='置信度调整', orient='horizontal',
                                 sliderlength=20, length=400, command=update_values)
     confidence_scale.set(confidence)
-    confidence_scale.grid(row=6, column=0)  # Adjust row number as per your needs
+    confidence_scale.grid(row=7, column=0)  # Adjust row number as per your needs
 
     # 自瞄范围调整
     closest_mouse_dist_scale = tk.Scale(root, from_=0, to=300, resolution=1, label='自瞄范围', orient='horizontal',
                                         sliderlength=20, length=400, command=update_values)
     closest_mouse_dist_scale.set(closest_mouse_dist)
-    closest_mouse_dist_scale.grid(row=7, column=0)
+    closest_mouse_dist_scale.grid(row=8, column=0)
 
     # 瞄准偏移（数值越大越靠上）
     aimOffset_scale = tk.Scale(root, from_=0, to=1, resolution=0.01, label='瞄准偏移倍率（数值越大越靠上）',
                                orient='horizontal',
                                sliderlength=20, length=400, command=update_values)
     aimOffset_scale.set(aimOffset)
-    aimOffset_scale.grid(row=8, column=0)
+    aimOffset_scale.grid(row=9, column=0)
 
     # 创建一个屏幕宽度滑块
     screen_width_scale = tk.Scale(root, from_=100, to=2000, resolution=10, label='*截图区域宽度',
                                   orient='horizontal', sliderlength=20, length=400, command=update_values)
     screen_width_scale.set(screen_width)  # 初始值
-    screen_width_scale.grid(row=9, column=0)  # 行号
+    screen_width_scale.grid(row=10, column=0)  # 行号
 
     # 创建一个屏幕高度滑块
     screen_height_scale = tk.Scale(root, from_=100, to=2000, resolution=10, label='*截图区域高度',
                                    orient='horizontal', sliderlength=20, length=400, command=update_values)
     screen_height_scale.set(screen_height)  # 初始值
-    screen_height_scale.grid(row=10, column=0)  # 行号
+    screen_height_scale.grid(row=11, column=0)  # 行号
 
     # 显示所选文件路径的标签
-    model_file_label = tk.Label(root, text="还未选择模型文件", width=30)  # 初始化时显示的文本
-    model_file_label.grid(row=11, column=0, sticky="w")  # 使用grid布局并靠左对齐
+    model_file_label = tk.Label(root, text="还未选择模型文件", width=44)  # 初始化时显示的文本
+    model_file_label.grid(row=12, column=0, sticky="w")  # 使用grid布局并靠左对齐
 
     # 用户选择模型文件的按钮
     model_file_button = tk.Button(root, text="选择模型文件", command=choose_model)  # 点击此按钮时，将调用choose_model函数
-    model_file_button.grid(row=12, column=0, sticky="w")  # 使用grid布局并靠左对齐
+    model_file_button.grid(row=13, column=0, sticky="w")  # 使用grid布局并靠左对齐
 
     # 创建 '保存' 按钮
     save_button = ttk.Button(root, text='保存设置', command=save_settings)
-    save_button.grid(row=13, column=0, padx=0)  # 根据你的需要调整行号
+    save_button.grid(row=14, column=0, padx=0)  # 根据你的需要调整行号
 
     # 创建 '加载' 按钮
     load_button = ttk.Button(root, text='加载设置', command=load_settings)
-    load_button.grid(row=14, column=1, padx=10)
+    load_button.grid(row=13, column=0, padx=10)
 
     # 创建按钮样式(红色背景样式)
     style = ttk.Style()
@@ -286,7 +293,7 @@ def create_gui_tkinter():  # 软件主题GUI界面
     # 创建 '关闭' 按钮
     close_button = ttk.Button(root, text='关闭', command=stop_program, style="Close.TButton")
     # 改变按钮行间距和字体大小
-    close_button.grid(row=13, column=0, padx=5, pady=5, sticky='w')
+    close_button.grid(row=14, column=0, padx=5, pady=5, sticky='w')
 
     # 从文件加载设置
     load_settings()
@@ -299,13 +306,15 @@ def create_gui_tkinter():  # 软件主题GUI界面
 
 def update_values(*args):
     global aimbot, lockSpeed, triggerType, arduinoMode, lockKey, lockKey_var, confidence, closest_mouse_dist \
-        , closest_mouse_dist_scale, screen_width, screen_height, model_file, aimOffset, draw_center
+        , closest_mouse_dist_scale, screen_width, screen_height, model_file, aimOffset, draw_center\
+        , mouse_Side_Button_Witch
     print("update_values function was called")
     aimbot = aimbot_var.get()
     lockSpeed = lockSpeed_scale.get()
     triggerType = triggerType_var.get()
     arduinoMode = arduinoMode_var.get()
     lockKey = lockKey_var.get()
+    mouse_Side_Button_Witch = mouse_Side_Button_Witch_var.get()
     confidence = confidence_scale.get()
     closest_mouse_dist = closest_mouse_dist_scale.get()
     screen_width = screen_width_scale.get()
@@ -314,6 +323,7 @@ def update_values(*args):
     draw_center = draw_center_var.get()
 
     print('状态1：aimbot_var:', aimbot_var.get(), '状态2：aimbot:', aimbot)
+    print('状态1：mouse_Side_Button_Witch:', aimbot_var.get(), '状态2：mouse_Side_Button_Witch_var.get:', mouse_Side_Button_Witch_var.get())
 
     # 触发键值转换
     key = lockKey_var.get()
@@ -333,6 +343,7 @@ def save_settings():  # 保存设置
         'triggerType': triggerType_var.get(),
         'arduinoMode': arduinoMode_var.get(),
         'lockKey': lockKey_var.get(),
+        'mouse_Side_Button_Witch': mouse_Side_Button_Witch_var.get(),
         'confidence': confidence_scale.get(),
         'closest_mouse_dist': closest_mouse_dist_scale.get(),
         'screen_width': screen_width_scale.get(),
@@ -357,6 +368,7 @@ def load_settings():  # 加载主程序参数设置
         triggerType_var.set(settings['triggerType'])
         arduinoMode_var.set(settings['arduinoMode'])
         lockKey_var.set(settings['lockKey'])
+        mouse_Side_Button_Witch_var.set(settings['mouse_Side_Button_Witch'])
         confidence_scale.set(settings['confidence'])
         closest_mouse_dist_scale.set(settings['closest_mouse_dist'])
         screen_width_scale.set(settings['screen_width'])
@@ -378,7 +390,7 @@ def calculate_distances(
         lockSpeed: float,  # The speed at which the mouse should move towards the object
         arduinoMode: bool,  # Whether the Arudino mode is active or not
         lockKey: int,  # Lock Key code
-        triggerType: str  # Trigger type
+        triggerType: str,  # Trigger type
 ):  # 目标选择逻辑与标识
     global boxes, cWidth, cHeight
 
@@ -396,6 +408,7 @@ def calculate_distances(
     for r in results:
         boxes = r.boxes.xyxy.cpu().numpy()  # 获取框坐标
         print("瞄准偏移量倍率为：", aimOffset)  # 打印框坐标
+        print("侧键状态", mouse_Side_Button_Witch)
 
     for box in boxes:
         x1, y1, x2, y2 = box
@@ -441,41 +454,42 @@ def calculate_distances(
         centerx = (center_text_x - cWidth) * lockSpeed
         centery = (center_text_y - cHeight - aimOffset_) * lockSpeed
 
+        # 检查 locker 键、Shift 键和鼠标下侧键是否按下
+        lockKey_pressed = win32api.GetKeyState(lockKey) & 0x8000
+        shift_pressed = win32api.GetKeyState(win32con.VK_SHIFT) & 0x8000
+        xbutton2_pressed = win32api.GetKeyState(0x05) & 0x8000
+
         # 将鼠标光标移动到检测到的框的中心
         # 第一种：切换触发
         if triggerType == "切换":
             print(101)
-            if aimbot == True and win32api.GetKeyState(lockKey):
+            if aimbot and (win32api.GetKeyState(lockKey) or (mouse_Side_Button_Witch and xbutton2_pressed)):
                 win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0,
                                      0)
 
         # 第二种：按下触发
         elif triggerType == "按下":
             print(102)
-            if aimbot == True and (win32api.GetKeyState(lockKey) & 0x8000):
-                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx), int(centery), 0, 0)
-            elif aimbot == True and not (win32api.GetKeyState(lockKey) & 0x8000):
-                # 在这里添加停止代码
+            if aimbot and (lockKey_pressed or (mouse_Side_Button_Witch and xbutton2_pressed)):
+                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0,
+                                     0)
+            elif not (lockKey_pressed or (mouse_Side_Button_Witch and xbutton2_pressed)):
+                # 停止代码
                 pass
 
         # 第三种：shift+按下触发
         elif triggerType == "shift+按下":
             print(104)
-            # 检查 locker 键、Shift 键和鼠标下侧键是否按下
-            lockKey_pressed = win32api.GetKeyState(lockKey) & 0x8000
-            shift_pressed = win32api.GetKeyState(win32con.VK_SHIFT) & 0x8000
-            xbutton2_pressed = win32api.GetKeyState(0x05) & 0x8000
+            # print('aimbot:', aimbot)
+            # print('lockKey_pressed:', lockKey_pressed)
+            # print('shift_pressed:', shift_pressed)
+            # print('xbutton2_pressed:', xbutton2_pressed)
+            # print('mouse_Side_Button_Witch:', mouse_Side_Button_Witch)
 
-            print('aimbot:', aimbot)
-            print('lockKey_pressed:', lockKey_pressed)
-            print('shift_pressed:', shift_pressed)
-            print('xbutton2_pressed:', xbutton2_pressed)
-            print('arduinoMode:', arduinoMode)
-
-            if aimbot and ((lockKey_pressed and shift_pressed) or xbutton2_pressed):
+            if aimbot and ((lockKey_pressed and shift_pressed) or (mouse_Side_Button_Witch and xbutton2_pressed)):
                 win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0,
                                      0)
-            elif not ((lockKey_pressed and shift_pressed) or xbutton2_pressed):
+            elif not ((lockKey_pressed and shift_pressed) or (mouse_Side_Button_Witch and xbutton2_pressed)):
                 # 停止代码
                 pass
 
