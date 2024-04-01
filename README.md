@@ -15,7 +15,7 @@ _访问[YOLOv8 GitHub界面](https://docs.ultralytics.com/)获取更多官方yol
 或者：  
 修改默认文件地址：  
 `# 默认的模型文件地址`  
-`default_model_file = "yolov8n.pt"`
+`default_model_file = "yolov8n.pt"`  
 
 1. #### 使用以下代码获取本代码需要的包：  
 `pip install -r requirements.txt` 
