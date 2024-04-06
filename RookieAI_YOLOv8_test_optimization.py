@@ -14,6 +14,7 @@ import numpy as np
 import pyautogui
 import win32api
 import win32con
+import customtkinter
 from mss import mss
 from ultralytics import YOLO
 
@@ -44,7 +45,7 @@ closest_mouse_dist = 100
 confidence = 0.65
 
 # 垂直瞄准偏移
-aimOffset = 5
+aimOffset = 0.5
 
 # 定义触发器类型和其他参数
 # 在全局范围声明 GUI 控件的变量
@@ -159,18 +160,25 @@ def create_gui_tkinter():  # 软件主题GUI界面
         , draw_center_var, mouse_Side_Button_Witch_var
 
     root = tk.Tk()
+    
     root.wm_title("RookieAI")  # 软件名称
 
-    # 使用特定的样式
-    style = ttk.Style(root)
-    style.theme_use('clam')  # UI风格
-    root.attributes('-topmost', 1)  # 窗口置顶
-    root.attributes('-alpha', 0.75)  # Sets the entire window transparency. 0.0=transparent, 1.0=no transparency 半透明
-    root.configure(background='white')  # 背景颜色
-    # 背景
-    background_image = PhotoImage(file="Apex_logo.png")  # 指定图片文件路径
-    background_label = Label(root, image=background_image)
-    background_label.place(x=0, y=0, relwidth=1, relheight=1)  # 使图片填充整个窗口
+    # 设置当用户点击窗口的关闭按钮时要做的操作
+    root.protocol("WM_DELETE_WINDOW", stop_program)  # 将WM_DELETE_WINDOW的默认操作设置为 _on_closing 函数
+
+    # 禁止窗口大小调整
+    root.resizable(False, False)
+
+    # # 使用特定的样式
+    # style = ttk.Style(root)
+    # style.theme_use('clam')  # UI风格
+    # root.attributes('-topmost', 1)  # 窗口置顶
+    # root.attributes('-alpha', 0.75)  # Sets the entire window transparency. 0.0=transparent, 1.0=no transparency 半透明
+    # root.configure(background='white')  # 背景颜色
+    # # 背景
+    # background_image = PhotoImage(file="Apex_logo.png")  # 指定图片文件路径
+    # background_label = Label(root, image=background_image)
+    # background_label.place(x=0, y=0, relwidth=1, relheight=1)  # 使图片填充整个窗口
 
     # 添加一个大标题
     title_label = tk.Label(root, text="RookieAI-yolov8版本", font=('Helvetica', 24), bg='white')
@@ -251,6 +259,11 @@ def create_gui_tkinter():  # 软件主题GUI界面
                                         sliderlength=20, length=400, command=update_values)
     closest_mouse_dist_scale.set(closest_mouse_dist)
     closest_mouse_dist_scale.grid(row=8, column=0)
+    # 创建图片实例
+    my_pic = tk.PhotoImage(file="Apex_logo.png")
+    # # 创建一个Label控件来显示图片，并将该控件添加到GUI
+    # my_pic_label = tk.Label(root, image=my_pic)
+    # my_pic_label.grid(row=8, column=1)
 
     # 瞄准偏移（数值越大越靠上）
     aimOffset_scale = tk.Scale(root, from_=0, to=1, resolution=0.01, label='瞄准偏移倍率（数值越大越靠上）',
@@ -322,8 +335,8 @@ def update_values(*args):
     aimOffset = aimOffset_scale.get()
     draw_center = draw_center_var.get()
 
-    print('状态1：aimbot_var:', aimbot_var.get(), '状态2：aimbot:', aimbot)
-    print('状态1：mouse_Side_Button_Witch:', aimbot_var.get(), '状态2：mouse_Side_Button_Witch_var.get:', mouse_Side_Button_Witch_var.get())
+    # print('状态1：aimbot_var:', aimbot_var.get(), '状态2：aimbot:', aimbot)
+    # print('状态1：mouse_Side_Button_Witch:', aimbot_var.get(), '状态2：mouse_Side_Button_Witch_var.get:', mouse_Side_Button_Witch_var.get())
 
     # 触发键值转换
     key = lockKey_var.get()
@@ -523,14 +536,10 @@ def main_program_loop():  # 主程序流程代码
         # 截图方式
         frame = capture_screen(monitor, sct)  # mss截图方式
         # ---------------------------------------------------------------------------
-        start_test_time = time.time()  # 记录开始时间
 
         # 检测和跟踪对象（推理部分）
         results = model.predict(frame, save=False, imgsz=320, conf=confidence, half=True, agnostic_nms=True, iou=0.7)
 
-        end_time = time.time()  # 记录结束时间
-        elapsed_time = end_time - start_test_time
-        print(f"Elapsed time(1): {elapsed_time} seconds")
         # ---------------------------------------------------------------------------
         # 绘制结果
         frame_ = results[0].plot()
