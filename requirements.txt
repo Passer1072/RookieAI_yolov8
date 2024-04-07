@@ -14,3 +14,4 @@ pywin32==304
 mss==6.1.0
 ultralytics==8.1.26
 customtkinter
+chardet
