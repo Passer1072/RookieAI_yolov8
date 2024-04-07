@@ -5,7 +5,7 @@
 ### 针对开发者：  
 1. ### 使用以下代码获取本代码需要的库与Pytorch库：  
 `pip install -r requirements.txt`   
-`pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121`
+`pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121`  
 2. ### 你还需要一个自己的模型（目前只支持.pt模型），如果没有可暂时使用ultralytics官方模型。  
 **当未找到模型时会自动下载YOLOv8n模型，你也可以 ⬇️**  
 _访问[YOLOv8 GitHub界面](https://docs.ultralytics.com/)获取更多官方yolov8模型以快速开始  
@@ -21,7 +21,7 @@ _访问[YOLOv8 GitHub界面](https://docs.ultralytics.com/)获取更多官方yol
 ### 针对想直接使用者：  
 1. ### 使用以下代码获取本代码需要的库与Pytorch库：  
 `pip install -r requirements.txt`   
-`pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121`
+`pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121`  
 2. ### 下载pyinstaller库(打包用)  
 `pip install pyinstaller`  
 3. ### 使用pyinstaller打包代码  
