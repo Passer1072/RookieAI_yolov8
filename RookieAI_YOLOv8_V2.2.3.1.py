@@ -98,6 +98,7 @@ target_selection_var = None
 target_selection_str = None
 method_of_prediction_var = None
 
+
 # 其他全局变量
 Thread_to_join = None
 restart_thread = False
@@ -146,7 +147,6 @@ def update_and_display_fps(frame_, frame_counter, start_time, end_time):
     # 在图形用户界面上显示帧率
     text_fps = "实时FPS：{:.0f}".format(frame_rate)
     image_label_FPSlabel.configure(text=text_fps)
-
     print(f"FPS: {frame_rate:.0f}")  # 在控制台打印帧率（如果需要的话）
 
     return frame_, frame_counter, start_time
@@ -404,10 +404,10 @@ def create_gui_tkinter():  # 软件主题GUI界面
     # 创建Label
     message_text_Label = ctk.CTkLabel(message_text_frame, text="更新公告")
     message_text_Label.grid(row=0, column=1)
-    # 创建文本框
-    message_text_box = ctk.CTkTextbox(message_text_frame, width=300, height=100, corner_radius=5)
-    message_text_box.grid(row=1, column=1, sticky="nsew")
-    message_text_box.insert("0.0", readme_content)
+    # # 创建文本框
+    # message_text_box = ctk.CTkTextbox(message_text_frame, width=300, height=100, corner_radius=5)
+    # message_text_box.grid(row=1, column=1, sticky="nsew")
+    # message_text_box.insert("0.0", readme_content)
 
 
 
@@ -961,6 +961,7 @@ def main_program_loop(model):  # 主程序流程代码
         end_time = time.time()
         frame_, frame_counter, start_time = update_and_display_fps(frame_, frame_counter, start_time, end_time)
 
+
         if test_window_frame:
             # 图像调试窗口（外部cv2.imshow）
             should_break = display_debug_window(frame_)
@@ -1029,7 +1030,7 @@ if __name__ == "__main__":
     freeze_support()
 
     # 读取在线公告
-    readme_content = fetch_readme()
+    # readme_content = fetch_readme()
 
 
     # 创建并启动子线程1用于运行main_program_loop
