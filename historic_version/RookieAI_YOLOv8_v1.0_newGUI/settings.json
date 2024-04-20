@@ -1,0 +1,14 @@
+{
+    "aimOffset": 0.35,
+    "aimbot": true,
+    "arduinoMode": false,
+    "closest_mouse_dist": 133,
+    "confidence": 0.5,
+    "lockKey": "\u53f3\u952e",
+    "lockSpeed": 0.77,
+    "model_file": "E:/My PycharmProjects/Yolov8_text/Model/Game_model/Apex_0203_yolov8.pt",
+    "mouse_Side_Button_Witch": true,
+    "screen_height": 360,
+    "screen_width": 360,
+    "triggerType": "\u6309\u4e0b"
+}
