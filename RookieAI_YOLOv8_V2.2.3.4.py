@@ -97,6 +97,7 @@ target_selection = None
 target_selection_var = None
 target_selection_str = None
 method_of_prediction_var = None
+readme_content = ""
 
 
 # 其他全局变量
@@ -204,7 +205,7 @@ def fetch_readme():  # 从github更新公告
         return update_log
 
     except Exception as e:
-        print("发生错误：", e)
+        print("获取失败：", e)
         return "无法加载最新的 README 文件，这可能是因为网络问题或其他未知错误。"
 
 
@@ -241,7 +242,7 @@ def create_gui_tkinter():  # 软件主题GUI界面
         , closest_mouse_dist_variable, aimOffset_variable, screen_width_scale_variable, screen_height_scale_variable \
         , image_label, image_label_switch, image_label_FPSlabel, target_selection_var, target_mapping, prediction_factor_variable \
         , prediction_factor_scale, method_of_prediction_var, extra_offset_x_scale, extra_offset_y_scale, extra_offset_y \
-        , extra_offset_x, extra_offset_x_variable, extra_offset_y_variable
+        , extra_offset_x, extra_offset_x_variable, extra_offset_y_variable, readme_content
 
     # 使用customtkinter创建根窗口
     root = ctk.CTk()
@@ -404,10 +405,10 @@ def create_gui_tkinter():  # 软件主题GUI界面
     # 创建Label
     message_text_Label = ctk.CTkLabel(message_text_frame, text="更新公告")
     message_text_Label.grid(row=0, column=1)
-    # # 创建文本框
-    # message_text_box = ctk.CTkTextbox(message_text_frame, width=300, height=100, corner_radius=5)
-    # message_text_box.grid(row=1, column=1, sticky="nsew")
-    # message_text_box.insert("0.0", readme_content)
+    # 创建文本框
+    message_text_box = ctk.CTkTextbox(message_text_frame, width=300, height=100, corner_radius=5)
+    message_text_box.grid(row=1, column=1, sticky="nsew")
+    message_text_box.insert("0.0", readme_content)
 
 
 
@@ -907,7 +908,11 @@ def calculate_distances(
 def main_program_loop(model):  # 主程序流程代码
     global start_time, gc_time, closest_mouse_dist, lockSpeed, triggerType, arduinoMode, lockKey, confidence \
         , run_threads, aimbot, image_label, test_images_GUI, target_selection, target_selection_str, target_mapping \
-        , target_selection_var, prediction_factor, should_break
+        , target_selection_var, prediction_factor, should_break, readme_content
+
+
+
+
 
     # # 加载模型
     # model = load_model_file()
@@ -957,9 +962,12 @@ def main_program_loop(model):  # 主程序流程代码
             # 当 TypeError 出现时，执行这部分代码
             print('lockKey 值发生错误。但是无关紧要')
 
-        # 获取并显示帧率
-        end_time = time.time()
-        frame_, frame_counter, start_time = update_and_display_fps(frame_, frame_counter, start_time, end_time)
+        try:
+            # 获取并显示帧率
+            end_time = time.time()
+            frame_, frame_counter, start_time = update_and_display_fps(frame_, frame_counter, start_time, end_time)
+        except NameError:
+            print("ERROR:帧率显示失败")
 
 
         if test_window_frame:
@@ -1010,6 +1018,8 @@ def restart_program():  # 重启软件
 
 
 def Initialization_parameters():  # 初始化参数
+    # 读取在线公告
+    readme_content = fetch_readme()
     model = load_model_file()
     aimbot = True
     lockSpeed = 1
@@ -1019,18 +1029,17 @@ def Initialization_parameters():  # 初始化参数
     aimOffset = 25
     screen_width = 640
     screen_height = 640
-    return model, aimbot, lockSpeed, arduinoMode, triggerType, lockKey, aimOffset, screen_width, screen_height
+
+    return model, aimbot, lockSpeed, arduinoMode, triggerType, lockKey, aimOffset, screen_width, screen_height, readme_content
 
 
 ### ---------------------------------------main-------------------------------------------------------------------------
 if __name__ == "__main__":
-    model, aimbot, lockSpeed, arduinoMode, triggerType, lockKey, aimOffset, screen_width, screen_height \
+    model, aimbot, lockSpeed, arduinoMode, triggerType, lockKey, aimOffset, screen_width, screen_height, readme_content \
         = Initialization_parameters()
 
     freeze_support()
 
-    # 读取在线公告
-    # readme_content = fetch_readme()
 
 
     # 创建并启动子线程1用于运行main_program_loop
