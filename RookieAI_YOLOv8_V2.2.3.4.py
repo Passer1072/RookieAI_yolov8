@@ -784,7 +784,7 @@ def calculate_distances(
 
     for r in results:
         boxes = r.boxes.xyxy.cpu().numpy()  # 获取框坐标
-        print("瞄准偏移量倍率为：", aimOffset)  # 打印框坐标
+        # print("瞄准偏移量倍率为：", aimOffset)  # 打印框坐标
 
     for box in boxes:
         x1, y1, x2, y2 = box
@@ -939,7 +939,7 @@ def main_program_loop(model):  # 主程序流程代码
         try:
             target_selection = target_mapping[target_selection_str]
         except KeyError:
-            print(f"Key {target_selection_str} not found in target_mapping.")
+            print(f"Key {target_selection_str} not found in target_mapping.（加载中）")
         # print("当前目标为", target_selection_str)
         # print("当前目标为", target_mapping)
 
@@ -967,7 +967,7 @@ def main_program_loop(model):  # 主程序流程代码
             end_time = time.time()
             frame_, frame_counter, start_time = update_and_display_fps(frame_, frame_counter, start_time, end_time)
         except NameError:
-            print("ERROR:帧率显示失败")
+            print("ERROR:帧率显示失败(加载中)")
 
 
         if test_window_frame:
