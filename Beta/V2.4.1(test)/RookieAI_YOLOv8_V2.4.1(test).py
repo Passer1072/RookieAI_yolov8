@@ -6,6 +6,8 @@ import threading
 import time
 import sys
 import requests
+import uuid
+import datetime
 import tkinter as tk
 import webbrowser
 import bettercam
@@ -26,7 +28,7 @@ from ultralytics import YOLO
 import ctypes
 import string
 from ctypes import *  # 导入 ctypes 库中所有模块
-
+import random
 
 ###------------------------------------------全局变量---------------------------------------------------------------------
 
@@ -34,7 +36,7 @@ from ctypes import *  # 导入 ctypes 库中所有模块
 model_file = "yolov8n.pt"
 
 # 加载DLL
-path_to_dll = "E:\\My_PycharmProjects\\Yolov8_text\\msdk.dll"
+path_to_dll = "msdk.dll"
 
 # 新建一个 MSS 对象（获取截图）
 sct = mss()
@@ -140,15 +142,37 @@ target_selection_str = None
 method_of_prediction_var = None
 readme_content = ""
 
-
 # 其他全局变量
 Thread_to_join = None
 restart_thread = False
 run_threads = True
 draw_center = True
+random_name = False
+
+# 随机偏移Y轴状态变量
+current_target = None
+current_target_dist = float('inf')
+aim_offset_x = 0
+aim_offset_y = 0
+offset_range = (0, 1)  # 偏移范围
+time_interval = 0.5  # 时间间隔，单位：秒
+last_offset_time = time.time()
+enable_random_offset = True  # 随机偏移功能开关
 
 
 ###------------------------------------------def部分---------------------------------------------------------------------
+
+def generate_fingerprint():  # 随机特征码
+    random_component = str(uuid.uuid4())
+    time_component = str(datetime.datetime.now())
+    environment_component = os.getenv('PATH')
+    return hash(random_component + time_component + environment_component)
+
+
+def random_string(length):  # 随即软件名称
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for _ in range(length))
+
 
 def calculate_screen_monitor(capture_width=640, capture_height=640):  # 截图区域
     # 获取屏幕的宽度和高度
@@ -295,16 +319,17 @@ def fetch_readme_version_number():  # 从github更新公告
 
 
 # 加载DLL文件
-def load_DLL():
+def load_DLL():  # 加载易键鼠DLL
     global dll, hdl
     # 加载DLL文件
     print("开始加载飞易来盒子文件...")
     dll = ctypes.windll.LoadLibrary('./x64_msdk.dll')  # 加载DLL
     print("启动飞易来盒子...")
     dll.M_Open_VidPid.restype = ctypes.c_uint64  # 声明M_Open函数的返回类型为无符号整数
-    hdl = dll.M_Open_VidPid(0x1532, 0x99)  # 打开端口代码
+    hdl = dll.M_Open_VidPid(0x1532, 0x98)  # 打开端口代码
     print("open handle = " + str(hdl))  # 打开端口并打印端口开启状态
     print("鼠标移动:" + str(dll.M_MoveR(ctypes.c_uint64(hdl), 100, 100) == 0))  # 相对移动
+
 
 def crawl_information_by_github():
     global readme_content, readme_version
@@ -312,6 +337,7 @@ def crawl_information_by_github():
         # 读取在线公告
         readme_content = fetch_readme()
         readme_version = fetch_readme_version_number()
+
 
 def open_web(event):
     webbrowser.open('https://github.com/Passer1072/RookieAI_yolov8')  # 要跳转的网页
@@ -322,8 +348,10 @@ def choose_model():  # 选择模型
     model_file = filedialog.askopenfilename()  # 在这里让用户选择文件
     model_file_label.config(text=model_file)  # 更新标签上的文本为选择的文件路径
 
+
 def open_settings_config():
     os.startfile("settings.json")
+
 
 def load_model_file():  # 加载模型文件
     # 默认的模型文件地址
@@ -352,13 +380,13 @@ def create_gui_tkinter():  # 软件主题GUI界面
         , closest_mouse_dist_variable, aimOffset_variable, screen_width_scale_variable, screen_height_scale_variable \
         , image_label, image_label_switch, image_label_FPSlabel, target_selection_var, target_mapping, prediction_factor_variable \
         , prediction_factor_scale, method_of_prediction_var, extra_offset_x_scale, extra_offset_y_scale, extra_offset_y \
-        , extra_offset_x, extra_offset_x_variable, extra_offset_y_variable, readme_content, screenshot_mode_var\
-        , screenshot_mode, segmented_aiming_switch_var, stage1_scope, stage1_scope_scale, stage1_scope_variable\
-        , stage1_intensity_variable, stage1_intensity, stage1_intensity_scale, stage2_scope_variable\
+        , extra_offset_x, extra_offset_x_variable, extra_offset_y_variable, readme_content, screenshot_mode_var \
+        , screenshot_mode, segmented_aiming_switch_var, stage1_scope, stage1_scope_scale, stage1_scope_variable \
+        , stage1_intensity_variable, stage1_intensity, stage1_intensity_scale, stage2_scope_variable \
         , stage2_intensity_variable, stage2_scope_scale, stage2_intensity_scale
 
     # 版本号
-    version_number = "V2.3.1"
+    version_number = "V2.4.0(test)"
     # 使用customtkinter创建根窗口
     root = ctk.CTk()
     # ctk.set_appearance_mode("system")  # default
@@ -386,7 +414,11 @@ def create_gui_tkinter():  # 软件主题GUI界面
     root.attributes('-topmost', 1)
     root.update()
 
-    root.title("RookieAI")  # 软件名称
+    root.title("RookieTIM")  # 标题名称
+
+    if random_name:  # 随机标题名称
+        random_title = random_string(10)  # 生成长度为 10 的随机字符串
+        root.title(random_title)  # 将标题设置为随机字符串
 
     root.geometry(f"{_win_width}x{_win_height}")
 
@@ -492,8 +524,6 @@ def create_gui_tkinter():  # 软件主题GUI界面
         ban_LookSpeed_label_text = ctk.CTkLabel(LookSpeed_frame, text="###", width=25)
         ban_LookSpeed_label_text.grid(row=0, column=2)  # 行号
 
-
-
     # 自瞄范围调整
     # 创建一个 StringVar 对象以保存 closest_mouse_dist 的值
     closest_mouse_dist_variable = tk.StringVar()
@@ -513,7 +543,8 @@ def create_gui_tkinter():  # 软件主题GUI界面
     closest_mouse_dist_text.grid(row=0, column=3)
     # 如果分段瞄准打开则停用一般瞄准范围设置
     if segmented_aiming_switch:
-        ban_closest_mouse_dist_label = ctk.CTkLabel(closest_mouse_dist_frame, text="由于分段瞄准启用，该选项已禁用", width=200)
+        ban_closest_mouse_dist_label = ctk.CTkLabel(closest_mouse_dist_frame, text="由于分段瞄准启用，该选项已禁用",
+                                                    width=200)
         ban_closest_mouse_dist_label.grid(row=0, column=2, padx=(12, 0))  # 行号
         ban_closest_mouse_dist_text = ctk.CTkLabel(closest_mouse_dist_frame, text="####", width=30)
         ban_closest_mouse_dist_text.grid(row=0, column=3)  # 行号
@@ -543,8 +574,6 @@ def create_gui_tkinter():  # 软件主题GUI界面
     message_text_box = ctk.CTkTextbox(message_text_frame, width=300, height=100, corner_radius=5)
     message_text_box.grid(row=1, column=1, sticky="nsew")
     message_text_box.insert("0.0", readme_content)
-
-
 
     # 目标选择框
     # 创建一个Frame来包含OptionMenu和其左边的Label
@@ -700,7 +729,6 @@ def create_gui_tkinter():  # 软件主题GUI界面
         ban_screen_width_scale_text = ctk.CTkLabel(screen_width_scale_frame, text="####", width=30)
         ban_screen_width_scale_text.grid(row=0, column=3)  # 行号
 
-
     # 屏幕高度
     # 创建一个 StringVar 对象以保存 screen_height_scale 的值
     screen_height_scale_variable = tk.StringVar()
@@ -732,8 +760,9 @@ def create_gui_tkinter():  # 软件主题GUI界面
     screenshot_mode_frame.grid(row=9, column=0, sticky='w', pady=5)  # 使用grid布局并靠左对齐
     # 创建一个名为 '启用DXcam模式' 的复选框
     screenshot_mode_var = ctk.BooleanVar(value=screenshot_mode)
-    screenshot_mode_check = ctk.CTkCheckBox(screenshot_mode_frame, text='启用DXcam截图模式(保存后重启生效)', variable=screenshot_mode_var,
-                                   command=update_values)
+    screenshot_mode_check = ctk.CTkCheckBox(screenshot_mode_frame, text='启用DXcam截图模式(保存后重启生效)',
+                                            variable=screenshot_mode_var,
+                                            command=update_values)
     screenshot_mode_check.grid(row=0, column=1)  # 使用grid布局并靠左对齐
 
     # 瞄准模式选择
@@ -742,10 +771,11 @@ def create_gui_tkinter():  # 软件主题GUI界面
     segmented_aiming_switch_frame.grid(row=10, column=0, sticky='w', pady=5)  # 使用grid布局并靠左对齐
     # 创建一个名为 '启用DXcam模式' 的复选框
     segmented_aiming_switch_var = ctk.BooleanVar(value=segmented_aiming_switch)
-    segmented_aiming_switch_check = ctk.CTkCheckBox(segmented_aiming_switch_frame, text='启用分段瞄准模式(保存后重启生效)', variable=segmented_aiming_switch_var,
-                                   command=update_values)
+    segmented_aiming_switch_check = ctk.CTkCheckBox(segmented_aiming_switch_frame,
+                                                    text='启用分段瞄准模式(保存后重启生效)',
+                                                    variable=segmented_aiming_switch_var,
+                                                    command=update_values)
     segmented_aiming_switch_check.grid(row=0, column=1)  # 使用grid布局并靠左对齐
-
 
     # 分段自瞄范围调整（强锁范围）
     # 创建一个 StringVar 对象以保存 stage1_scope 的值
@@ -782,7 +812,8 @@ def create_gui_tkinter():  # 软件主题GUI界面
     stage1_intensity_label = ctk.CTkLabel(stage1_intensity_frame, text="强锁速度:")
     stage1_intensity_label.grid(row=0, column=1, sticky='w')
     # 自瞄范围调整
-    stage1_intensity_scale = ctk.CTkSlider(stage1_intensity_frame, from_=0, to=1, number_of_steps=100, command=update_values)
+    stage1_intensity_scale = ctk.CTkSlider(stage1_intensity_frame, from_=0, to=1, number_of_steps=100,
+                                           command=update_values)
     stage1_intensity_scale.set(stage1_intensity)
     stage1_intensity_scale.grid(row=0, column=2, padx=(12, 0))
     # 使用 textvariable 而非 text
@@ -830,7 +861,8 @@ def create_gui_tkinter():  # 软件主题GUI界面
     stage2_intensity_label = ctk.CTkLabel(stage2_intensity_frame, text="软锁速度:")
     stage2_intensity_label.grid(row=0, column=1, sticky='w')
     # 自瞄范围调整
-    stage2_intensity_scale = ctk.CTkSlider(stage2_intensity_frame, from_=0, to=1, number_of_steps=100, command=update_values)
+    stage2_intensity_scale = ctk.CTkSlider(stage2_intensity_frame, from_=0, to=1, number_of_steps=100,
+                                           command=update_values)
     stage2_intensity_scale.set(stage2_intensity)
     stage2_intensity_scale.grid(row=0, column=2, padx=(12, 0))
     # 使用 textvariable 而非 text
@@ -842,7 +874,6 @@ def create_gui_tkinter():  # 软件主题GUI界面
         ban_stage2_intensity_scale.grid(row=0, column=2, padx=(12, 0))  # 行号
         ban_stage2_intensity_scale = ctk.CTkLabel(stage2_intensity_frame, text="####", width=30)
         ban_stage2_intensity_scale.grid(row=0, column=3)  # 行号
-
 
     # 6创建一个Frame来包其他设置
     setting_frame = ctk.CTkFrame(tab_view.tab("其他设置"), width=300, height=300)
@@ -902,7 +933,6 @@ def create_gui_tkinter():  # 软件主题GUI界面
     else:
         version_number2.configure(text=version, text_color="red")
 
-
     # 调试窗口标签栏
     image_label_frame = ctk.CTkFrame(tab_view.tab("测试窗口"), height=370, width=305)
     image_label_frame.grid(row=1, column=0, sticky='w')
@@ -931,8 +961,8 @@ def update_values(*args):
     global aimbot, lockSpeed, triggerType, arduinoMode, lockKey, lockKey_var, confidence, closest_mouse_dist \
         , closest_mouse_dist_scale, screen_width, screen_height, model_file, aimOffset, draw_center \
         , mouse_Side_Button_Witch, lockSpeed_text, LookSpeed_label_1, test_images_GUI, target_selection_str \
-        , prediction_factor_scale, prediction_factor, method_of_prediction, extra_offset_x, extra_offset_y\
-        , screenshot_mode, segmented_aiming_switch, stage1_scope, stage1_scope_scale, stage1_intensity\
+        , prediction_factor_scale, prediction_factor, method_of_prediction, extra_offset_x, extra_offset_y \
+        , screenshot_mode, segmented_aiming_switch, stage1_scope, stage1_scope_scale, stage1_intensity \
         , stage1_intensity_scale, stage2_scope, stage2_scope_scale, stage2_intensity, stage2_intensity_scale
 
     print("update_values function was called（配置已更新）")
@@ -958,8 +988,6 @@ def update_values(*args):
     stage1_intensity = stage1_intensity_scale.get()
     stage2_scope = stage2_scope_scale.get()
     stage2_intensity = stage2_intensity_scale.get()
-
-
 
     # 更新 lockSpeed_variable
     lockSpeed = round(lockSpeed_scale.get(), 2)
@@ -1054,7 +1082,8 @@ def save_settings():  # 保存设置
 
 
 def load_prefix_variables():  # 加载前置参数
-    global model_file, screenshot_mode, segmented_aiming_switch, crawl_information
+    global model_file, screenshot_mode, segmented_aiming_switch, crawl_information, random_name, offset_range \
+        , time_interval, enable_random_offset
     print('Loading prefix variables...')
     try:
         with open('settings.json', 'r') as f:
@@ -1063,11 +1092,16 @@ def load_prefix_variables():  # 加载前置参数
         screenshot_mode = settings.get("screenshot_mode", False)  # 加载截图方式
         segmented_aiming_switch = settings.get("segmented_aiming_switch", False)  # 加载分段瞄准开关
         crawl_information = settings.get("crawl_information", False)  # 加载公告获取开关
-
+        random_name = settings.get("random_name", False)  # 随机软件标题开关
+        offset_range = tuple(settings.get("offset_range", [0, 1]))  # 随机瞄准偏移范围（0-1）
+        time_interval = settings.get("time_interval", 1)  # 随机瞄准偏移时间间隔（s）
+        enable_random_offset = settings.get("enable_random_offset", False)  # 随机瞄准偏移开关
 
         print("前置变量加载成功！")
     except FileNotFoundError:
         print('[ERROR] 没有找到设置文件; 跳过加载设置')
+    except Exception as e:
+        print(f'[ERROR] 加载设置时出错: {e}')
 
 
 def load_settings():  # 加载主程序参数设置
@@ -1106,7 +1140,6 @@ def load_settings():  # 加载主程序参数设置
         stage2_scope_scale.set(settings.get('stage2_scope', 170))  # 软锁范围(分段瞄准)
         stage2_intensity_scale.set(settings.get('stage2_intensity', 0.4))  # 软锁力度(分段瞄准)
 
-
         print("设置加载成功！")
         loaded_successfully = True  # 加载成功标识符
     except FileNotFoundError:
@@ -1115,16 +1148,16 @@ def load_settings():  # 加载主程序参数设置
 
 
 def calculate_distances(
-        monitor: dict,  # A dictionary containing width and height of the monitor
-        results: list,  # A list of object detection results
-        frame_: np.array,  # The current frame to be processed
-        aimbot: bool,  # Whether the aimbot is active or not
-        lockSpeed: float,  # The speed at which the mouse should move towards the object
-        arduinoMode: bool,  # Whether the Arudino mode is active or not
-        lockKey: int,  # Lock Key code
-        triggerType: str,  # Trigger type
+        monitor: dict,  # 包含显示器宽度和高度的字典
+        results: list,  # 目标检测结果列表
+        frame_: np.array,  # 当前处理的帧
+        aimbot: bool,  # 是否启用自瞄
+        lockSpeed: float,  # 鼠标移动速度
+        arduinoMode: bool,  # 是否启用Arduino模式
+        lockKey: int,  # 锁定键的代码
+        triggerType: str,  # 触发类型
 ):  # 目标选择逻辑与标识
-    global boxes, cWidth, cHeight, extra_offset_x, extra_offset_y
+    global boxes, cWidth, cHeight, extra_offset_x, extra_offset_y, last_offset_time, aimOffset, enable_random_offset
 
     minDist = float('inf')  # 初始最小距离设置为无限大
     minBox = None  # 初始最小框设置为None
@@ -1150,7 +1183,6 @@ def calculate_distances(
 
     for r in results:
         boxes = r.boxes.xyxy.cpu().numpy()  # 获取框坐标
-        # print("瞄准偏移量倍率为：", aimOffset)  # 打印框坐标
 
     for box in boxes:
         x1, y1, x2, y2 = box
@@ -1161,7 +1193,6 @@ def calculate_distances(
 
         # 绘制目标中心点
         cv2.circle(frame_, (int(centerx), int(centery)), 5, (0, 255, 255), -1)
-
 
         dist = sqrt((cWidth - centerx) ** 2 + (cHeight - centery) ** 2)
         dist = round(dist, 1)
@@ -1182,12 +1213,8 @@ def calculate_distances(
 
     # 检查最小距离和最小框是否已更新
     if minBox is not None:
-        # print('自瞄状态2：', aimbot)
-
         # 获取当前循环中的最小框的四个坐标
         min_x1, min_y1, min_x2, min_y2 = minBox
-
-
 
         # 将最近的目标标记为绿色框
         cv2.rectangle(frame_, (int(minBox[0]), int(minBox[1])), (int(minBox[2]), int(minBox[3])), (0, 255, 0), 2)
@@ -1195,6 +1222,14 @@ def calculate_distances(
         center_text_y = int((minBox[1] + minBox[3]) / 2)
         location = (center_text_x, center_text_y)
         cv2.putText(frame_, f'dist: {minDist}', location, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+        # 检查是否需要更新aimOffset(随机瞄准偏移)
+        if enable_random_offset:
+            current_time = time.time()
+            if current_time - last_offset_time >= time_interval:
+                aimOffset = random.uniform(*offset_range)
+                last_offset_time = current_time
+                print("随机偏移:", aimOffset)
 
         # 重新计算目标框中点
         box_centerx = (min_x1 + min_x2) / 2
@@ -1235,7 +1270,6 @@ def calculate_distances(
             # 计算光标应当从当前位置移动多大的距离以便到达目标位置(禁用预测)
             centerx *= lockSpeed
             centery *= lockSpeed
-            pass
 
         elif method_of_prediction == "倍率预测":
             print("倍率预测已启用")
@@ -1245,24 +1279,17 @@ def calculate_distances(
             # 使用更新后的目标位置计算鼠标移动距离
             centerx = (centerx + centerx_extra) * lockSpeed
             centery = (centery + centery_extra) * lockSpeed
-            pass
 
         elif method_of_prediction == "像素预测":
-            # print("像素预测已启用")
-            # print("X轴提前设置：", extra_offset_x)
-            # print("Y轴提前设置：", extra_offset_y)
             # 如果centerx或centery为负值，表示目标在光标的左边或上面，偏移量需要反向
             extra_offset_x_result = extra_offset_x if centerx >= 0 else -extra_offset_x
             extra_offset_y_result = extra_offset_y if centery >= 0 else -extra_offset_y
 
-            # print("X轴提前结果：", extra_offset_x_result)
-            # print("Y轴提前结果：", extra_offset_y_result)
             # 使用更新后的目标位置计算鼠标移动距离
             centerx = (centerx + extra_offset_x_result) * lockSpeed
             centery = (centery + extra_offset_y_result) * lockSpeed
-            pass
 
-        # 检查 locker 键、Shift 键和鼠标下侧键是否按下
+        # 检查锁定键、Shift 键和鼠标侧键是否按下
         lockKey_pressed = win32api.GetKeyState(lockKey) & 0x8000
         shift_pressed = win32api.GetKeyState(win32con.VK_SHIFT) & 0x8000
         xbutton2_pressed = win32api.GetKeyState(0x05) & 0x8000
@@ -1272,16 +1299,15 @@ def calculate_distances(
         if triggerType == "切换":
             print(101)
             if aimbot and (win32api.GetKeyState(lockKey) or (mouse_Side_Button_Witch and xbutton2_pressed)):
-                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0,
-                                     0)
-
+                if usb_control:
+                    dll.M_MoveR(ctypes.c_uint64(hdl), int(centerx * lockSpeed), int(centery * lockSpeed))
 
         # 第二种：按下触发
         elif triggerType == "按下":
             print(102)
             if aimbot and (lockKey_pressed or (mouse_Side_Button_Witch and xbutton2_pressed)):
-                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0,
-                                     0)
+                if usb_control:
+                    dll.M_MoveR(ctypes.c_uint64(hdl), int(centerx * lockSpeed), int(centery * lockSpeed))
             elif not (lockKey_pressed or (mouse_Side_Button_Witch and xbutton2_pressed)):
                 # 停止代码
                 pass
@@ -1289,22 +1315,13 @@ def calculate_distances(
         # 第三种：shift+按下触发
         elif triggerType == "shift+按下":
             print(104)
-            # print('aimbot:', aimbot)
-            # print('lockKey_pressed:', lockKey_pressed)
-            # print('shift_pressed:', shift_pressed)
-            # print('xbutton2_pressed:', xbutton2_pressed)
-            # print('mouse_Side_Button_Witch:', mouse_Side_Button_Witch)
-
             if aimbot and ((lockKey_pressed and shift_pressed) or (mouse_Side_Button_Witch and xbutton2_pressed)):
                 if usb_control:
                     dll.M_MoveR(ctypes.c_uint64(hdl), int(centerx * lockSpeed), int(centery * lockSpeed))
-                else:
-                    win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed),
-                                         0, 0)
             elif not ((lockKey_pressed and shift_pressed) or (mouse_Side_Button_Witch and xbutton2_pressed)):
                 # 停止代码
                 pass
-    # dll.M_MoveR(ctypes.c_uint64(hdl), 100, 100)
+
     return frame_
 
 
@@ -1312,10 +1329,6 @@ def main_program_loop(model):  # 主程序流程代码
     global start_time, gc_time, closest_mouse_dist, lockSpeed, triggerType, arduinoMode, lockKey, confidence \
         , run_threads, aimbot, image_label, test_images_GUI, target_selection, target_selection_str, target_mapping \
         , target_selection_var, prediction_factor, should_break, readme_content
-
-
-
-
 
     # # 加载模型
     # model = load_model_file()
@@ -1367,8 +1380,8 @@ def main_program_loop(model):  # 主程序流程代码
         # ---------------------------------------------------------------------------
 
         # 检测和跟踪对象（推理部分）
-        results = model.predict(frame, save=False, imgsz=320, conf=confidence, half=True, agnostic_nms=True, iou=0.7,
-                                classes=[target_selection], device="cuda:0")
+        results = model.predict(frame, save=False, conf=confidence, half=True, agnostic_nms=True, iou=0.7
+                                , classes=[target_selection], device="cuda:0", verbose=False)
         # ---------------------------------------------------------------------------
         # 绘制结果
         frame_ = results[0].plot()
@@ -1388,7 +1401,6 @@ def main_program_loop(model):  # 主程序流程代码
             frame_, frame_counter, start_time = update_and_display_fps(frame_, frame_counter, start_time, end_time)
         except NameError:
             print("ERROR:帧率显示失败(加载中)")
-
 
         if test_window_frame:
             # 图像调试窗口（外部cv2.imshow）
@@ -1457,9 +1469,11 @@ def Initialization_parameters():  # 初始化参数
             screen_height)
 
 
-
 ### ---------------------------------------main-------------------------------------------------------------------------
 if __name__ == "__main__":
+    fingerprint = generate_fingerprint()  # 随机特征码
+    print("随机特征码:", fingerprint)
+
     load_DLL()  # 加载控制盒DLL文件，并开启端口
 
     # 优先级设置
@@ -1478,9 +1492,6 @@ if __name__ == "__main__":
         = Initialization_parameters()
 
     freeze_support()
-
-
-
 
     # 创建并启动子线程1用于运行main_program_loop
     thread1 = threading.Thread(target=main_program_loop, args=(model,))
