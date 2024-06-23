@@ -7,6 +7,7 @@ import sys
 import requests
 import tkinter as tk
 import webbrowser
+import mouse
 import bettercam
 import psutil
 from math import sqrt
@@ -1249,16 +1250,14 @@ def calculate_distances(
         if triggerType == "切换":
             print(101)
             if aimbot and (win32api.GetKeyState(lockKey) or (mouse_Side_Button_Witch and xbutton2_pressed)):
-                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0,
-                                     0)
+                mouse.move(int(centerx * lockSpeed), int(centery * lockSpeed), False)
 
 
         # 第二种：按下触发
         elif triggerType == "按下":
             print(102)
             if aimbot and (lockKey_pressed or (mouse_Side_Button_Witch and xbutton2_pressed)):
-                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0,
-                                     0)
+                mouse.move(int(centerx * lockSpeed), int(centery * lockSpeed), False)
             elif not (lockKey_pressed or (mouse_Side_Button_Witch and xbutton2_pressed)):
                 # 停止代码
                 pass
@@ -1273,8 +1272,7 @@ def calculate_distances(
             # print('mouse_Side_Button_Witch:', mouse_Side_Button_Witch)
 
             if aimbot and ((lockKey_pressed and shift_pressed) or (mouse_Side_Button_Witch and xbutton2_pressed)):
-                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0,
-                                     0)
+                mouse.move(int(centerx * lockSpeed), int(centery * lockSpeed), False)
             elif not ((lockKey_pressed and shift_pressed) or (mouse_Side_Button_Witch and xbutton2_pressed)):
                 # 停止代码
                 pass
