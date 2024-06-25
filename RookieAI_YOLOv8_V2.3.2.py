@@ -7,7 +7,6 @@ import sys
 import requests
 import tkinter as tk
 import webbrowser
-import mouse
 import bettercam
 import psutil
 from math import sqrt
@@ -115,6 +114,7 @@ lockSpeed_scale = None
 triggerType_var = None
 arduinoMode_var = None
 lockKey_var = None
+mouseMove_var = None
 confidence_scale = None
 closest_mouse_dist_scale = None
 screen_width_scale = None
@@ -324,7 +324,7 @@ def load_model_file():  # 加载模型文件
 
 
 def create_gui_tkinter():  # 软件主题GUI界面
-    global aimbot_var, lockSpeed_scale, triggerType_var, arduinoMode_var, lockKey_var, confidence_scale \
+    global aimbot_var, lockSpeed_scale, triggerType_var, arduinoMode_var, lockKey_var, mouseMove_var, confidence_scale \
         , closest_mouse_dist_scale, screen_width_scale, screen_height_scale, root, model_file, model_file_label, aimOffset_scale \
         , draw_center_var, mouse_Side_Button_Witch_var, LookSpeed_label_text, lockSpeed_variable, confidence_variable \
         , closest_mouse_dist_variable, aimOffset_variable, screen_width_scale_variable, screen_height_scale_variable \
@@ -421,23 +421,39 @@ def create_gui_tkinter():  # 软件主题GUI界面
                                            command=update_values)
     triggerType_option.pack(side='left')  # 在Frame中靠左对齐
 
+
     # 创建新的Frame部件以容纳标签和OptionMenu
-    frame = ctk.CTkLabel(tab_view.tab("基础设置"))
-    frame.grid(row=3, column=0, sticky='w', pady=5)  # frame在root窗口中的位置
+    hotkeys_frame = ctk.CTkLabel(tab_view.tab("基础设置"))
+    hotkeys_frame.grid(row=3, column=0, sticky='w', pady=5)  # frame在root窗口中的位置
     # 创建一个标签文本并将其插入frame中
-    lbl = ctk.CTkLabel(frame, text="当前热键为:")
+    lbl = ctk.CTkLabel(hotkeys_frame, text="当前热键为:")
     lbl.grid(row=0, column=0)  # 标签在frame部件中的位置
     # 创建一个可变的字符串变量以用于OptionMenu的选项值
     lockKey_var = ctk.StringVar()
     lockKey_var.set('右键')  # 设置选项菜单初始值为'左键'
     options = ['左键', '右键', '下侧键']  # 定义可用选项的列表
     # 创建OptionMenu并使用lockKey_var和options
-    lockKey_menu = ctk.CTkOptionMenu(frame, variable=lockKey_var, values=options, command=update_values)
+    lockKey_menu = ctk.CTkOptionMenu(hotkeys_frame, variable=lockKey_var, values=options, command=update_values)
     lockKey_menu.grid(row=0, column=1)  # OptionMenu在frame部件中的位置
+
+    # # 创建新的Frame部件以容纳标签和OptionMenu
+    # mouseMove_frame = ctk.CTkLabel(tab_view.tab("基础设置"))
+    # mouseMove_frame.grid(row=4, column=0, sticky='w', pady=5)  # frame在root窗口中的位置
+    # # 创建一个标签文本并将其插入frame中
+    # lbl = ctk.CTkLabel(mouseMove_frame, text="鼠标移动库:")
+    # lbl.grid(row=0, column=0)  # 标签在frame部件中的位置
+    # # 创建一个可变的字符串变量以用于OptionMenu的选项值
+    # mouseMove_var = ctk.StringVar()
+    # mouseMove_var.set('win32')  # 设置选项菜单初始值为'左键'
+    # options = ["win32", "mouse", "Logitech（待开发）"]  # 定义可用选项的列表
+    # # 创建OptionMenu并使用lockKey_var和options
+    # mouseMove_menu = ctk.CTkOptionMenu(mouseMove_frame, variable=mouseMove_var, values=options, command=update_values)
+    # mouseMove_menu.grid(row=0, column=1)  # OptionMenu在frame部件中的位置
+
 
     # 创建一个Frame来包含arduinoMode开关和其左边的显示瞄准范围
     mouse_Side_Button_Witch_frame = ctk.CTkFrame(tab_view.tab("基础设置"))
-    mouse_Side_Button_Witch_frame.grid(row=4, column=0, sticky='w', pady=5)  # 使用grid布局并靠左对齐
+    mouse_Side_Button_Witch_frame.grid(row=5, column=0, sticky='w', pady=5)  # 使用grid布局并靠左对齐
     # 创建一个名为 '鼠标侧键瞄准开关' 的复选框
     mouse_Side_Button_Witch_var = ctk.BooleanVar(value=False)
     mouse_Side_Button_Witch_check = ctk.CTkCheckBox(mouse_Side_Button_Witch_frame, text='鼠标侧键瞄准开关',
@@ -1250,14 +1266,16 @@ def calculate_distances(
         if triggerType == "切换":
             print(101)
             if aimbot and (win32api.GetKeyState(lockKey) or (mouse_Side_Button_Witch and xbutton2_pressed)):
-                mouse.move(int(centerx * lockSpeed), int(centery * lockSpeed), False)
+                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0,
+                                     0)
 
 
         # 第二种：按下触发
         elif triggerType == "按下":
             print(102)
             if aimbot and (lockKey_pressed or (mouse_Side_Button_Witch and xbutton2_pressed)):
-                mouse.move(int(centerx * lockSpeed), int(centery * lockSpeed), False)
+                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0,
+                                     0)
             elif not (lockKey_pressed or (mouse_Side_Button_Witch and xbutton2_pressed)):
                 # 停止代码
                 pass
@@ -1272,7 +1290,8 @@ def calculate_distances(
             # print('mouse_Side_Button_Witch:', mouse_Side_Button_Witch)
 
             if aimbot and ((lockKey_pressed and shift_pressed) or (mouse_Side_Button_Witch and xbutton2_pressed)):
-                mouse.move(int(centerx * lockSpeed), int(centery * lockSpeed), False)
+                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed), 0,
+                                     0)
             elif not ((lockKey_pressed and shift_pressed) or (mouse_Side_Button_Witch and xbutton2_pressed)):
                 # 停止代码
                 pass
