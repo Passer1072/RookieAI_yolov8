@@ -446,6 +446,11 @@ def random_offset_set_window():  # 随机瞄准偏移配置窗口
     def close_random_offset_window():  # 优化创建账户窗口打开体验
         random_offset_window.destroy()  # 销毁窗口
         random_offset_set_window()  # 打开并隐藏窗口，方便下次直接显示
+        load_settings()
+
+    def save_button():
+        update_values()
+        save_settings()
 
     random_offset_win_width = 245
     random_offset_win_hight = 200
@@ -485,7 +490,7 @@ def random_offset_set_window():  # 随机瞄准偏移配置窗口
                                   , text_color="black", placeholder_text="单位：秒")
     offset_time_entry.grid(row=3, column=0, sticky="n", padx=(120, 0), pady=(20, 0))
     # 应用按钮
-    set_button = ctk.CTkButton(random_offset_window_frame, width=50, image=None, command=update_values, text="应 用"
+    set_button = ctk.CTkButton(random_offset_window_frame, width=50, image=None, command=save_button, text="保存并应用"
                                  , font=("Microsoft YaHei", 16))
     set_button.grid(row=5, column=0, sticky="n", padx=(20, 0), pady=(10, 0))
 
