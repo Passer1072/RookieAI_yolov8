@@ -446,11 +446,54 @@ def random_offset_set_window():  # 随机瞄准偏移配置窗口
     def close_random_offset_window():  # 优化创建账户窗口打开体验
         random_offset_window.destroy()  # 销毁窗口
         random_offset_set_window()  # 打开并隐藏窗口，方便下次直接显示
-        load_settings()
+        load_random_offset()  # 加载随机瞄准参数
+
+    def load_random_offset():  # 加载随机瞄准参数
+        global model_file, test_window_frame, screenshot_mode, crawl_information, DXcam_screenshot, dxcam_maxFPS, \
+            loaded_successfully, stage1_scope, stage1_intensity, stage2_scope, stage2_intensity, segmented_aiming_switch
+        print('加载随机瞄准参数...')
+        try:
+            with open('settings.json', 'r') as f:
+                settings = json.load(f)
+
+            random_offset_mode_var.set(settings.get("enable_random_offset", False))  # 随机瞄准偏移开关
+            offset_time_entry.insert(0, str(settings.get("time_interval", 1)))  # 随即瞄准时间间隔
+            offset_range = tuple(settings.get("offset_range", [0, 1]))  # 随机瞄准偏移范围（0-1）
+            max_offset_entry.insert(0, str(offset_range[1]))  # 插入瞄准偏移最大值
+            min_offset_entry.insert(0, str(offset_range[0]))  # 插入瞄准偏移最小值
+
+            print("设置加载成功！")
+            loaded_successfully = True  # 加载成功标识符
+        except FileNotFoundError:
+            print('[ERROR] 没有找到设置文件; 跳过加载设置')
+            pass
+
+    def save_random_offset():  # 保存设置
+        global model_file
+        print("保存随机瞄准部位参数...")
+        new_settings = {
+            'enable_random_offset': random_offset_mode_var.get(),  # 随机瞄准部位开关
+            'offset_range': [float(min_offset_entry.get()), float(max_offset_entry.get())],  # 随即瞄准最大最小值保存
+            'time_interval': float(offset_time_entry.get()),  # 随机瞄准切换间隔
+        }
+
+        # 加载当前设置
+        try:
+            with open('settings.json', 'r') as f:
+                current_settings = json.load(f)
+        except FileNotFoundError:
+            current_settings = {}
+
+        # 将新设置合并到当前设置中
+        current_settings.update(new_settings)
+
+        # 保存当前设置
+        with open('settings.json', 'w') as f:
+            json.dump(current_settings, f, sort_keys=True, indent=4)
 
     def save_button():
         update_values()
-        save_settings()
+        save_random_offset()
 
     random_offset_win_width = 245
     random_offset_win_hight = 200
@@ -507,7 +550,7 @@ def create_gui_tkinter():  # 软件主题GUI界面
         , screenshot_mode, segmented_aiming_switch_var, stage1_scope, stage1_scope_scale, stage1_scope_variable \
         , stage1_intensity_variable, stage1_intensity, stage1_intensity_scale, stage2_scope_variable \
         , stage2_intensity_variable, stage2_scope_scale, stage2_intensity_scale, aimOffset_x, aimOffset_variable_x \
-        , aimOffset_x_scale, mouseMove_var, random_offset_mode_var
+        , aimOffset_x_scale, mouseMove_var, random_offset_mode_var, random_offset_mode_check
 
     # 版本号
     version_number = "V2.4.1"
@@ -1150,7 +1193,8 @@ def update_values(*args):
         , prediction_factor_scale, prediction_factor, method_of_prediction, extra_offset_x, extra_offset_y\
         , screenshot_mode, segmented_aiming_switch, stage1_scope, stage1_scope_scale, stage1_intensity\
         , stage1_intensity_scale, stage2_scope, stage2_scope_scale, stage2_intensity, stage2_intensity_scale\
-        , aimOffset_Magnification_x, aimOffset_x, mouse_control, max_offset_entry, min_offset_entry
+        , aimOffset_Magnification_x, aimOffset_x, mouse_control, max_offset_entry, min_offset_entry, offset_range\
+        , enable_random_offset, time_interval
 
     # 数值合法判断
     # 1.随机瞄准部位瞄准参数合法性判断
@@ -1204,6 +1248,11 @@ def update_values(*args):
     stage1_intensity = stage1_intensity_scale.get()
     stage2_scope = stage2_scope_scale.get()
     stage2_intensity = stage2_intensity_scale.get()
+    offset_range = [min_value, max_value]  # 随机瞄准部位参数
+    enable_random_offset = random_offset_mode_check.get()  # 随机瞄准部位开关
+    time_interval = float(offset_time_entry.get())  # 随机瞄准部位切换时间
+    print(time_interval)
+
 
     # 更新显示的数值
     # 更新 lockSpeed_variable
@@ -1664,14 +1713,16 @@ def main_program_loop(model):  # 主程序流程代码
         # 绘制结果
         frame_ = results[0].plot()
 
-        # print("鼠标移动:" + str(dll.M_MoveR(ctypes.c_uint64(hdl), 100, 100) == 0))  # 相对移动
+        print("鼠标移动:" + str(dll.M_MoveR(ctypes.c_uint64(hdl), 100, 100) == 0))  # 相对移动
 
         # 计算距离 并 将最近的目标绘制为绿色边框
         try:
             frame_ = calculate_distances(monitor, results, frame_, aimbot, lockSpeed, arduinoMode, lockKey, triggerType)
         except TypeError:
-            # 当 TypeError 出现时，执行这部分代码
-            print('lockKey 值发生错误。但是无关紧要')
+            # 当 TypeError 出现时
+            print('[ERROR]未知数值错误')
+
+        # frame_ = calculate_distances(monitor, results, frame_, aimbot, lockSpeed, arduinoMode, lockKey, triggerType)
 
         try:
             # 获取并显示帧率
