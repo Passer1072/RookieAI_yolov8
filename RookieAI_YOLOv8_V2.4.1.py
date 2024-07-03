@@ -1713,7 +1713,7 @@ def main_program_loop(model):  # 主程序流程代码
         # 绘制结果
         frame_ = results[0].plot()
 
-        print("鼠标移动:" + str(dll.M_MoveR(ctypes.c_uint64(hdl), 100, 100) == 0))  # 相对移动
+        # print("鼠标移动:" + str(dll.M_MoveR(ctypes.c_uint64(hdl), 100, 100) == 0))  # 相对移动
 
         # 计算距离 并 将最近的目标绘制为绿色边框
         try:
