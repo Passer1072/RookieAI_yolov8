@@ -1,0 +1,12 @@
+版本：V2.4.3(demo)
+
+简介：该版本主要添加压枪功能，
+
+新增变量：
+last_recoil_time = time.time()  # 压枪间隔时间初始化
+recoil_switch = False  # 压枪开关
+recoil_interval = 0.01  # 压枪间隔（s）
+recoil_single_distance = 5  # 每次向下移动距离（像素）
+
+进展日志：
+2024/07/05：做到多段分段不同压枪力度（目前两段）。
