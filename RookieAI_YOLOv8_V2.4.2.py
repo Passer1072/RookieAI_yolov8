@@ -7,6 +7,7 @@ import time
 import sys
 import requests
 import uuid
+import base64
 import datetime
 import tkinter as tk
 import webbrowser
@@ -18,7 +19,6 @@ from math import sqrt
 from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
 from multiprocessing import Process, freeze_support
-
 import cv2
 import numpy as np
 import pyautogui
@@ -289,9 +289,9 @@ def get_desired_size(screen_width_1, screen_height_1):
 def fetch_readme():  # 从github更新公告
     print("开始获取公告......")
     try:
-        readme_url = "https://raw.githubusercontent.com/Passer1072/RookieAI_yolov8/master/README.md"
+        readme_url = "https://api.github.com/repos/Passer1072/RookieAI_yolov8/readme"
         response = requests.get(readme_url, timeout=10)
-        response_text = response.text
+        response_text = base64.b64decode(response.json()['content']).decode('utf-8')
         print("获取成功")
 
         # 找到 "更新日志：" 在字符串中的位置
@@ -313,9 +313,9 @@ def fetch_readme():  # 从github更新公告
 def fetch_readme_version_number():  # 从github更新公告
     print("开始获取版本号......")
     try:
-        readme_url = "https://raw.githubusercontent.com/Passer1072/RookieAI_yolov8/master/README.md"
-        response = requests.get(readme_url)
-        response_text = response.text
+        readme_url = "https://api.github.com/repos/Passer1072/RookieAI_yolov8/readme"
+        response = requests.get(readme_url, timeout=10)
+        response_text = base64.b64decode(response.json()['content']).decode('utf-8')
         print("获取成功")
 
         # 创建搜索字符串
