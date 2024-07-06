@@ -3,11 +3,18 @@
 简介：该版本主要添加压枪功能，
 
 新增变量：
-last_recoil_time = time.time()  # 压枪间隔时间初始化
+# 初始化压枪参数
 recoil_switch = False  # 压枪开关
 recoil_interval = 0.01  # 压枪间隔（s）
-recoil_single_distance = 5  # 每次向下移动距离（像素）
+recoil_boosted_distance_time = 0.5  # 一阶段时间
+recoil_boosted_distance = 4  # 一阶段力度
+recoil_standard_distance = 1  # 二阶段力度
+recoil_transition_time = 0.2  # 一阶段到二阶段缓冲时间
 
 进展日志：
 2024/07/05：V2.4.3.1(beta)
-做到多段分段不同压枪力度（目前两段）。
+新增：做到多段分段不同压枪力度（目前两段）。
+
+2024/07/06：V2.4.3.2(beta)
+新增：一阶段到时间结束后切换到二阶段会有缓冲区间。
+新增：辅助压枪GUI开关。

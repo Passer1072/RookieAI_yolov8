@@ -7,6 +7,7 @@ import time
 import sys
 import requests
 import uuid
+import base64
 import datetime
 import tkinter as tk
 import webbrowser
@@ -18,7 +19,6 @@ from math import sqrt
 from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
 from multiprocessing import Process, freeze_support
-
 import cv2
 import numpy as np
 import pyautogui
@@ -172,6 +172,7 @@ run_threads = True
 draw_center = True
 random_name = False
 dll_lg_loaded = False  # 初始化lg_dll加载标识符
+recoil_start_time = None
 
 # 随机偏移Y轴状态变量
 current_target = None
@@ -298,9 +299,9 @@ def get_desired_size(screen_width_1, screen_height_1):
 def fetch_readme():  # 从github更新公告
     print("开始获取公告......")
     try:
-        readme_url = "https://raw.githubusercontent.com/Passer1072/RookieAI_yolov8/master/README.md"
+        readme_url = "https://api.github.com/repos/Passer1072/RookieAI_yolov8/readme"
         response = requests.get(readme_url, timeout=10)
-        response_text = response.text
+        response_text = base64.b64decode(response.json()['content']).decode('utf-8')
         print("获取成功")
 
         # 找到 "更新日志：" 在字符串中的位置
@@ -322,9 +323,9 @@ def fetch_readme():  # 从github更新公告
 def fetch_readme_version_number():  # 从github更新公告
     print("开始获取版本号......")
     try:
-        readme_url = "https://raw.githubusercontent.com/Passer1072/RookieAI_yolov8/master/README.md"
-        response = requests.get(readme_url)
-        response_text = response.text
+        readme_url = "https://api.github.com/repos/Passer1072/RookieAI_yolov8/readme"
+        response = requests.get(readme_url, timeout=10)
+        response_text = base64.b64decode(response.json()['content']).decode('utf-8')
         print("获取成功")
 
         # 创建搜索字符串
@@ -559,7 +560,7 @@ def create_gui_tkinter():  # 软件主题GUI界面
         , screenshot_mode, segmented_aiming_switch_var, stage1_scope, stage1_scope_scale, stage1_scope_variable \
         , stage1_intensity_variable, stage1_intensity, stage1_intensity_scale, stage2_scope_variable \
         , stage2_intensity_variable, stage2_scope_scale, stage2_intensity_scale, aimOffset_x, aimOffset_variable_x \
-        , aimOffset_x_scale, mouseMove_var, random_offset_mode_var, random_offset_mode_check
+        , aimOffset_x_scale, mouseMove_var, random_offset_mode_var, random_offset_mode_check, recoil_check, recoil_var
 
     # 版本号
     version_number = "V2.4.1"
@@ -760,15 +761,22 @@ def create_gui_tkinter():  # 软件主题GUI界面
 
     # 创建一个名为 '自动扳机' 的复选框
     automatic_Trigger_frame = ctk.CTkLabel(tab_view.tab("基础设置"))
-    automatic_Trigger_frame.grid(row=10, column=0, sticky='w', pady=5)  # frame在root窗口中的位置
+    automatic_Trigger_frame.grid(row=10, column=0, sticky='w', pady=5)
     automatic_Trigger_var = ctk.BooleanVar(value=automatic_Trigger)
     automatic_Trigger_check = ctk.CTkCheckBox(automatic_Trigger_frame, text='自动扳机（待开发）', variable=automatic_Trigger_var,
                                    command=update_values, state="DISABLED")
     automatic_Trigger_check.grid(row=0, column=0)  # 使用grid布局并靠左对齐
 
+    # 创建一个名为 '辅助压枪' 的复选框
+    recoil_frame = ctk.CTkLabel(tab_view.tab("基础设置"))
+    recoil_frame.grid(row=11, column=0, sticky='w', pady=5)
+    recoil_var = ctk.BooleanVar(value=recoil_switch)
+    recoil_check = ctk.CTkCheckBox(recoil_frame, text='辅助压枪', variable=recoil_var, command=update_values)
+    recoil_check.grid(row=0, column=0)  # 使用grid布局并靠左对齐
+
     # 2创建一个Frame来包含OptionMenu和其左边的Label-
     message_text_frame = ctk.CTkFrame(tab_view.tab("基础设置"))
-    message_text_frame.grid(row=11, column=0, sticky='w', pady=2)  # 使用grid布局并靠左对齐
+    message_text_frame.grid(row=13, column=0, sticky='w', pady=2)  # 使用grid布局并靠左对齐
     # 创建Label
     message_text_Label = ctk.CTkLabel(message_text_frame, text="更新公告")
     message_text_Label.grid(row=0, column=1)
@@ -1203,7 +1211,7 @@ def update_values(*args):
         , screenshot_mode, segmented_aiming_switch, stage1_scope, stage1_scope_scale, stage1_intensity\
         , stage1_intensity_scale, stage2_scope, stage2_scope_scale, stage2_intensity, stage2_intensity_scale\
         , aimOffset_Magnification_x, aimOffset_x, mouse_control, max_offset_entry, min_offset_entry, offset_range\
-        , enable_random_offset, time_interval
+        , enable_random_offset, time_interval, recoil_switch
 
     # 数值合法判断
     # 1.随机瞄准部位瞄准参数合法性判断
@@ -1260,6 +1268,7 @@ def update_values(*args):
     offset_range = [min_value, max_value]  # 随机瞄准部位参数
     enable_random_offset = random_offset_mode_check.get()  # 随机瞄准部位开关
     time_interval = float(offset_time_entry.get())  # 随机瞄准部位切换时间
+    recoil_switch = recoil_var.get()  # 辅助压枪开关
 
 
     # 更新显示的数值
@@ -1351,6 +1360,7 @@ def save_settings():  # 保存设置
         'enable_random_offset': random_offset_mode_var.get(),  # 随机瞄准部位开关
         'offset_range': [float(min_offset_entry.get()), float(max_offset_entry.get())],  # 随即瞄准最大最小值保存
         'time_interval': float(offset_time_entry.get()),  # 随机瞄准切换间隔
+        'recoil_switch': recoil_var.get()  # 辅助压枪开关
     }
 
     # 加载当前设置
@@ -1438,7 +1448,7 @@ def load_settings():  # 加载主程序参数设置
         max_offset_entry.insert(0, str(offset_range[1]))  # 插入瞄准偏移最大值
         min_offset_entry.insert(0, str(offset_range[0]))  # 插入瞄准偏移最小值
         recoil_interval = settings.get("recoil_interval", 0.01)  # 压枪间隔（s）
-        recoil_switch = settings.get("recoil_switch", False)  # 压枪模块开关
+        recoil_var.set(settings.get("recoil_switch", False))  # 压枪模块开关
         recoil_boosted_distance_time = settings.get("recoil_boosted_distance_time", 0.5)  # 一阶段时间
         recoil_boosted_distance = settings.get("recoil_boosted_distance", 4)  # 一阶段力度
         recoil_standard_distance = settings.get("recoil_standard_distance", 1)  # 二阶段力度
@@ -1488,9 +1498,9 @@ def calculate_distances(
 
     # 压枪模块
     current_time = time.time()
-    if current_time - last_recoil_time >= recoil_interval:  # 检查是否已经过了0.01秒
+    if current_time - last_recoil_time >= recoil_interval:  # 检查间隔是否已经过了0.01秒
         if recoil_switch:
-            recoil()  # 如果过了0.01秒，触发 recoil 函数进行反后坐力动作
+            recoil()  # 触发 recoil 函数进行反后坐力动作
         last_recoil_time = current_time  # 更新 recoil 的触发时间
 
     for r in results:
@@ -1909,7 +1919,7 @@ if __name__ == "__main__":
     print("随机特征码:", fingerprint)
 
     load_DLL()  # 加载控制盒DLL文件，并开启端口
-    time.sleep(0.5)
+    time.sleep(0.3)
     load_lg_dll()  # 加载罗技DLL文件，并测试
 
     # 优先级设置
