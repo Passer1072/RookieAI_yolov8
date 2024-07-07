@@ -21,3 +21,6 @@ recoil_transition_time = 0.2  # 一阶段到二阶段缓冲时间
 
 2024/07/07：V2.4.3.3(beta)
 新增：可在settings.json中将"deactivate_dxcam"设置为true禁用dxcam模块加载
+
+2024/07/07：V2.4.3.4(beta)
+新增：完整的辅助压枪参数设置页面以及对应逻辑，包括输入的字符合法性验证
