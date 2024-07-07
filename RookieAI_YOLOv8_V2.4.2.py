@@ -553,7 +553,7 @@ def create_gui_tkinter():  # 软件主题GUI界面
         , aimOffset_x_scale, mouseMove_var, random_offset_mode_var, random_offset_mode_check
 
     # 版本号
-    version_number = "V2.4.1"
+    version_number = "V2.4.2"
     # 使用customtkinter创建根窗口
     root = ctk.CTk()
     # ctk.set_appearance_mode("system")  # default
