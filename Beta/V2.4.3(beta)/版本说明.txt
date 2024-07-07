@@ -18,3 +18,6 @@ recoil_transition_time = 0.2  # 一阶段到二阶段缓冲时间
 2024/07/06：V2.4.3.2(beta)
 新增：一阶段到时间结束后切换到二阶段会有缓冲区间。
 新增：辅助压枪GUI开关。
+
+2024/07/07：V2.4.3.3(beta)
+新增：可在settings.json中将"deactivate_dxcam"设置为true禁用dxcam模块加载
