@@ -121,7 +121,10 @@ class Option:
         except FileNotFoundError:
             return self.default
     
-    def get(self, key):
+    def get(self, key, default=None):
+        # 请仓库所有者尽快将代码里get的传参改为一个，统一在该类的init中声明默认值
+        if default is not None:  # 如果key不在content中，则返回默认值
+            return self.content.get(key, default)
         return self.content.get(key, self.default.get(key))
     
     def update(self, key, value):
@@ -142,7 +145,7 @@ model_file = "yolov8n.pt"
 sct = mss()
 
 # 新建一个Option对象
-option = Option()
+Opt = Option()
 
 # returns a DXCamera instance on primary monitor
 # Primary monitor's BetterCam instance
@@ -541,16 +544,10 @@ def open_settings_config():
 def load_model_file():  # 加载模型文件
     # 默认的模型文件地址
     default_model_file = "yolov8n.pt"
-    try:
-        with open('settings.json', 'r') as f:
-            settings = json.load(f)
-            model_file = settings.get('model_file', default_model_file)
-            # 检查文件是否存在，如果不存在，使用默认模型文件
-            if not os.path.isfile(model_file):
-                print("[WARNING] 设置文件中的模型文件路径无效; 使用默认模型文件")
-                model_file = default_model_file
-    except FileNotFoundError:
-        print("[WARNING] 没有找到设置文件; 使用默认模型文件")
+    model_file = Opt.get('model_file', default_model_file)
+    # 检查文件是否存在，如果不存在，使用默认模型文件
+    if not os.path.isfile(model_file):
+        print("[WARNING] 设置文件中的模型文件路径无效; 使用默认模型文件")
         model_file = default_model_file
 
     print("加载模型文件:", model_file)
@@ -575,48 +572,25 @@ def random_offset_set_window():  # 随机瞄准偏移配置窗口
         global model_file, test_window_frame, screenshot_mode, crawl_information, DXcam_screenshot, dxcam_maxFPS, \
             loaded_successfully, stage1_scope, stage1_intensity, stage2_scope, stage2_intensity, segmented_aiming_switch
         print('加载随机瞄准参数...')
-        try:
-            with open('settings.json', 'r') as f:
-                settings = json.load(f)
+        random_offset_mode_var.set(Opt.get(
+            "enable_random_offset", False))  # 随机瞄准偏移开关
+        offset_time_entry.insert(
+            0, str(Opt.get("time_interval", 1)))  # 随即瞄准时间间隔
+        offset_range = tuple(Opt.get(
+            "offset_range", [0, 1]))  # 随机瞄准偏移范围（0-1）
+        max_offset_entry.insert(0, str(offset_range[1]))  # 插入瞄准偏移最大值
+        min_offset_entry.insert(0, str(offset_range[0]))  # 插入瞄准偏移最小值
 
-            random_offset_mode_var.set(settings.get(
-                "enable_random_offset", False))  # 随机瞄准偏移开关
-            offset_time_entry.insert(
-                0, str(settings.get("time_interval", 1)))  # 随即瞄准时间间隔
-            offset_range = tuple(settings.get(
-                "offset_range", [0, 1]))  # 随机瞄准偏移范围（0-1）
-            max_offset_entry.insert(0, str(offset_range[1]))  # 插入瞄准偏移最大值
-            min_offset_entry.insert(0, str(offset_range[0]))  # 插入瞄准偏移最小值
-
-            print("设置加载成功！")
-            loaded_successfully = True  # 加载成功标识符
-        except FileNotFoundError:
-            print('[ERROR] 没有找到设置文件; 跳过加载设置')
-            pass
+        print("设置加载成功！")
+        loaded_successfully = True  # 加载成功标识符
 
     def save_random_offset():  # 保存设置
         global model_file
         print("保存随机瞄准部位参数...")
-        new_settings = {
-            'enable_random_offset': random_offset_mode_var.get(),  # 随机瞄准部位开关
-            # 随即瞄准最大最小值保存
-            'offset_range': [float(min_offset_entry.get()), float(max_offset_entry.get())],
-            'time_interval': float(offset_time_entry.get()),  # 随机瞄准切换间隔
-        }
-
-        # 加载当前设置
-        try:
-            with open('settings.json', 'r') as f:
-                current_settings = json.load(f)
-        except FileNotFoundError:
-            current_settings = {}
-
-        # 将新设置合并到当前设置中
-        current_settings.update(new_settings)
-
-        # 保存当前设置
-        with open('settings.json', 'w') as f:
-            json.dump(current_settings, f, sort_keys=True, indent=4)
+        Opt.update('enable_random_offset', random_offset_mode_var.get())
+        Opt.update('time_interval', float(offset_time_entry.get()))
+        Opt.update('offset_range', [float(min_offset_entry.get()), float(max_offset_entry.get())])
+        Opt.save()
 
     def save_button():
         update_values()
@@ -689,56 +663,34 @@ def recoil_set_window():  # 辅助压枪配置窗口
     def load_recoil():  # 加载辅助压枪参数
         global loaded_successfully, recoil_interval_entry, recoil_boosted_distance_time_entry, recoil_boosted_distance_entry, recoil_standard_distance_entry, recoil_transition_time_entry
         print('加载辅助压枪参数...')
-        try:
-            with open('settings.json', 'r') as f:
-                settings = json.load(f)
+        recoil_interval_entry.insert(
+            0, str(Opt.get("recoil_interval", 0.1)))  # 压枪间隔
+        recoil_boosted_distance_entry.insert(
+            0, str(Opt.get("recoil_boosted_distance", 5)))  # 一阶段单次距离
+        recoil_boosted_distance_time_entry.insert(
+            0, str(Opt.get("recoil_boosted_distance_time", 0.5)))  # 一阶段时间
+        recoil_standard_distance_entry.insert(
+            0, str(Opt.get("recoil_standard_distance", 1)))  # 二阶段单次距离
+        recoil_transition_time_entry.insert(
+            0, str(Opt.get("recoil_transition_time", 0.2)))  # 缓冲时间
 
-            recoil_interval_entry.insert(
-                0, str(settings.get("recoil_interval", 0.1)))  # 压枪间隔
-            recoil_boosted_distance_entry.insert(
-                0, str(settings.get("recoil_boosted_distance", 5)))  # 一阶段单次距离
-            recoil_boosted_distance_time_entry.insert(
-                0, str(settings.get("recoil_boosted_distance_time", 0.5)))  # 一阶段时间
-            recoil_standard_distance_entry.insert(
-                0, str(settings.get("recoil_standard_distance", 1)))  # 二阶段单次距离
-            recoil_transition_time_entry.insert(
-                0, str(settings.get("recoil_transition_time", 0.2)))  # 缓冲时间
-
-            print("设置加载成功！")
-            loaded_successfully = True  # 加载成功标识符
-        except FileNotFoundError:
-            print('[ERROR] 没有找到设置文件; 跳过加载设置')
-            pass
+        print("设置加载成功！")
+        loaded_successfully = True  # 加载成功标识符
 
     def save_recoil():  # 保存设置
         global model_file
         print("保存辅助压枪参数...")
-        new_settings = {
-            'recoil_interval': float(recoil_interval_entry.get()),  # 压枪间隔
-            # 一阶段单次距离
-            'recoil_boosted_distance': float(recoil_boosted_distance_entry.get()),
-            # 一阶段时间
-            'recoil_boosted_distance_time': float(recoil_boosted_distance_time_entry.get()),
-            # 二0阶段时间
-            'recoil_standard_distance': float(recoil_standard_distance_entry.get()),
-            # 缓冲时间
-            'recoil_transition_time': float(recoil_transition_time_entry.get())
-        }
-
-        # 加载当前设置
-        try:
-            with open('settings.json', 'r') as f:
-                current_settings = json.load(f)
-        except FileNotFoundError:
-            current_settings = {}
-
-        # 将新设置合并到当前设置中
-        current_settings.update(new_settings)
-
-        # 保存当前设置
-        with open('settings.json', 'w') as f:
-            json.dump(current_settings, f, sort_keys=True, indent=4)
-
+        Opt.update('recoil_interval', float(recoil_interval_entry.get()))
+        Opt.update('recoil_boosted_distance', float(
+            recoil_boosted_distance_entry.get()))
+        Opt.update('recoil_boosted_distance_time', float(
+            recoil_boosted_distance_time_entry.get()))
+        Opt.update('recoil_standard_distance', float(
+            recoil_standard_distance_entry.get()))
+        Opt.update('recoil_transition_time', float(
+            recoil_transition_time_entry.get()))
+        Opt.save()
+        
     def save_button():
         # 检查所有输入的值是否均为数字
         entries = [recoil_interval_entry, recoil_boosted_distance_entry, recoil_boosted_distance_time_entry,
@@ -1563,9 +1515,7 @@ def update_values(*args):
     # 数值合法判断
     # 1.随机瞄准部位瞄准参数合法性判断
     # 获取默认值
-    with open('settings.json', 'r') as f:
-        current_settings = json.load(f)
-        default_max, default_min = current_settings.get('offset_range')
+    default_max, default_min = Opt.get('offset_range')
     # 获取输入并转化为浮点数
     try:
         max_value = float(max_offset_entry.get())
@@ -1686,72 +1636,56 @@ def update_values(*args):
 
 def save_settings():  # 保存设置
     global model_file
-    new_settings = {
-        'aimbot': aimbot_var.get(),
-        'lockSpeed': lockSpeed_scale.get(),
-        'triggerType': triggerType_var.get(),
-        'arduinoMode': arduinoMode_var.get(),
-        'lockKey': lockKey_var.get(),
-        'mouse_Side_Button_Witch': mouse_Side_Button_Witch_var.get(),
-        'confidence': confidence_scale.get(),
-        'closest_mouse_dist': closest_mouse_dist_scale.get(),
-        'screen_width': screen_width_scale.get(),
-        'screen_height': screen_height_scale.get(),
-        'screenshot_mode': screenshot_mode_var.get(),
-        'segmented_aiming_switch': segmented_aiming_switch_var.get(),
-        'aimOffset': aimOffset_scale.get(),
-        'aimOffset_Magnification_x': aimOffset_x_scale.get(),
-        'model_file': model_file,
-        'prediction_factor': prediction_factor_scale.get(),
-        'method_of_prediction': method_of_prediction_var.get(),
-        'mouse_control': mouseMove_var.get(),
-        'extra_offset_x': extra_offset_x_scale.get(),
-        'extra_offset_y': extra_offset_y_scale.get(),
-        'stage1_intensity': stage1_intensity_scale.get(),  # 强锁力度
-        'stage1_scope': stage1_scope_scale.get(),  # 强锁范围
-        'stage2_intensity': stage2_intensity_scale.get(),  # 软锁力度
-        'stage2_scope': stage2_scope_scale.get(),  # 软锁范围
-        'enable_random_offset': random_offset_mode_var.get(),  # 随机瞄准部位开关
-        # 随即瞄准最大最小值保存
-        'offset_range': [float(min_offset_entry.get()), float(max_offset_entry.get())],
-        'time_interval': float(offset_time_entry.get()),  # 随机瞄准切换间隔
-        'recoil_switch': recoil_var.get()  # 辅助压枪开关
-    }
-
-    # 加载当前设置
-    try:
-        with open('settings.json', 'r') as f:
-            current_settings = json.load(f)
-    except FileNotFoundError:
-        current_settings = {}
-
-    # 将新设置合并到当前设置中
-    current_settings.update(new_settings)
-
-    # 保存当前设置
-    with open('settings.json', 'w') as f:
-        json.dump(current_settings, f, sort_keys=True, indent=4)
+    Opt.update('aimbot', aimbot_var.get())
+    Opt.update('lockSpeed', lockSpeed_scale.get())
+    Opt.update('triggerType', triggerType_var.get())
+    Opt.update('arduinoMode', arduinoMode_var.get())
+    Opt.update('lockKey', lockKey_var.get())
+    Opt.update('mouse_Side_Button_Witch', mouse_Side_Button_Witch_var.get())
+    Opt.update('confidence', confidence_scale.get())
+    Opt.update('closest_mouse_dist', closest_mouse_dist_scale.get())
+    Opt.update('screen_width', screen_width_scale.get())
+    Opt.update('screen_height', screen_height_scale.get())
+    Opt.update('screenshot_mode', screenshot_mode_var.get())
+    Opt.update('segmented_aiming_switch', segmented_aiming_switch_var.get())
+    Opt.update('aimOffset', aimOffset_scale.get())
+    Opt.update('aimOffset_Magnification_x', aimOffset_x_scale.get())
+    Opt.update('model_file', model_file)
+    Opt.update('prediction_factor', prediction_factor_scale.get())
+    Opt.update('method_of_prediction', method_of_prediction_var.get())
+    Opt.update('mouse_control', mouseMove_var.get())
+    Opt.update('extra_offset_x', extra_offset_x_scale.get())
+    Opt.update('extra_offset_y', extra_offset_y_scale.get())
+    Opt.update('stage1_intensity', stage1_intensity_scale.get())
+    Opt.update('stage1_scope', stage1_scope_scale.get())
+    Opt.update('stage2_intensity', stage2_intensity_scale.get())
+    Opt.update('stage2_scope', stage2_scope_scale.get())
+    Opt.update('enable_random_offset', random_offset_mode_var.get())
+    Opt.update('offset_range', [float(min_offset_entry.get()), float(max_offset_entry.get())])
+    Opt.update('time_interval', float(offset_time_entry.get()))
+    Opt.update('recoil_switch', recoil_var.get())
+    Opt.update('aimbot', aimbot_var.get())
+    Opt.update('lockSpeed', lockSpeed_scale.get())
+    Opt.update('triggerType', triggerType_var.get())
+    Opt.update('arduinoMode', arduinoMode_var.get())
+    Opt.update('lockKey', lockKey_var.get())
+    Opt.save()
 
 
 def load_prefix_variables():  # 加载前置参数
     global model_file, screenshot_mode, segmented_aiming_switch, crawl_information, random_name, offset_range, time_interval, enable_random_offset, deactivate_dxcam
     print('Loading prefix variables...')
     try:
-        with open('settings.json', 'r') as f:
-            settings = json.load(f)
-
-        deactivate_dxcam = settings.get(
+        deactivate_dxcam = Opt.get(
             "deactivate_dxcam", False)   # 加载是否禁用加载dxcam
-        screenshot_mode = settings.get("screenshot_mode", False)  # 加载截图方式
-        segmented_aiming_switch = settings.get(
+        screenshot_mode = Opt.get("screenshot_mode", False)  # 加载截图方式
+        segmented_aiming_switch = Opt.get(
             "segmented_aiming_switch", False)  # 加载分段瞄准开关
-        crawl_information = settings.get(
+        crawl_information = Opt.get(
             "crawl_information", False)  # 加载公告获取开关
-        random_name = settings.get("random_name", False)  # 随机软件标题开关
+        random_name = Opt.get("random_name", False)  # 随机软件标题开关
 
         print("前置变量加载成功！")
-    except FileNotFoundError:
-        print('[ERROR] 没有找到设置文件; 跳过加载设置')
     except Exception as e:
         print(f'[ERROR] 加载设置时出错: {e}')
 
@@ -1762,74 +1696,67 @@ def load_settings():  # 加载主程序参数设置
         recoil_interval, recoil_switch, recoil_boosted_distance_time, recoil_boosted_distance, recoil_standard_distance, \
         recoil_transition_time
     print('Loading settings...')
-    try:
-        with open('settings.json', 'r') as f:
-            settings = json.load(f)
+    aimbot_var.set(Opt.get('aimbot', True))
+    lockSpeed_scale.set(Opt.get('lockSpeed', 0.7))
+    triggerType_var.set(Opt.get('triggerType', "\u6309\u4e0b"))
+    arduinoMode_var.set(Opt.get('arduinoMode', False))
+    lockKey_var.set(Opt.get('lockKey', "\u53f3\u952e"))
+    mouse_Side_Button_Witch_var.set(
+        Opt.get('mouse_Side_Button_Witch', True))
+    method_of_prediction_var.set(Opt.get(
+        'method_of_prediction', "\u500d\u7387\u9884\u6d4b"))
+    confidence_scale.set(Opt.get('confidence', 0.5))
+    extra_offset_x_scale.set(Opt.get('extra_offset_x', 5))
+    extra_offset_y_scale.set(Opt.get('extra_offset_y', 5))
+    prediction_factor_scale.set(Opt.get(
+        'prediction_factor', 0.5))  # 使用适当的默认值来替换default_value
+    closest_mouse_dist_scale.set(Opt.get('closest_mouse_dist', 160))
+    screen_width_scale.set(Opt.get('screen_width', 360))
+    screen_height_scale.set(Opt.get('screen_height', 360))
+    aimOffset_scale.set(Opt.get('aimOffset', 0.4))
+    aimOffset_x_scale.set(Opt.get('aimOffset_Magnification_x', 0))
+    model_file = Opt.get('model_file', None)  # 从文件中加载model_file
+    # 更新标签上的文本为加载的文件路径或默认文本
+    model_file_label.config(text=model_file or "还未选择模型文件")
+    # 从文件中加载test_window_frame的值，如果没有就默认为False
+    test_window_frame = Opt.get('test_window_frame', False)
+    crawl_information = Opt.get("crawl_information", True)  # 是否联网加载公告
+    screenshot_mode = Opt.get(
+        "screenshot_mode", False)  # 是否启用DXcam截图模式
+    DXcam_screenshot = Opt.get(
+        "DXcam_screenshot", 360)  # DXcam截图方式的分辨率
+    dxcam_maxFPS = Opt.get('dxcam_maxFPS', 30)  # DXcam截图最大帧率限制
+    segmented_aiming_switch = Opt.get(
+        'segmented_aiming_switch', False)  # 是否开启分段瞄准模式
+    mouseMove_var.set(Opt.get('mouse_control', 'win32'))  # 加载鼠标移动库名称
+    stage1_scope_scale.set(Opt.get('stage1_scope', 50))  # 强锁范围(分段瞄准)
+    stage1_intensity_scale.set(Opt.get(
+        'stage1_intensity', 0.8))  # 强锁力度(分段瞄准)
+    stage2_scope_scale.set(Opt.get('stage2_scope', 170))  # 软锁范围(分段瞄准)
+    stage2_intensity_scale.set(Opt.get(
+        'stage2_intensity', 0.4))  # 软锁力度(分段瞄准)
+    random_offset_mode_var.set(Opt.get(
+        "enable_random_offset", False))  # 随机瞄准偏移开关
+    offset_time_entry.insert(
+        0, str(Opt.get("time_interval", 1)))  # 随即瞄准时间间隔
+    offset_range = tuple(Opt.get(
+        "offset_range", [0, 1]))  # 随机瞄准偏移范围（0-1）
+    max_offset_entry.insert(0, str(offset_range[1]))  # 插入瞄准偏移最大值
+    min_offset_entry.insert(0, str(offset_range[0]))  # 插入瞄准偏移最小值
+    recoil_var.set(Opt.get("recoil_switch", False))  # 压枪模块开关
+    recoil_interval_entry.insert(
+        0, str(Opt.get("recoil_interval", 0.1)))  # 压枪间隔
+    recoil_boosted_distance_entry.insert(
+        0, str(Opt.get("recoil_boosted_distance", 5)))  # 一阶段单次距离
+    recoil_boosted_distance_time_entry.insert(
+        0, str(Opt.get("recoil_boosted_distance_time", 0.5)))  # 一阶段时间
+    recoil_standard_distance_entry.insert(
+        0, str(Opt.get("recoil_standard_distance", 1)))  # 二阶段单次距离
+    recoil_transition_time_entry.insert(
+        0, str(Opt.get("recoil_transition_time", 0.2)))  # 缓冲时间
 
-        aimbot_var.set(settings.get('aimbot', True))
-        lockSpeed_scale.set(settings.get('lockSpeed', 0.7))
-        triggerType_var.set(settings.get('triggerType', "\u6309\u4e0b"))
-        arduinoMode_var.set(settings.get('arduinoMode', False))
-        lockKey_var.set(settings.get('lockKey', "\u53f3\u952e"))
-        mouse_Side_Button_Witch_var.set(
-            settings.get('mouse_Side_Button_Witch', True))
-        method_of_prediction_var.set(settings.get(
-            'method_of_prediction', "\u500d\u7387\u9884\u6d4b"))
-        confidence_scale.set(settings.get('confidence', 0.5))
-        extra_offset_x_scale.set(settings.get('extra_offset_x', 5))
-        extra_offset_y_scale.set(settings.get('extra_offset_y', 5))
-        prediction_factor_scale.set(settings.get(
-            'prediction_factor', 0.5))  # 使用适当的默认值来替换default_value
-        closest_mouse_dist_scale.set(settings.get('closest_mouse_dist', 160))
-        screen_width_scale.set(settings.get('screen_width', 360))
-        screen_height_scale.set(settings.get('screen_height', 360))
-        aimOffset_scale.set(settings.get('aimOffset', 0.4))
-        aimOffset_x_scale.set(settings.get('aimOffset_Magnification_x', 0))
-        model_file = settings.get('model_file', None)  # 从文件中加载model_file
-        # 更新标签上的文本为加载的文件路径或默认文本
-        model_file_label.config(text=model_file or "还未选择模型文件")
-        # 从文件中加载test_window_frame的值，如果没有就默认为False
-        test_window_frame = settings.get('test_window_frame', False)
-        crawl_information = settings.get("crawl_information", True)  # 是否联网加载公告
-        screenshot_mode = settings.get(
-            "screenshot_mode", False)  # 是否启用DXcam截图模式
-        DXcam_screenshot = settings.get(
-            "DXcam_screenshot", 360)  # DXcam截图方式的分辨率
-        dxcam_maxFPS = settings.get('dxcam_maxFPS', 30)  # DXcam截图最大帧率限制
-        segmented_aiming_switch = settings.get(
-            'segmented_aiming_switch', False)  # 是否开启分段瞄准模式
-        mouseMove_var.set(settings.get('mouse_control', 'win32'))  # 加载鼠标移动库名称
-        stage1_scope_scale.set(settings.get('stage1_scope', 50))  # 强锁范围(分段瞄准)
-        stage1_intensity_scale.set(settings.get(
-            'stage1_intensity', 0.8))  # 强锁力度(分段瞄准)
-        stage2_scope_scale.set(settings.get('stage2_scope', 170))  # 软锁范围(分段瞄准)
-        stage2_intensity_scale.set(settings.get(
-            'stage2_intensity', 0.4))  # 软锁力度(分段瞄准)
-        random_offset_mode_var.set(settings.get(
-            "enable_random_offset", False))  # 随机瞄准偏移开关
-        offset_time_entry.insert(
-            0, str(settings.get("time_interval", 1)))  # 随即瞄准时间间隔
-        offset_range = tuple(settings.get(
-            "offset_range", [0, 1]))  # 随机瞄准偏移范围（0-1）
-        max_offset_entry.insert(0, str(offset_range[1]))  # 插入瞄准偏移最大值
-        min_offset_entry.insert(0, str(offset_range[0]))  # 插入瞄准偏移最小值
-        recoil_var.set(settings.get("recoil_switch", False))  # 压枪模块开关
-        recoil_interval_entry.insert(
-            0, str(settings.get("recoil_interval", 0.1)))  # 压枪间隔
-        recoil_boosted_distance_entry.insert(
-            0, str(settings.get("recoil_boosted_distance", 5)))  # 一阶段单次距离
-        recoil_boosted_distance_time_entry.insert(
-            0, str(settings.get("recoil_boosted_distance_time", 0.5)))  # 一阶段时间
-        recoil_standard_distance_entry.insert(
-            0, str(settings.get("recoil_standard_distance", 1)))  # 二阶段单次距离
-        recoil_transition_time_entry.insert(
-            0, str(settings.get("recoil_transition_time", 0.2)))  # 缓冲时间
-
-        print("设置加载成功！")
-        loaded_successfully = True  # 加载成功标识符
-    except FileNotFoundError:
-        print('[ERROR] 没有找到设置文件; 跳过加载设置')
-        pass
+    print("设置加载成功！")
+    loaded_successfully = True  # 加载成功标识符
 
 
 def calculate_distances(
