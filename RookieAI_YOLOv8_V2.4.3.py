@@ -32,6 +32,41 @@ import string
 import random
 import onnxruntime
 
+###------------------------------------------自动扳机----------------------------------------------------------------------
+class AutoTrigger:
+    def __init__(self, interval=0.2):
+        self.interval = interval
+        self.running = False
+        self.destroyed = False
+        self.thread = threading.Thread(target=self._mouse_press_loop)
+        self.thread.daemon = True
+        self.thread.start()
+
+    def _mouse_press_loop(self):
+        """循环监听"""
+        while not self.destroyed:
+            if self.running:
+                mouse.click(button='left')
+                time.sleep(self.interval)
+            else:
+                time.sleep(0.1)
+
+    def start(self):
+        """开始开火"""
+        self.running = True
+
+    def stop(self):
+        """停止开火"""
+        self.running = False
+
+    def destroy(self):
+        """释放资源"""
+        self.running = False
+        self.destroyed = True
+        if self.thread.is_alive():
+            pass
+        self.thread = None
+
 ###------------------------------------------全局变量---------------------------------------------------------------------
 
 # 选择模型
