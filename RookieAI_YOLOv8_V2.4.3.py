@@ -35,7 +35,7 @@ import onnxruntime
 # ------------------------------------------类声明----------------------------------------------------------------------
 
 
-class AutoTrigger:
+class AutoFire:
     def __init__(self, interval=0.2):
         self.interval = interval
         self.running = False
@@ -113,25 +113,24 @@ class Option:
             "recoil_transition_time": 0.2,
         }
 
-    def read(self):
-        """读取配置文件"""
+    def read(self)->dict:
         try:
             with open("settings.json", "r") as f:
                 return json.load(f)
         except FileNotFoundError:
             return self.default
     
-    def get(self, key, default=None):
+    def get(self, key, default=None)->any:
         # 请仓库所有者尽快将代码里get的传参改为一个，统一在该类的init中声明默认值
-        if default is not None:  # 如果key不在content中，则返回默认值
+        if default is not None:
             return self.content.get(key, default)
         return self.content.get(key, self.default.get(key))
     
-    def update(self, key, value):
+    def update(self, key, value)->None:
         self.content[key] = value
         self.save()
     
-    def save(self):
+    def save(self)->None:
         with open("settings.json", "w") as f:
             json.dump(self.content, f, indent=4, ensure_ascii=False)
 
@@ -146,6 +145,9 @@ sct = mss()
 
 # 新建一个Option对象
 Opt = Option()
+
+# 新建一个AutoFire对象
+AFe = AutoFire()
 
 # returns a DXCamera instance on primary monitor
 # Primary monitor's BetterCam instance
@@ -1006,8 +1008,8 @@ def create_gui_tkinter():  # 软件主题GUI界面
     automatic_Trigger_frame = ctk.CTkLabel(tab_view.tab("基础设置"))
     automatic_Trigger_frame.grid(row=10, column=0, sticky='w', pady=5)
     automatic_Trigger_var = ctk.BooleanVar(value=automatic_Trigger)
-    automatic_Trigger_check = ctk.CTkCheckBox(automatic_Trigger_frame, text='自动扳机（待开发）', variable=automatic_Trigger_var,
-                                              command=update_values, state="DISABLED")
+    automatic_Trigger_check = ctk.CTkCheckBox(automatic_Trigger_frame, text='自动扳机', variable=automatic_Trigger_var,
+                                              command=update_values)
     automatic_Trigger_check.grid(row=0, column=0)  # 使用grid布局并靠左对齐
 
     # 创建一个名为 '辅助压枪' 的复选框
@@ -1933,35 +1935,37 @@ def calculate_distances(
         if triggerType == "切换":
             # print(101)
             if aimbot and (win32api.GetKeyState(lockKey) or (mouse_Side_Button_Witch and xbutton2_pressed)):
-                if mouse_control == '飞易来USB':
-                    dll.M_MoveR2(ctypes.c_uint64(hdl), int(
-                        centerx * lockSpeed), int(centery * lockSpeed))
-                if mouse_control == 'win32':
-                    win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed),
-                                         0, 0)
-                if mouse_control == 'mouse':
-                    mouse.move(int(centerx * lockSpeed),
-                               int(centery * lockSpeed), False)
-                if mouse_control == 'Logitech':
-                    LG_driver.move_R(int(centerx * lockSpeed),
-                                     int(centery * lockSpeed))
+                match mouse_control:
+                    case '飞易来USB':
+                        dll.M_MoveR2(ctypes.c_uint64(hdl), int(
+                            centerx * lockSpeed), int(centery * lockSpeed))
+                    case 'win32':
+                        win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed),
+                                             0, 0)
+                    case 'mouse':
+                        mouse.move(int(centerx * lockSpeed),
+                                   int(centery * lockSpeed), False)
+                    case 'Logitech':
+                        LG_driver.move_R(int(centerx * lockSpeed),
+                                         int(centery * lockSpeed))
 
         # 第二种：按下触发
         elif triggerType == "按下":
             # print(102)
             if aimbot and (lockKey_pressed or (mouse_Side_Button_Witch and xbutton2_pressed)):
-                if mouse_control == '飞易来USB':
-                    dll.M_MoveR2(ctypes.c_uint64(hdl), int(
-                        centerx * lockSpeed), int(centery * lockSpeed))
-                if mouse_control == 'win32':
-                    win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed),
-                                         0, 0)
-                if mouse_control == 'mouse':
-                    mouse.move(int(centerx * lockSpeed),
-                               int(centery * lockSpeed), False)
-                if mouse_control == 'Logitech':
-                    LG_driver.move_R(int(centerx * lockSpeed),
-                                     int(centery * lockSpeed))
+                match mouse_control:
+                    case '飞易来USB':
+                        dll.M_MoveR2(ctypes.c_uint64(hdl), int(
+                            centerx * lockSpeed), int(centery * lockSpeed))
+                    case 'win32':
+                        win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed),
+                                             0, 0)
+                    case 'mouse':
+                        mouse.move(int(centerx * lockSpeed),
+                                   int(centery * lockSpeed), False)
+                    case 'Logitech':
+                        LG_driver.move_R(int(centerx * lockSpeed),
+                                         int(centery * lockSpeed))
             elif not (lockKey_pressed or (mouse_Side_Button_Witch and xbutton2_pressed)):
                 # 停止代码
                 pass
@@ -1970,18 +1974,19 @@ def calculate_distances(
         elif triggerType == "shift+按下":
             # print(104)
             if aimbot and ((lockKey_pressed and shift_pressed) or (mouse_Side_Button_Witch and xbutton2_pressed)):
-                if mouse_control == '飞易来USB':
-                    dll.M_MoveR2(ctypes.c_uint64(hdl), int(
-                        centerx * lockSpeed), int(centery * lockSpeed))
-                if mouse_control == 'win32':
-                    win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed),
-                                         0, 0)
-                if mouse_control == 'mouse':
-                    mouse.move(int(centerx * lockSpeed),
-                               int(centery * lockSpeed), False)
-                if mouse_control == 'Logitech':
-                    LG_driver.move_R(int(centerx * lockSpeed),
-                                     int(centery * lockSpeed))
+                match mouse_control:
+                    case '飞易来USB':
+                        dll.M_MoveR2(ctypes.c_uint64(hdl), int(
+                            centerx * lockSpeed), int(centery * lockSpeed))
+                    case 'win32':
+                        win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(centerx * lockSpeed), int(centery * lockSpeed),
+                                             0, 0)
+                    case 'mouse':
+                        mouse.move(int(centerx * lockSpeed),
+                                   int(centery * lockSpeed), False)
+                    case 'Logitech':
+                        LG_driver.move_R(int(centerx * lockSpeed),
+                                         int(centery * lockSpeed))
             elif not ((lockKey_pressed and shift_pressed) or (mouse_Side_Button_Witch and xbutton2_pressed)):
                 # 停止代码
                 pass
