@@ -48,7 +48,18 @@ class AutoFire:
         """循环监听"""
         while not self.destroyed:
             if self.running:
-                mouse.click(button='left')
+                match mouse_control:
+                    case '飞易来USB':
+                        #等待补全
+                        pass
+                    case 'win32':
+                        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+                        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+                    case 'mouse':
+                        mouse.click('left')
+                    case 'Logitech':
+                        #等待补全
+                        pass
                 time.sleep(self.interval)
             else:
                 time.sleep(0.1)
@@ -1948,6 +1959,10 @@ def calculate_distances(
                     case 'Logitech':
                         LG_driver.move_R(int(centerx * lockSpeed),
                                          int(centery * lockSpeed))
+                if offset_dist <= 30:# 此处判断待定
+                    AFe.start()
+                else:
+                    AFe.stop()
 
         # 第二种：按下触发
         elif triggerType == "按下":
@@ -1966,7 +1981,12 @@ def calculate_distances(
                     case 'Logitech':
                         LG_driver.move_R(int(centerx * lockSpeed),
                                          int(centery * lockSpeed))
+                if offset_dist <= 30:# 此处判断待定
+                    AFe.start()
+                else:
+                    AFe.stop()
             elif not (lockKey_pressed or (mouse_Side_Button_Witch and xbutton2_pressed)):
+                AFe.stop()
                 # 停止代码
                 pass
 
@@ -1987,7 +2007,12 @@ def calculate_distances(
                     case 'Logitech':
                         LG_driver.move_R(int(centerx * lockSpeed),
                                          int(centery * lockSpeed))
+                if offset_dist <= 30:# 此处判断待定
+                    AFe.start()
+                else:
+                    AFe.stop()
             elif not ((lockKey_pressed and shift_pressed) or (mouse_Side_Button_Witch and xbutton2_pressed)):
+                AFe.stop()
                 # 停止代码
                 pass
 
