@@ -2032,30 +2032,32 @@ def recoil():  # 反后坐力
     # 第一种：切换触发
     if triggerType == "切换" and lbutton_pressed:
         if win32api.GetKeyState(lockKey):
-            if mouse_control == '飞易来USB':
-                dll.M_MoveR2(ctypes.c_uint64(hdl),
-                             int(0), int(single_distance))
-            if mouse_control == 'win32':
-                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(
-                    0), int(single_distance), 0, 0)
-            if mouse_control == 'mouse':
-                mouse.move(int(0), int(single_distance), False)
-            if mouse_control == 'Logitech':
-                LG_driver.move_R(int(0), int(single_distance))
+            match mouse_control:
+                case '飞易来USB':
+                    dll.M_MoveR2(ctypes.c_uint64(hdl),
+                                 int(0), int(single_distance))
+                case 'win32':
+                    win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(
+                        0), int(single_distance), 0, 0)
+                case 'mouse':
+                    mouse.move(int(0), int(single_distance), False)
+                case 'Logitech':
+                    LG_driver.move_R(int(0), int(single_distance))
 
     # 第二种：按下触发
     elif triggerType == "按下" and lbutton_pressed:
         if lockKey_pressed:
-            if mouse_control == '飞易来USB':
-                dll.M_MoveR2(ctypes.c_uint64(hdl),
-                             int(0), int(single_distance))
-            if mouse_control == 'win32':
-                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(
-                    0), int(single_distance), 0, 0)
-            if mouse_control == 'mouse':
-                mouse.move(int(0), int(single_distance), False)
-            if mouse_control == 'Logitech':
-                LG_driver.move_R(int(0), int(single_distance))
+            match mouse_control:
+                case '飞易来USB':
+                    dll.M_MoveR2(ctypes.c_uint64(hdl),
+                                 int(0), int(single_distance))
+                case 'win32':
+                    win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(
+                        0), int(single_distance), 0, 0)
+                case 'mouse':
+                    mouse.move(int(0), int(single_distance), False)
+                case 'Logitech':
+                    LG_driver.move_R(int(0), int(single_distance))
 
         elif not lockKey_pressed:
             pass
@@ -2063,16 +2065,17 @@ def recoil():  # 反后坐力
     # 第三种：shift+按下触发
     elif triggerType == "shift+按下" and lbutton_pressed:
         if lockKey_pressed and shift_pressed:
-            if mouse_control == '飞易来USB':
-                dll.M_MoveR2(ctypes.c_uint64(hdl),
-                             int(0), int(single_distance))
-            if mouse_control == 'win32':
-                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(
-                    0), int(single_distance), 0, 0)
-            if mouse_control == 'mouse':
-                mouse.move(int(0), int(single_distance), False)
-            if mouse_control == 'Logitech':
-                LG_driver.move_R(int(0), int(single_distance))
+            match mouse_control:
+                case '飞易来USB':
+                    dll.M_MoveR2(ctypes.c_uint64(hdl),
+                                 int(0), int(single_distance))
+                case 'win32':
+                    win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, int(
+                        0), int(single_distance), 0, 0)
+                case 'mouse':
+                    mouse.move(int(0), int(single_distance), False)
+                case 'Logitech':
+                    LG_driver.move_R(int(0), int(single_distance))
 
         elif not (lockKey_pressed and shift_pressed):
             pass
