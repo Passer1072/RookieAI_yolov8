@@ -19,24 +19,29 @@ _访问[YOLOv8 GitHub界面](https://docs.ultralytics.com/)获取更多官方yol
 `# 默认的模型文件地址`  
 `default_model_file = "yolov8n.pt"`  
 
-### 针对想直接使用者：  
+### 针对想直接使用者：
+
 1. ### 使用以下代码获取本代码需要的库与Pytorch库：  
 `pip install -r requirements.txt`   
-`pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121`  
+`pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121`
+
 2. ### 下载pyinstaller库(打包用)  
-`pip install pyinstaller`  
+`pip install pyinstaller`
+
 3. ### 使用pyinstaller打包代码  
 `pyinstaller xxxxx.py`    
 将xxxxx替换为代码实际名称。  
 更多打包参数介绍：[Python pyinstaller打包exe最完整教程](https://blog.csdn.net/qq_48979387/article/details/132359366)  
 ❗必定会遇到的问题：  
 Q：运行提示`FileNotFoundError:`，问题：缺少库  
-A：把编译器虚拟环境里的库全部复制粘贴到打包出的文件夹<_internal>里就可以了。参考：[打包后库不全解决办法](https://github.com/Passer1072/RookieAI_yolov8/issues/1#issuecomment-2041157885)  
+A：把编译器虚拟环境里的库全部复制粘贴到打包出的文件夹<_internal>里就可以了。参考：[打包后库不全解决办法](https://github.com/Passer1072/RookieAI_yolov8/issues/1#issuecomment-2041157885)
+
 5. ### 关于模型文件  
 建议自行训练  
 前往bilibili学习：[B站](https://search.bilibili.com/all?keyword=%E5%A6%82%E4%BD%95%E8%AE%AD%E7%BB%83%E6%A8%A1%E5%9E%8B&from_source=webtop_search&spm_id_from=333.1007&search_source=5)  
 前往YouTube学习：[油管](https://www.youtube.com/results?search_query=how+to+train+yolov8+model)  
-❗在软件中选择完模型文件后需保存重启后才会生效，因为需要重新加载模型。  
+❗在软件中选择完模型文件后需保存重启后才会生效，因为需要重新加载模型。
+
 4. ### 文件整理  
 将  
 '_internal'(包含软件环境/库)  
