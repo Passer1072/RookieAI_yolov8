@@ -6,12 +6,13 @@
     "arduinoMode": false,
     "closest_mouse_dist": 160.8,
     "confidence": 0.55,
-    "crawl_information": true,
+    "crawl_information": false,
     "deactivate_dxcam": true,
     "dxcam_maxFPS": 35,
     "enable_random_offset": true,
     "extra_offset_x": 5.0,
     "extra_offset_y": 3.0,
+    "ignore_colors": [[62, 203, 236]],
     "lockKey": "\u53f3\u952e",
     "lockSpeed": 0.7,
     "method_of_prediction": "\u500d\u7387\u9884\u6d4b",
@@ -41,5 +42,6 @@
     "test_images_GUI": true,
     "test_window_frame": true,
     "time_interval": 0.35,
+    "tolerance": 63.0,
     "triggerType": "shift+\u6309\u4e0b"
 }
