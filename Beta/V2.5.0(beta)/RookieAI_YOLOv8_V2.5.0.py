@@ -143,7 +143,7 @@ class Option:
     
     def save(self)->None:
         with open("settings.json", "w") as f:
-            json.dump(self.content, f, indent=4, ensure_ascii=False)
+            f.write(json.dump(self.content, f, indent=4, ensure_ascii=False))
 
 
 # ------------------------------------------全局变量---------------------------------------------------------------------
@@ -309,13 +309,6 @@ enable_random_offset = False  # 随机偏移功能开关
 
 
 # ------------------------------------------def部分---------------------------------------------------------------------
-
-def generate_fingerprint():  # 随机特征码
-    random_component = str(uuid.uuid4())
-    time_component = str(datetime.datetime.now())
-    environment_component = os.getenv('PATH')
-    return hash(random_component + time_component + environment_component)
-
 
 def random_string(length):  # 随即软件名称
     letters = string.ascii_lowercase
@@ -2280,9 +2273,6 @@ def Initialization_parameters():  # 初始化参数
 
 # ---------------------------------------main-------------------------------------------------------------------------
 if __name__ == "__main__":
-    fingerprint = generate_fingerprint()  # 随机特征码
-    print("随机特征码:", fingerprint)
-
     load_DLL()  # 加载控制盒DLL文件，并开启端口
     time.sleep(0.3)
     load_lg_dll()  # 加载罗技DLL文件，并测试
