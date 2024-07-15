@@ -41,7 +41,7 @@ model_file = "yolov8n.pt"
 sct = mss()
 
 # returns a DXCamera instance on primary monitor
-camera = dxcam.create(output_idx=0, output_color="BGR", max_buffer_len=2048)  # Primary monitor's BetterCam instance
+
 
 # 截图模式（请勿更改）
 screenshot_mode = False
@@ -263,8 +263,11 @@ def capture_screen(monitor, sct):  # mss截图方式
 
 
 def DXcam():
+    global camera
     # 获取屏幕的宽度和高度
     screen_width, screen_height = pyautogui.size()
+
+    camera = dxcam.create(output_idx=0, output_color="BGR", max_buffer_len=2048)  # Primary monitor's BetterCam instance
 
     # 计算截图区域
     left, top = (screen_width - DXcam_screenshot) // 2, (screen_height - DXcam_screenshot) // 2
@@ -330,7 +333,7 @@ def fetch_readme_version_number():  # 从github更新公告
         print("获取成功")
 
         # 创建搜索字符串
-        search_str = "Current latest version: "
+        search_str = "Current latest version:"
 
         # 找到 "更新日志：" 在字符串中的位置
         update_log_start = response_text.find(search_str)
@@ -2032,7 +2035,8 @@ def main_program_loop(model):  # 主程序流程代码
 
 def stop_program():  # 停止子线程
     global run_threads, Thread_to_join, root
-    camera.stop()
+    if not deactivate_dxcam:
+        camera.stop()  # 停止DXcam
     run_threads = False
     if Thread_to_join:
         Thread_to_join.join()  # 等待子线程结束
