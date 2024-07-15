@@ -143,7 +143,7 @@ class Option:
     
     def save(self)->None:
         with open("settings.json", "w") as f:
-            json.dump(self.content, f, indent=4, ensure_ascii=False)
+            f.write(json.dump(self.content, f, indent=4, ensure_ascii=False))
 
 
 # ------------------------------------------全局变量---------------------------------------------------------------------
