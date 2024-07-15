@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="ProjectModuleManager">
-    <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/RookieAI_English.iml" filepath="$PROJECT_DIR$/.idea/RookieAI_English.iml" />
-      <module fileurl="file://E:/My_PycharmProjects/Yolov8_text/.idea/Yolov8_text.iml" filepath="E:/My_PycharmProjects/Yolov8_text/.idea/Yolov8_text.iml" />
-    </modules>
-  </component>
-</project>
