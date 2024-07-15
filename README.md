@@ -214,7 +214,7 @@ ___
 
 [@loy0516](https://github.com/loy0516)：提出加入睡眠，防止刷在加载的建议。
 
-[@CougarApp](https://github.com/CougarApp)：提供英文版以及英文版特有功能：
+[@CougarP](https://github.com/Cougarp)：提供英文版以及英文版特有功能：
 
 1. 添加PID控制，使鼠标移动更平滑、更精确
 
