@@ -450,7 +450,7 @@ def fetch_readme_version_number():  # 从github更新公告
         print("获取成功")
 
         # 创建搜索字符串
-        search_str = "Current latest version: "
+        search_str = "Current latest version:"
 
         # 找到 "更新日志：" 在字符串中的位置
         update_log_start = response_text.find(search_str)
