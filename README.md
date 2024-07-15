@@ -488,4 +488,4 @@ ___
 
 ___
 
-Currentlatestversion:V2.4.3
+Current latest version:V2.4.3
