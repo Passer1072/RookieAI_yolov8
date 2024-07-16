@@ -333,7 +333,7 @@ def fetch_readme_version_number():  # 从github更新公告
         print("获取成功")
 
         # 创建搜索字符串
-        search_str = "Current latest version:"
+        search_str = "Current latest version: "
 
         # 找到 "更新日志：" 在字符串中的位置
         update_log_start = response_text.find(search_str)
@@ -348,6 +348,10 @@ def fetch_readme_version_number():  # 从github更新公告
 
         # 使用 strip 方法去除两侧空格
         update_log = update_log.strip()
+
+        # 检查获取到的版本号的长度
+        if len(update_log) > 20:
+            return "版本号格式化错误，请联系开发者"
 
         return update_log
 

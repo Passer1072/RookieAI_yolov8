@@ -467,6 +467,10 @@ def fetch_readme_version_number():  # 从github更新公告
         # 使用 strip 方法去除两侧空格
         update_log = update_log.strip()
 
+        # 检查获取到的版本号的长度
+        if len(update_log) > 20:
+            return "版本号格式化错误，请联系开发者"
+
         return update_log
 
     except Exception as e:
