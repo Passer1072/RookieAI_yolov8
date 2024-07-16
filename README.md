@@ -47,7 +47,7 @@ pip install torchvision==0.17.0 torchaudio==2.2.0
 pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp312-cp312-win_amd64.whl --no-warn-script-location
 ```
 
-2. ### 你还需要一个自己的模型（目前只支持.pt模型），如果没有可暂时使用ultralytics官方模型。
+2. ### 你还需要一个自己的模型（目前只支持.pt模型与TRT模型，暂不支持ONNX），如果没有可暂时使用ultralytics官方模型。
 
 3. **当未找到模型时会自动下载YOLOv8n模型，你也可以⬇️**
 
@@ -134,7 +134,19 @@ Ps:二者在最终使用效果上无任何区别，仅视觉差异
 
 ![V2.4.3](images/V2.4.3.png)
 
-✅✅✅注意✅✅✅
+### 推荐使用Atlas游戏系统配合boosterX性能优化软件获得更好体验
+
+[AtlasOS](https://atlasos.net/)对 Windows 进行修改，专为游戏玩家设计。具有更高的游戏帧率和更低的延迟。同时在此系统上使用RookieAI可更高效的利用GPU资源得到更高的推理帧率。
+
+[boosterX](https://boosterx.org/en/)是一款系统优化软件，优化Windows，降低延迟、提高 FPS。在AtlasOS系统上使用可进一步进行优化。
+
+配置单：截图模式:mss  截图高/宽:320  显卡:RTX4080M  模型:YOLOv8s_TheFinals_teammate_enemy_04.engine
+
+原版windows空载运行RookieAI2.4.3 对比 AtlasOS 空载运行RookieAI2.4.3：
+
+
+
+### ✅✅✅注意✅✅✅
 
 此项目最初目的为Apex的Aimbot，未考虑其他游戏，可能会出现因反作弊禁止WIN32移动方式而无法使用的情况！
 
@@ -147,7 +159,7 @@ Ps:二者在最终使用效果上无任何区别，仅视觉差异
 **🎉🎉🎉非常感谢由RicardoJoaquim提供的英文特别版本🎉🎉🎉**
 
 
-更新日志：
+### 更新日志：
 
 7/15/2024更新：
 
