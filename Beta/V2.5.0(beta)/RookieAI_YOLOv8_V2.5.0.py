@@ -455,10 +455,6 @@ def fetch_readme_version_number():  # 从github更新公告
         # 找到 "更新日志：" 在字符串中的位置
         update_log_start = response_text.find(search_str)
 
-        # 若找不到 "Current latest version: "，则返回全部内容
-        if update_log_start == -1:
-            return response_text
-
         # 截取 "Current latest version: " 及其后的所有文本
         # Move the index to the end of "Current latest version: "
         update_log_start += len(search_str)
@@ -469,9 +465,9 @@ def fetch_readme_version_number():  # 从github更新公告
 
         # 检查获取到的版本号的长度
         if len(update_log) > 20:
-            return "版本号格式化错误，请联系开发者"
-
-        return update_log
+            return "版本号格式化错误"
+        else:
+            return update_log
 
     except Exception as e:
         print("获取失败：", e)
