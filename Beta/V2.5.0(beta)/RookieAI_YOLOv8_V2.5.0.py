@@ -117,6 +117,8 @@ class Option:
             'stage2_intensity': 0.4,
             "enable_random_offset": False,
             "time_interval": 1,
+            "tolerance": 63.0,
+            "ignore_colors": [[62, 203, 236]],
             "offset_range": [0, 1],
             "recoil_switch": False,
             "recoil_interval": 0.1,
@@ -126,9 +128,9 @@ class Option:
             "recoil_transition_time": 0.2,
         }
 
-    def read(self)->dict:
+    def read(self) -> dict:
         try:
-            with open("settings.json", "r") as f:
+            with open("settings.json", "r", encoding='utf-8') as f:
                 return json.load(f)
         except FileNotFoundError:
             return self.default
@@ -142,10 +144,10 @@ class Option:
     def update(self, key, value)->None:
         self.content[key] = value
         self.save()
-    
-    def save(self)->None:
-        with open("settings.json", "w") as f:
-            f.write(json.dump(self.content, f, indent=4, ensure_ascii=False))
+
+    def save(self) -> None:
+        with open("settings.json", "w", encoding='utf8') as f:
+            f.write(json.dumps(self.content, ensure_ascii=False, indent=4))
 
 
 # ------------------------------------------全局变量---------------------------------------------------------------------
@@ -191,6 +193,10 @@ gc_time = time.time()
 dxcam_maxFPS = 30
 deactivate_dxcam = False  # 是否禁止加载dxcam
 
+# 颜色忽略部分
+tolerance = 80  # Default value
+ignore_colors = [[62, 203, 236]]  # Default value, list of BGR tuples
+
 # 自瞄范围
 closest_mouse_dist = 100
 
@@ -215,7 +221,7 @@ extra_offset_y = 5  # 额外向y方向移动10个像素
 
 # 软件页面大小
 _win_width = 350
-_win_height = 762
+_win_height = 825
 
 # 识别对象限制（敌我识别）
 classes = 0
@@ -539,6 +545,11 @@ def open_web(event):
     webbrowser.open('https://github.com/Passer1072/RookieAI_yolov8')  # 要跳转的网页
 
 
+def string_to_list(s: str) -> list:  # 忽略颜色保存样式格式化
+    s = s.replace('[', '').replace(']', '')
+    return [int(num_str) for num_str in s.split(',')]
+
+
 def choose_model():  # 选择模型
     global model_file
     model_file = filedialog.askopenfilename()  # 在这里让用户选择文件
@@ -562,6 +573,39 @@ def load_model_file():  # 加载模型文件
     # 如果 model_file 为 None或者空，我们返回None，否则我们返回对应的 YOLO 模型
     return YOLO(model_file) if model_file else None
 
+
+def count_pixels_of_color(image, target_color, tolerance=30):  # 颜色忽略
+    target_color_bgr = target_color[::-1]
+    lower_bound = np.array([max(0, c - tolerance) for c in target_color_bgr], dtype=np.uint8)
+    upper_bound = np.array([min(255, c + tolerance) for c in target_color_bgr], dtype=np.uint8)
+    mask = cv2.inRange(image, lower_bound, upper_bound)
+    return cv2.countNonZero(mask)
+
+
+def filter_color_above_box(frame_, box, ignore_colors, height=33, width_ratio=1, tolerance=80):  # 颜色忽略
+    x1, y1, x2, y2 = map(int, box)
+    box_width = x2 - x1
+    region_width = int(box_width * width_ratio)
+    center_x = x1 + box_width // 2
+    region_x1 = max(0, center_x - region_width // 2)
+    region_x2 = min(frame_.shape[1], center_x + region_width // 2)
+    region_above = frame_[max(0, y1-height):y1, region_x1:region_x2]
+
+    if region_above.size == 0:
+        return False
+
+    for ignore_color in ignore_colors:
+        ignore_color_count = count_pixels_of_color(region_above, ignore_color, tolerance)
+        # print(f"忽略颜色 ({ignore_color}) 像素数: {ignore_color_count}")
+
+        if ignore_color_count >= 5:
+            ignore_color_bgr = ignore_color[::-1]
+            # cv2.rectangle(frame_, (region_x1, max(0, y1-height)), (region_x2, y1), ignore_color_bgr, -1)
+            # print(f"用颜色填充框上方的区域: {ignore_color}")
+            return True
+
+    # print("盒子经过了彩色滤光片")
+    return False
 
 def show_random_offset_window():  # 显示随机瞄准偏移配置窗口
     global random_offset_window
@@ -791,7 +835,18 @@ def recoil_set_window():  # 辅助压枪配置窗口
 
 
 def create_gui_tkinter():  # 软件主题GUI界面
-    global aimbot_var, lockSpeed_scale, triggerType_var, arduinoMode_var, lockKey_var, confidence_scale, closest_mouse_dist_scale, screen_width_scale, screen_height_scale, root, model_file, model_file_label, aimOffset_scale, draw_center_var, mouse_Side_Button_Witch_var, LookSpeed_label_text, lockSpeed_variable, confidence_variable, closest_mouse_dist_variable, aimOffset_variable, screen_width_scale_variable, screen_height_scale_variable, image_label, image_label_switch, image_label_FPSlabel, target_selection_var, target_mapping, prediction_factor_variable, prediction_factor_scale, method_of_prediction_var, extra_offset_x_scale, extra_offset_y_scale, extra_offset_y, extra_offset_x, extra_offset_x_variable, extra_offset_y_variable, readme_content, screenshot_mode_var, screenshot_mode, segmented_aiming_switch_var, stage1_scope, stage1_scope_scale, stage1_scope_variable, stage1_intensity_variable, stage1_intensity, stage1_intensity_scale, stage2_scope_variable, stage2_intensity_variable, stage2_scope_scale, stage2_intensity_scale, aimOffset_x, aimOffset_variable_x, aimOffset_x_scale, mouseMove_var, random_offset_mode_var, random_offset_mode_check, recoil_check, recoil_var
+    global aimbot_var, lockSpeed_scale, triggerType_var, arduinoMode_var, lockKey_var, confidence_scale \
+        , closest_mouse_dist_scale, screen_width_scale, screen_height_scale, root, model_file, model_file_label, aimOffset_scale \
+        , draw_center_var, mouse_Side_Button_Witch_var, LookSpeed_label_text, lockSpeed_variable, confidence_variable \
+        , closest_mouse_dist_variable, aimOffset_variable, screen_width_scale_variable, screen_height_scale_variable \
+        , image_label, image_label_switch, image_label_FPSlabel, target_selection_var, target_mapping, prediction_factor_variable \
+        , prediction_factor_scale, method_of_prediction_var, extra_offset_x_scale, extra_offset_y_scale, extra_offset_y \
+        , extra_offset_x, extra_offset_x_variable, extra_offset_y_variable, readme_content, screenshot_mode_var \
+        , screenshot_mode, segmented_aiming_switch_var, stage1_scope, stage1_scope_scale, stage1_scope_variable \
+        , stage1_intensity_variable, stage1_intensity, stage1_intensity_scale, stage2_scope_variable \
+        , stage2_intensity_variable, stage2_scope_scale, stage2_intensity_scale, aimOffset_x, aimOffset_variable_x \
+        , aimOffset_x_scale, mouseMove_var, random_offset_mode_var, random_offset_mode_check, recoil_check, recoil_var \
+        , tolerance_variable, tolerance_scale, ignore_colors_entry, ignore_colors_variable
 
     # 版本号
     version_number = "V2.4.3"
@@ -1426,6 +1481,34 @@ def create_gui_tkinter():  # 软件主题GUI界面
             stage2_intensity_frame, text="####", width=30)
         ban_stage2_intensity_scale.grid(row=0, column=3)  # 行号
 
+    # 颜色忽略
+    tolerance_variable = tk.StringVar()
+    tolerance_variable.set(str(tolerance))
+    tolerance_frame = ctk.CTkFrame(tab_view.tab("高级设置"))
+    tolerance_frame.grid(row=17, column=0, sticky='w', pady=2)
+    tolerance_label = ctk.CTkLabel(tolerance_frame, text="忽略宽容:")
+    tolerance_label.grid(row=0, column=1, sticky='w')
+    tolerance_scale = ctk.CTkSlider(tolerance_frame, from_=0, to=100, number_of_steps=100, command=update_values)
+    tolerance_scale.set(tolerance)
+    tolerance_scale.grid(row=0, column=2, padx=(12, 0))
+    tolerance_label_text = ctk.CTkLabel(tolerance_frame, textvariable=tolerance_variable)
+    tolerance_label_text.grid(row=0, column=3)
+
+    ignore_colors_variable = tk.StringVar()
+    ignore_colors_variable.set(str(ignore_colors))
+    ignore_colors_frame = ctk.CTkFrame(tab_view.tab("高级设置"))
+    ignore_colors_frame.grid(row=18, column=0, sticky='w', pady=2)
+    ignore_colors_label = ctk.CTkLabel(ignore_colors_frame, text="忽略颜色:")
+    ignore_colors_label.grid(row=0, column=1, sticky='w')
+    ignore_colors_entry = ctk.CTkEntry(ignore_colors_frame, textvariable=ignore_colors_variable)
+    ignore_colors_entry.delete(0, 'end')  # 清除当前输入框的内容
+    ignore_colors_entry.grid(row=0, column=2, padx=(12, 0))
+    # 应用颜色忽略参数
+    ignore_colors_set_button = ctk.CTkButton(ignore_colors_frame, width=50, image=None
+                                             , command=update_values, text="应用")  # 加上按钮图像
+    ignore_colors_set_button.grid(row=0, column=3, sticky="n", padx=(10, 0), pady=(0, 0))
+
+
     # 6创建一个Frame来包其他设置
     setting_frame = ctk.CTkFrame(tab_view.tab("其他设置"), width=300, height=300)
     setting_frame.grid(row=9, column=0, sticky='w', pady=2)  # 使用grid布局并靠左对齐
@@ -1481,7 +1564,10 @@ def create_gui_tkinter():  # 软件主题GUI界面
     version_number2.bind("<Button-1>", command=open_web)
     version_number2.grid(row=4, column=0, padx=(120, 0), pady=(0, 0))
     # # Fetch version number from GitHub
-    version = fetch_readme_version_number()
+    if crawl_information:
+        version = fetch_readme_version_number()
+    else:
+        version = "禁用获取"
     # # 更新version_number2的文本为从 Github 获取的版本号
     version_number2.configure(text=version)
     # 更新 version_number2 的文本并设置颜色（对比版本号）
@@ -1518,7 +1604,16 @@ def create_gui_tkinter():  # 软件主题GUI界面
 
 
 def update_values(*args):
-    global aimbot, lockSpeed, triggerType, arduinoMode, lockKey, lockKey_var, confidence, closest_mouse_dist, closest_mouse_dist_scale, screen_width, screen_height, model_file, aimOffset, draw_center, mouse_Side_Button_Witch, lockSpeed_text, LookSpeed_label_1, test_images_GUI, target_selection_str, prediction_factor_scale, prediction_factor, method_of_prediction, extra_offset_x, extra_offset_y, screenshot_mode, segmented_aiming_switch, stage1_scope, stage1_scope_scale, stage1_intensity, stage1_intensity_scale, stage2_scope, stage2_scope_scale, stage2_intensity, stage2_intensity_scale, aimOffset_Magnification_x, aimOffset_x, mouse_control, max_offset_entry, min_offset_entry, offset_range, enable_random_offset, time_interval, recoil_switch, recoil_interval, recoil_boosted_distance, recoil_boosted_distance_time, recoil_standard_distance, recoil_transition_time
+    global aimbot, lockSpeed, triggerType, arduinoMode, lockKey, lockKey_var, confidence, closest_mouse_dist\
+        , closest_mouse_dist_scale, screen_width, screen_height, model_file, aimOffset, draw_center\
+        , mouse_Side_Button_Witch, lockSpeed_text, LookSpeed_label_1, test_images_GUI, target_selection_str\
+        , prediction_factor_scale, prediction_factor, method_of_prediction, extra_offset_x, extra_offset_y\
+        , screenshot_mode, segmented_aiming_switch, stage1_scope, stage1_scope_scale, stage1_intensity\
+        , stage1_intensity_scale, stage2_scope, stage2_scope_scale, stage2_intensity, stage2_intensity_scale\
+        , aimOffset_Magnification_x, aimOffset_x, mouse_control, max_offset_entry, min_offset_entry, offset_range\
+        , enable_random_offset, time_interval, recoil_switch, recoil_interval, recoil_boosted_distance\
+        , recoil_boosted_distance_time, recoil_standard_distance, recoil_transition_time, tolerance, tolerance_variable\
+        , ignore_colors
 
     # 数值合法判断
     # 1.随机瞄准部位瞄准参数合法性判断
@@ -1543,6 +1638,17 @@ def update_values(*args):
         min_offset_entry.delete(0, 'end')
         min_offset_entry.insert(0, str(default_min))
         return
+    # 2.颜色忽略输入RGB值合法性
+    try:
+        ignore_colors = [list(map(int, color.strip('()').split(','))) for color in
+                         ignore_colors_variable.get().strip('[]').split('), (')]
+    except ValueError:
+        print("颜色输入无效")
+        messagebox.showerror("错误", "颜色输入无效，回到默认值")
+        ignore_colors = 0,0,0  # valor padrão
+        ignore_colors_string = ','.join(str(e) for e in ignore_colors)  # 变为 '62,203,236' 格式的字符串
+        ignore_colors_variable.set(str(ignore_colors_string))  # 设置默认值
+
 
     # 数据应用
     print("update_values function was called（配置已更新）")
@@ -1575,13 +1681,14 @@ def update_values(*args):
     time_interval = float(offset_time_entry.get())  # 随机瞄准部位切换时间
     recoil_switch = recoil_var.get()  # 辅助压枪开关
     recoil_interval = float(recoil_interval_entry.get())  # 压枪间隔
-    recoil_boosted_distance = float(
-        recoil_boosted_distance_entry.get())  # 一阶段单次距离
-    recoil_boosted_distance_time = float(
-        recoil_boosted_distance_time_entry.get())  # 一阶段时间
-    recoil_standard_distance = float(
-        recoil_standard_distance_entry.get())  # 二0阶段时间
+    recoil_boosted_distance = float(recoil_boosted_distance_entry.get())  # 一阶段单次距离
+    recoil_boosted_distance_time = float(recoil_boosted_distance_time_entry.get())  # 一阶段时间
+    recoil_standard_distance = float(recoil_standard_distance_entry.get())  # 二阶段时间
     recoil_transition_time = float(recoil_transition_time_entry.get())  # 缓冲时间
+    tolerance = int(tolerance_scale.get())  # 颜色忽略(误差调整)
+
+
+
 
     # 更新显示的数值
     # 更新 lockSpeed_variable
@@ -1626,6 +1733,8 @@ def update_values(*args):
     # 更新 stage2_intensity 显示的数值
     stage2_intensity = round(stage2_intensity_scale.get(), 2)
     stage2_intensity_variable.set(str(stage2_intensity))
+    # 更新颜色忽略显示数值
+    tolerance_variable.set(str(tolerance))
 
     # 触发键值转换
     key = lockKey_var.get()
@@ -1677,6 +1786,10 @@ def save_settings():  # 保存设置
     Opt.update('triggerType', triggerType_var.get())
     Opt.update('arduinoMode', arduinoMode_var.get())
     Opt.update('lockKey', lockKey_var.get())
+    Opt.update('tolerance', tolerance_scale.get())
+    ignore_colors_string = ignore_colors_entry.get()
+    ignore_colors_list = string_to_list(ignore_colors_string)
+    Opt.update('ignore_colors', [ignore_colors_list])
     Opt.save()
 
 
@@ -1762,6 +1875,11 @@ def load_settings():  # 加载主程序参数设置
         0, str(Opt.get("recoil_standard_distance", 1)))  # 二阶段单次距离
     recoil_transition_time_entry.insert(
         0, str(Opt.get("recoil_transition_time", 0.2)))  # 缓冲时间
+    tolerance_scale.set(Opt.get("tolerance", 50))  # 颜色忽略宽容
+    ignore_colors_nested_list = Opt.get("ignore_colors", [[0, 0, 0]])  # 返回嵌套列表，例 [[62, 203, 88]]
+    ignore_colors_list = ignore_colors_nested_list[0] if ignore_colors_nested_list else [0, 0, 0]  # 提取内部的子列表
+    ignore_colors_string = ','.join(str(e) for e in ignore_colors_list)  # 转换为 '62, 203, 88' 格式的字符串
+    ignore_colors_entry.insert(0, ignore_colors_string)  # 颜色忽略指定颜色，将转换后格式的字符串写入ignore_colors_entry
 
     print("设置加载成功！")
     loaded_successfully = True  # 加载成功标识符
@@ -1816,7 +1934,17 @@ def calculate_distances(
     for r in results:
         boxes = r.boxes.xyxy.cpu().numpy()  # 获取框坐标
 
+    # 颜色忽略模块
+    filtered_boxes = []
     for box in boxes:
+        if filter_color_above_box(frame_, box, ignore_colors, tolerance=tolerance):
+            # print("由于忽略了颜色过滤器，因此忽略了框")
+            pass
+        else:
+            filtered_boxes.append(box)
+
+    # 将过滤后的框用于后续处理
+    for box in filtered_boxes:
         x1, y1, x2, y2 = box
 
         # 计算检测到的物体框（BoundingBox）的中心点。
@@ -1891,13 +2019,11 @@ def calculate_distances(
         centery = offset_centery - cHeight
 
         # 屏幕中心点与偏移后的目标中心点之间的距离
-        offset_dist = sqrt((cWidth - offset_centerx) ** 2 +
-                           (cHeight - offset_centery) ** 2)
+        offset_dist = sqrt((cWidth - offset_centerx) ** 2 + (cHeight - offset_centery) ** 2)
         offset_dist = round(offset_dist, 1)
         # 在偏移后的目标中心点上方显示偏移距离
         offset_location = (int(offset_centerx), int(offset_centery))
-        cv2.putText(frame_, f'offset_dist: {offset_dist}',
-                    offset_location, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        cv2.putText(frame_, f'offset_dist: {offset_dist}', offset_location, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
         # 是否开启分段瞄准
         if segmented_aiming_switch:
