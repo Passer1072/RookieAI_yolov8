@@ -50,7 +50,8 @@ class AutoFire:
             if self.running:
                 match mouse_control:
                     case '飞易来USB':
-                        #等待补全
+                        dll.M_KeyDown2(ctypes.c_uint64(hdl), int(1))  # 左键按下
+                        dll.M_KeyDown2(ctypes.c_uint64(hdl), int(2))  # 左键按下
                         pass
                     case 'win32':
                         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
@@ -58,7 +59,8 @@ class AutoFire:
                     case 'mouse':
                         mouse.click('left')
                     case 'Logitech':
-                        #等待补全
+                        LG_driver.click_Left_down()
+                        LG_driver.click_Left_up()
                         pass
                 time.sleep(self.interval)
             else:
