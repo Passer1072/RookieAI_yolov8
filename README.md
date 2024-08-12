@@ -7,6 +7,16 @@
 
 1. ### 使用以下代码获取本代码需要的库与Pytorch库：
 
+<details>
+<summary>CUDA 12.4或更高(无镜像)</summary>
+```shell
+pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu124
+```
+</details>
+
+<details>
+<summary>CUDA 12.0及以上(镜像源)</summary>
+
 #### 对于python3.8版本，使用以下代码：
 
 ```shell
@@ -46,6 +56,8 @@ pip install -r requirements.txt
 pip install torchvision==0.17.0 torchaudio==2.2.0
 pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp312-cp312-win_amd64.whl --no-warn-script-location
 ```
+
+</details>
 
 2. ### 你还需要一个自己的模型（目前只支持.pt模型与TRT模型，暂不支持ONNX），如果没有可暂时使用ultralytics官方模型。
 
