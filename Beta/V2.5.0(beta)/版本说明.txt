@@ -11,3 +11,11 @@
 2024/8/1：
 *修改：分段瞄准逻辑，将强锁范围绑定在检测目标上。
 *增加：动态停止(减速)瞄准范围，有助于缓解瞄准左右晃动的问题
+
+2024/8/16：V2.5.3
+*优化：分段瞄准
+解释：
+线性插值计算 lockSpeed：
+t = (offset_dist - stage1_scope) / (stage2_scope - stage1_scope)：这里的 t 是一个线性插值因子，用来表示 offset_dist 在 stage1_scope 到 stage2_scope 之间的位置。t 的值从 0 变到 1，表示从强锁区域边界到软锁区域边界的距离比例。
+lockSpeed = stage1_intensity + t * (stage2_intensity - stage1_intensity)：通过插值公式，lockSpeed 将随着 offset_dist 线性变化。当 offset_dist 靠近 stage1_scope 时，lockSpeed 接近 stage1_intensity（快）；当 offset_dist 靠近 stage2_scope 时，lockSpeed 接近 stage2_intensity（慢）。
+
