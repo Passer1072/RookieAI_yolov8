@@ -2078,12 +2078,16 @@ def calculate_distances(
 
         # 是否开启分段瞄准
         if segmented_aiming_switch:
-            # 判断距离是否小于30或100，然后设置lockSpeed的值
+            # 判断距离是否小于 stage1_scope（强锁范围）
             if offset_dist < stage1_scope:  # 强锁范围 stage1_scope
-                # lockSpeed = stage1_intensity  # 强锁力度 stage1_intensity
-                pass
+                lockSpeed = stage1_intensity  # 强锁力度 stage1_intensity
+
+            # 判断距离是否在 stage1_scope 和 stage2_scope 之间（软锁范围）
             elif offset_dist < stage2_scope:  # 软锁范围 stage2_scope
-                lockSpeed = stage2_intensity  # 软锁力度 stage2_intensity
+                # 计算 lockSpeed，距离越近速度越快，距离越远速度越慢
+                # 使用线性插值计算 lockSpeed
+                t = (offset_dist - stage1_scope) / (stage2_scope - stage1_scope)
+                lockSpeed = stage1_intensity + t * (stage2_intensity - stage1_intensity)
 
         if method_of_prediction == "禁用预测":
             # print("已禁用预测")
@@ -2137,7 +2141,7 @@ def calculate_distances(
             if abs(centerx) < threshold and abs(centery) < threshold:
                 lockSpeed *= slowDownFactor  # 目标停止时，减慢速度以精确瞄准
             else:
-                lockSpeed = normalSpeed  # 目标移动时，恢复正常速度
+                lockSpeed = lockSpeed  # 目标移动时，恢复正常速度
 
             # 平滑处理
             centerx = (previous_centerx * (1 - smoothing_factor)) + (centerx_predicted * smoothing_factor)
