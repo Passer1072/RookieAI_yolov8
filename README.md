@@ -180,6 +180,25 @@ Ps:二者在最终使用效果上无任何区别，仅视觉差异
 
 ### 更新日志：
 
+8/26/2024更新：
+
+🎛️版本更新：V2.5.6(beta)
+
+概要：增加对于onnx模型的支持
+
+➕新增：全目标识别。可通过'目标选择-全部'让模型识别编号为0-9的所有目标(可通过代码修改上限)
+
+➕新增：onnx模型支持。配合'cuDNN_download_V9.3_12.6.bat'工具快速部署onnx环境即可支持GPU加速的onnx模型使用。
+
+➖移除：像素预测”，一并移除相关可调选项。
+
+❗注意：如需使用onnx模型需下载cuDNN，可通过`tool`文件夹内的`cuDNN_download_V9.3_12.6.bat`工具快速部署cuDNN环境，随后在环境中执行
+`pip install onnxruntime-gpu`下载onnx运行库，最后将`onnx`与`onnxruntime-gpu`文件夹移动到程序运行环境文件夹`_internal`中即可。  
+Tips：如果文件夹中有名为`onnxruntime`的文件夹请删除，这是CPU版本，会与GPU版本冲突。
+
+❗注意：`requirements.txt`请求列表已添加`onnxruntime-gpu`
+
+___
 8/19/2024更新：
 
 🎛️版本更新：V2.5.5(beta)
