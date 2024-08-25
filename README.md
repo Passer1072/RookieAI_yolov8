@@ -66,7 +66,7 @@ pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp
 
 </details>
 
-2. ### 你还需要一个自己的模型（目前支持.pt/.TRT/.onnx模型），如果没有可暂时使用ultralytics官方模型。
+2. ### 你还需要一个自己的模型（目前支持.pt/.engine/.onnx模型），如果没有可暂时使用ultralytics官方模型。
 
 3. **当未找到模型时会自动下载YOLOv8n模型，你也可以⬇️**
 
