@@ -1,3 +1,5 @@
+::该脚本由 @Passer1072 提供，如有问题请联系作者。
+
 @echo off
 
 :: Check if running as administrator
@@ -28,3 +30,4 @@ del %CUDNN_EXE%
 
 echo All tasks completed.
 pause
+
