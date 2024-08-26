@@ -194,7 +194,7 @@ Ps:二者在最终使用效果上无任何区别，仅视觉差异
 
 ❗注意：如需使用onnx模型需下载cuDNN，可通过`tool`文件夹内的`cuDNN_download_V9.3_12.6.bat`工具快速部署cuDNN环境，随后在环境中执行
 `pip install onnxruntime-gpu`下载onnx运行库，最后将`onnx`与`onnxruntime-gpu`文件夹移动到程序运行环境文件夹`_internal`中即可。  
-Tips：如果文件夹中有名为`onnxruntime`的文件夹请删除，这是CPU版本，会与GPU版本冲突。
+Tips：请删除CPU版本onnxruntime，会与GPU版本冲突。
 
 ❗注意：`requirements.txt`请求列表已添加`onnxruntime-gpu`
 
