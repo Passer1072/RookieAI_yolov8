@@ -85,7 +85,6 @@ class AutoFire:
 
 class Option:
     def __init__(self):
-        self.content = self.read()
         self.default = {
             'aimbot': True,
             'lockSpeed': 0.7,
@@ -127,6 +126,7 @@ class Option:
             "recoil_standard_distance": 1,
             "recoil_transition_time": 0.2,
         }
+        self.content = self.read()
 
     def read(self) -> dict:
         try:
