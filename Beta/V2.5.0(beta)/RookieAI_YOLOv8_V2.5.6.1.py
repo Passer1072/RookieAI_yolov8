@@ -1102,8 +1102,10 @@ def create_gui_tkinter():  # 软件主题GUI界面
     lbl.grid(row=0, column=0)  # 标签在frame部件中的位置
     # 创建一个可变的字符串变量以用于OptionMenu的选项值
     lockKey_var = ctk.StringVar()
-    lockKey_var.set('右键')  # 设置选项菜单初始值为'左键'
-    options = ['左键', '右键', '下侧键']  # 定义可用选项的列表
+    lockKey_var.set('右键')  # 设置选项菜单初始值为'右键'
+    options = ['左键', '右键', '下侧键',
+               '左Ctrl', '右Ctrl', '左Shift',
+               '右Shift', '左Alt', '右Alt']  # 定义可用选项的列表
     # 创建OptionMenu并使用lockKey_var和options
     lockKey_menu = ctk.CTkOptionMenu(
         frame, variable=lockKey_var, values=options, command=update_values)
