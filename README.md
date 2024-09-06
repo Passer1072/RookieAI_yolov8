@@ -22,56 +22,11 @@
 
 1. ### 使用以下代码获取本代码需要的库与Pytorch库：
 
-<details>
-<summary>CUDA 12.4或更高(无镜像)</summary>
-   
+**✨ 超高速无痛下载 ✨**
 
 ```shell
-pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu124
-```
-</details>
-
-<details>
-<summary>CUDA 12.0及以上(镜像源)</summary>
-
-#### 对于python3.8版本，使用以下代码：
-
-```shell
-pip install -r requirements.txt
-pip install --upgrade torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
-pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp38-cp38-win_amd64.whl --no-warn-script-location
-```
-
-#### 对于python3.9版本，使用以下代码：
-
-```shell
-pip install -r requirements.txt
-pip install --upgrade torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
-pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp39-cp39-win_amd64.whl --no-warn-script-location
-```
-
-#### 对于python3.10版本，使用以下代码：
-
-```shell
-pip install -r requirements.txt
-pip install --upgrade torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
-pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp310-cp310-win_amd64.whl --no-warn-script-location
-```
-
-#### 对于python3.11版本，使用以下代码：
-
-```shell
-pip install -r requirements.txt
-pip install --upgrade torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
-pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp311-cp311-win_amd64.whl --no-warn-script-location
-```
-
-#### 对于python3.12版本，使用以下代码：
-
-```shell
-pip install -r requirements.txt
-pip install --upgrade torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
-pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp312-cp312-win_amd64.whl --no-warn-script-location
+pip install -r requirements.txt -i http://mirrors.aliyun.com/pypi/simple/
+pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
 </details>
