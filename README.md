@@ -1,6 +1,11 @@
 # RookieAI_yolov8
 
-## [历史版本](https://github.com/Passer1072/RookieAI_yolov8/tree/main/history) | [Beta版本](https://github.com/Passer1072/RookieAI_yolov8/tree/beta)
+## 版本要求
+
+| Version | Python |
+|---------|--------|
+| `2.4.3或更早`   | 3.7+   |
+| `2.4.4.2或更新`   | 3.10+   |
 
 ## 使用方法：
 前言：为维护环境不提供直接打包成型的软件，开源代码鼓励自学。

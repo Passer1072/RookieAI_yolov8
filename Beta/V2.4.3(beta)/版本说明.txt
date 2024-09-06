@@ -1,0 +1,26 @@
+版本：V2.4.3(beta)
+
+简介：该版本主要添加压枪功能，
+
+新增变量：
+# 初始化压枪参数
+recoil_switch = False  # 压枪开关
+recoil_interval = 0.01  # 压枪间隔（s）
+recoil_boosted_distance_time = 0.5  # 一阶段时间
+recoil_boosted_distance = 4  # 一阶段力度
+recoil_standard_distance = 1  # 二阶段力度
+recoil_transition_time = 0.2  # 一阶段到二阶段缓冲时间
+
+进展日志：
+2024/07/05：V2.4.3.1(beta)
+新增：做到多段分段不同压枪力度（目前两段）。
+
+2024/07/06：V2.4.3.2(beta)
+新增：一阶段到时间结束后切换到二阶段会有缓冲区间。
+新增：辅助压枪GUI开关。
+
+2024/07/07：V2.4.3.3(beta)
+新增：可在settings.json中将"deactivate_dxcam"设置为true禁用dxcam模块加载
+
+2024/07/07：V2.4.3.4(beta)
+新增：完整的辅助压枪参数设置页面以及对应逻辑，包括输入的字符合法性验证
