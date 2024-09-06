@@ -38,7 +38,7 @@ pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https
 
 ```shell
 pip install -r requirements.txt
-pip install torchvision==0.17.0 torchaudio==2.2.0
+pip install --upgrade torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
 pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp38-cp38-win_amd64.whl --no-warn-script-location
 ```
 
@@ -46,7 +46,7 @@ pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp
 
 ```shell
 pip install -r requirements.txt
-pip install torchvision==0.17.0 torchaudio==2.2.0
+pip install --upgrade torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
 pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp39-cp39-win_amd64.whl --no-warn-script-location
 ```
 
@@ -54,7 +54,7 @@ pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp
 
 ```shell
 pip install -r requirements.txt
-pip install torchvision==0.17.0 torchaudio==2.2.0
+pip install --upgrade torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
 pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp310-cp310-win_amd64.whl --no-warn-script-location
 ```
 
@@ -62,7 +62,7 @@ pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp
 
 ```shell
 pip install -r requirements.txt
-pip install torchvision==0.17.0 torchaudio==2.2.0
+pip install --upgrade torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
 pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp311-cp311-win_amd64.whl --no-warn-script-location
 ```
 
@@ -70,7 +70,7 @@ pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp
 
 ```shell
 pip install -r requirements.txt
-pip install torchvision==0.17.0 torchaudio==2.2.0
+pip install --upgrade torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
 pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp312-cp312-win_amd64.whl --no-warn-script-location
 ```
 
