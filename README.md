@@ -25,8 +25,8 @@
 **✨ 超高速无痛下载 ✨**
 
 ```shell
-pip install -r requirements.txt -i http://mirrors.aliyun.com/pypi/simple/
-pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html
+pip install -r requirements.txt -i https://pypi.doubanio.com/simple/
+pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html -i https://pypi.doubanio.com/simple/
 ```
 
 </details>
