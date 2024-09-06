@@ -26,7 +26,7 @@
 
 ```shell
 pip install -r requirements.txt -i https://pypi.doubanio.com/simple/
-pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html -i https://pypi.doubanio.com/simple/
+pip install torch torchvision torchaudio -f https://mirror.sjtu.edu.cn/pytorch-wheels/torch_stable.html --no-index
 ```
 
 </details>
