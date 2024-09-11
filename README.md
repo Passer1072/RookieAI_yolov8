@@ -22,46 +22,47 @@
 
 1. ### 使用以下代码获取本代码需要的库与Pytorch库：
 
-**✨ 超高速无痛下载 ✨**
-
-```shell
-pip install -r requirements.txt -i https://pypi.doubanio.com/simple/
-pip install torch torchvision torchaudio -f https://mirror.sjtu.edu.cn/pytorch-wheels/torch_stable.html --no-index
-```
-
-</details>
+   **✨ 超高速无痛下载 ✨**
+   
+   ```shell
+   pip install -r requirements.txt -i https://pypi.doubanio.com/simple/
+   pip install torch torchvision torchaudio -f https://mirror.sjtu.edu.cn/pytorch-wheels/torch_stable.html --no-index
+   ```
 
 2. ### 你还需要一个自己的模型（目前支持.pt/.engine/.onnx模型），如果没有可暂时使用ultralytics官方模型。
 
 3. **当未找到模型时会自动下载YOLOv8n模型，你也可以⬇️**
 
-_访问[YOLOv8GitHub界面](https://docs.ultralytics.com/)获取更多官方yolov8模型以快速开始_
-
-_访问[ultralytics官网](https://docs.ultralytics.com/)查看官方网站帮助文档_
+   访问[YOLOv8GitHub界面](https://docs.ultralytics.com/)获取更多官方yolov8模型以快速开始
+   
+   访问[ultralytics官网](https://docs.ultralytics.com/)查看官方网站帮助文档
 
 4. ### 使用你的模型
-打开软件>选择模型文件>保存设置>关闭软件，重启软件。
 
-即可加载上选择的模型文件
-
-或者：
-
-修改默认文件地址：
-
-```
-#默认的模型文件地址
-default_model_file="yolov8n.pt"
-```
+   打开软件>选择模型文件>保存设置>关闭软件，重启软件。
+   
+   即可加载上选择的模型文件
+   
+   或者：
+   
+   修改默认文件地址：
+   
+   ```
+   #默认的模型文件地址
+   default_model_file="yolov8n.pt"
+   ```
 
 ### 针对想直接使用者：
+
+> 此处教程未更新，**仅供参考**
 
 > 如果您是开发者，无需阅读此步骤，使用终端运行即可
 
 1. ### 使用以下代码获取本代码需要的库与Pytorch库：
-```shell
-pip install -r requirements.txt
-pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
-```
+   ```shell
+   pip install -r requirements.txt
+   pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
+   ```
 
 2. ### 下载pyinstaller库(打包用)
 
@@ -69,45 +70,45 @@ pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https
 
 3. ### 使用pyinstaller打包代码
 
-`pyinstaller xxxxx.py`
+   `pyinstaller xxxxx.py`
+   
+   将xxxxx替换为代码实际名称。
+   
+   更多打包参数介绍：[Pythonpyinstaller打包exe最完整教程](https://blog.csdn.net/qq_48979387/article/details/132359366)
 
-将xxxxx替换为代码实际名称。
-
-更多打包参数介绍：[Pythonpyinstaller打包exe最完整教程](https://blog.csdn.net/qq_48979387/article/details/132359366)
-
-❗必定会遇到的问题：
-
-Q：运行提示`FileNotFoundError:`，问题：缺少库
-
-A：把编译器虚拟环境里的库全部复制粘贴到打包出的文件夹<_internal>里就可以了。
-
-参考：[打包后库不全解决办法](https://github.com/Passer1072/RookieAI_yolov8/issues/1#issuecomment-2041157885)
+   ❗必定会遇到的问题：
+   
+   Q：运行提示`FileNotFoundError:`，问题：缺少库
+   
+   A：把编译器虚拟环境里的库全部复制粘贴到打包出的文件夹<_internal>里就可以了。
+   
+   参考：[打包后库不全解决办法](https://github.com/Passer1072/RookieAI_yolov8/issues/1#issuecomment-2041157885)
 
 4. ### 关于模型文件
 
-建议自行训练
-
-学习资料：
-
-[Bilibili](https://search.bilibili.com/all?keyword=%E5%A6%82%E4%BD%95%E8%AE%AD%E7%BB%83%E6%A8%A1%E5%9E%8B&from_source=webtop_search&spm_id_from=333.1007&search_source=5)
-
-[YouTube](https://www.youtube.com/results?search_query=how+to+train+yolov8+model)
-
-❗在软件中选择完模型文件后需保存重启后才会生效，因为需要重新加载模型。
+   建议自行训练
+   
+   学习资料：
+   
+   [Bilibili](https://search.bilibili.com/all?keyword=%E5%A6%82%E4%BD%95%E8%AE%AD%E7%BB%83%E6%A8%A1%E5%9E%8B&from_source=webtop_search&spm_id_from=333.1007&search_source=5)
+   
+   [YouTube](https://www.youtube.com/results?search_query=how+to+train+yolov8+model)
+   
+   ❗在软件中选择完模型文件后需保存重启后才会生效，因为需要重新加载模型。
 
 5. ### 文件整理
 
-将
-```txt
-_internal(包含软件环境/库)
-body_photo.png（软件需要的图片1）
-logo-bird.png（软件需要的图片2）
-程序.exe（主程序）
-settings.json(参数保存)
-模型文件.pt（模型文件）
-```
-
-放在同一目录下，直接运行exe文件即可。
+   将
+   ```txt
+   _internal(包含软件环境/库)
+   body_photo.png（软件需要的图片1）
+   logo-bird.png（软件需要的图片2）
+   程序.exe（主程序）
+   settings.json(参数保存)
+   模型文件.pt（模型文件）
+   ```
+   
+   放在同一目录下，直接运行exe文件即可。
 
 oldGUI版与newGUI版对比图：
 
@@ -151,20 +152,9 @@ Ps:二者在最终使用效果上无任何区别，仅视觉差异
 
 概要：新增一些热键
 
-新增热键列表(Windows)
-*参考 https://learn.microsoft.com/zh-cn/windows/win32/inputdev/virtual-key-codes*
-| 热键 | 键码(Virtual-Key Codes) |
-| ------ | -------- |
-| `左键` | `0x01` |
-| `右键` | `0x02` |
-| `下侧键` | `0x05` |
-| `左Ctrl` | `0xA2` |
-| `右Ctrl` | `0xA3` |
-| `左Shift` | `0xA0` |
-| `右Shift` | `0xA1` |
-| `左Alt` | `0xA4` |
-| `右Alt` | `0xA5` |
+新增热键`左Ctrl` `右Ctrl` `左Shift` `右Shift` `左Alt` `右Alt`
 
+___
 8/26/2024更新：
 
 🎛️版本更新：V2.5.6(beta)
