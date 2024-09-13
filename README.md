@@ -11,7 +11,8 @@
 前言：为维护环境不提供直接打包成型的软件，开源代码鼓励自学。
 使用前务必查看[参数说明文档](Parameter_explanation.txt)
 
-> Note:<br>
+> [!Warning]
+>
 > 如果你只是想使用，请直接下载打包好的exe文件，使用前请先阅读[参数解释文档](Parameter_explanation.txt)
 >
 > 如果你只是本地运行该项目，请**不要使用**pyinstaller打包 
