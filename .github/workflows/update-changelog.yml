@@ -26,10 +26,10 @@ jobs:
         run: |
           if [ -f CHANGELOG.md ]; then
             LAST_UPDATE=$(grep -m 1 "## " CHANGELOG.md | awk '{print $2}' | tr -d '[]')
-            git log --since="$LAST_UPDATE" --pretty=format:"%ad - (%h): %s (PR #%G)" --date=format:"%Y-%m-%d" > commits.txt || echo "No new commits"
+            git log --since="$LAST_UPDATE" --pretty=format:"- %s" > commits.txt || echo "No new commits"
           else
-            # 如果没有 CHANGELOG.md，获取所有提交
-            git log --pretty=format:"%ad - (%h): %s (PR #%G)" --date=format:"%Y-%m-%d" --reverse > commits.txt || echo "No commits found"
+            # 直接获取所有提交，并确保格式正确
+            git log --pretty=format:"- %s" --reverse > commits.txt || echo "No commits found"
           fi
 
           if [[ -s commits.txt ]]; then
@@ -37,6 +37,7 @@ jobs:
           else
             echo "Commits=No new commits" >> $GITHUB_ENV
           fi
+
 
       - name: Update or create CHANGELOG.md
         run: |
