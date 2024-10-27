@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Git
         run: |
@@ -49,8 +49,33 @@ jobs:
             echo "" >> CHANGELOG.md
           fi
 
-      - name: Commit and Push Changes
+      - name: Create a new branch
+        run: |
+          git checkout -b update-changelog
+
+      - name: Commit changes
         run: |
           git add CHANGELOG.md
-          git commit -m "Update CHANGELOG.md with latest commits" || echo "No changes to commit"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Passer1072/RookieAI_yolov8 HEAD:dev
+          git commit -m "Update CHANGELOG.md with latest commits on ${{ env.DATE }}" || echo "No changes to commit"
+
+      - name: Push changes to remote
+        run: |
+          git push origin update-changelog
+
+      - name: Check for open PR from GitHub Action bot
+        id: check_pr
+        run: |
+          OPEN_PR=$(gh pr list --base dev --state open --json author --jq '[.[] | select(.author.login == "github-actions[bot]")] | length')
+          echo "OPEN_PR=$OPEN_PR" >> $GITHUB_ENV
+
+      - name: Create Pull Request
+        if: env.OPEN_PR == '0'
+        run: |
+          gh pr create --title "Update CHANGELOG.md" --body "This PR updates the CHANGELOG with the latest commits." --base dev --head update-changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cleanup branch (optional)
+        if: github.event.action == 'closed'
+        run: |
+          git branch -D update-changelog
