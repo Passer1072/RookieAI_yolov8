@@ -30,9 +30,10 @@ jobs:
         run: |
           if [ -f CHANGELOG.md ]; then
             LAST_UPDATE=$(grep -m 1 "## " CHANGELOG.md | awk '{print $2}' | tr -d '[]')
-            git log --since="$LAST_UPDATE" --pretty=format:"- %s" > commits.txt || echo "No new commits"
+            git log --since="$LAST_UPDATE" --pretty=format:"- %h: %s" > commits.txt || echo "No new commits"
           else
-            git log --pretty=format:"- %s" > commits.txt || echo "No commits found"
+            # 如果没有 CHANGELOG.md，获取所有提交
+            git log --pretty=format:"- %h: %s" > commits.txt || echo "No commits found"
           fi
 
           if [[ -s commits.txt ]]; then
