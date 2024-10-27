@@ -1,0 +1,38 @@
+name: Update Changelog
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Update Changelog
+        run: |
+          CHANGELOG_FILE="CHANGELOG.md"
+
+          COMMITS=$(git log --pretty=format:'- %s (%h)' --date=format:'%Y-%m-%d' -1)
+
+          if [ ! -f $CHANGELOG_FILE ]; then
+            echo "# Changelog" > $CHANGELOG_FILE
+          fi
+
+          TODAY=$(date +'%Y-%m-%d')
+
+          echo -e "\n## $TODAY\n$COMMITS" >> $CHANGELOG_FILE
+
+      - name: Commit and push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add $CHANGELOG_FILE
+          git commit -m "Update CHANGELOG.md with latest commit" || echo "No changes to commit"
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} HEAD:${{ github.ref }}
