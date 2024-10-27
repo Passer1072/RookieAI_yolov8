@@ -28,6 +28,7 @@ jobs:
             LAST_UPDATE=$(grep -m 1 "## " CHANGELOG.md | awk '{print $2}' | tr -d '[]')
             git log --since="$LAST_UPDATE" --pretty=format:"%ad - %h: %s (PR #%G)" --date=format:"%Y-%m-%d" > commits.txt || echo "No new commits"
           else
+            # 如果没有 CHANGELOG.md，获取所有提交
             git log --pretty=format:"%ad - %h: %s (PR #%G)" --date=format:"%Y-%m-%d" > commits.txt || echo "No commits found"
           fi
 
