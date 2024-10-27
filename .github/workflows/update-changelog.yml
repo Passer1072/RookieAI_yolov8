@@ -1,66 +1,54 @@
-name: Update CHANGELOG
+name: Generate Changelog
 
 on:
   push:
     branches:
-      - dev
+      - dev  # 根据需要修改分支
 
 permissions:
-  contents: write  # 允许写入仓库内容
+  contents: write  # 允许写入内容
 
 jobs:
-  update-changelog:
+  generate-changelog:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Git
+      - name: Check for existing CHANGELOG.md
+        id: check_changelog
+        run: |
+          if [ ! -f CHANGELOG.md ]; then
+            echo "CHANGELOG.md does not exist."
+            echo "create=true" >> $GITHUB_ENV
+          else
+            echo "CHANGELOG.md exists."
+            echo "create=false" >> $GITHUB_ENV
+          fi
+
+      - name: Generate or Update CHANGELOG.md
+        run: |
+          CURRENT_DATE=$(date +%Y-%m-%d)
+          if [ "${{ env.create }}" == "true" ]; then
+            echo "# Changelog" > CHANGELOG.md
+            echo "## [$CURRENT_DATE] - Initial Release" >> CHANGELOG.md
+            # 获取所有提交信息并倒序写入，包含哈希
+            git log --reverse --date=short --pretty=format:"- %s (%h)" >> CHANGELOG.md
+          else
+            echo "Updating existing CHANGELOG.md"
+            echo "" >> CHANGELOG.md
+            echo "## [$CURRENT_DATE] - Update" >> CHANGELOG.md
+            # 获取最新提交信息并写入，包含哈希
+            git log -1 --date=short --pretty=format:"- %s (%h)" >> CHANGELOG.md
+          fi
+
+      - name: Commit and push changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-
-      - name: Generate CHANGELOG
-        run: |
-          # Initialize CHANGELOG if it doesn't exist
-          if [ ! -f CHANGELOG.md ]; then
-            echo "# Changelog" > CHANGELOG.md
-            echo "" >> CHANGELOG.md
-          fi
-
-          # Get the last commit timestamp from the CHANGELOG
-          last_commit_timestamp=$(git log -1 --pretty=format:"%ct" CHANGELOG.md 2>/dev/null)
-
-          # Determine if we should get all commits or only new ones
-          if [ -z "$last_commit_timestamp" ]; then
-            # If CHANGELOG.md is new, get all commits
-            git log --no-merges --pretty=format:"%ad | %h | %s" --date=format:'%Y-%m-%d %H:%M:%S' > CHANGELOG_TEMP.md
-          else
-            # Get all commits after the last commit in CHANGELOG
-            git log --no-merges --pretty=format:"%ad | %h | %s" --date=format:'%Y-%m-%d %H:%M:%S' --after="$(date -d @$last_commit_timestamp '+%Y-%m-%d %H:%M:%S')" > CHANGELOG_TEMP.md
-          fi
-
-          # Format CHANGELOG from temporary file
-          if [ -s CHANGELOG_TEMP.md ]; then
-            current_date=""
-            while IFS=' | ' read -r date hash message; do
-              if [[ $current_date != $date ]]; then
-                current_date=$date
-                echo "## $current_date" >> CHANGELOG.md
-              fi
-              echo "- $message (commit: $hash)" >> CHANGELOG.md
-            done < CHANGELOG_TEMP.md
-          fi
-
-          # Clean up temporary file
-          rm CHANGELOG_TEMP.md
-
-          # Stage the CHANGELOG.md file
           git add CHANGELOG.md
-          git commit -m "Update CHANGELOG.md" || echo "No changes to commit"
-
-      - name: Push changes
-        run: git push
+          git commit -m "Update CHANGELOG.md with new entries (hash: $(git rev-parse --short HEAD))" || echo "No changes to commit"
+          git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
