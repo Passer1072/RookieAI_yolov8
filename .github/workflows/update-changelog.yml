@@ -3,10 +3,10 @@ name: Update CHANGELOG
 on:
   push:
     branches:
-      - dev
-
+      - main
 permissions:
   contents: write  # 允许写入仓库内容，必要用于更新 CHANGELOG.md
+
 
 jobs:
   update-changelog:
@@ -26,29 +26,25 @@ jobs:
           if [ ! -f CHANGELOG.md ]; then
             echo "# Changelog" > CHANGELOG.md
             echo "" >> CHANGELOG.md
-            # Get all commits since the beginning for the first time
-            git log --no-merges --pretty=format:"%ad | %h | %s" --date=format:'%Y-%m-%d' > CHANGELOG_TEMP.md
-          else
-            # Get the last commit hash from the CHANGELOG
-            last_commit_hash=$(git log -1 --pretty=format:"%h" CHANGELOG.md)
-            # Get all commits after the last commit in CHANGELOG
-            git log --no-merges --pretty=format:"%ad | %h | %s" --date=format:'%Y-%m-%d' "$last_commit_hash"..HEAD > CHANGELOG_TEMP.md
           fi
 
-          # Format CHANGELOG from temporary file
-          if [ -s CHANGELOG_TEMP.md ]; then
-            current_date=""
-            while IFS=' | ' read -r date hash message; do
-              if [[ $current_date != $date ]]; then
-                current_date=$date
-                echo "## $current_date" >> CHANGELOG.md
-              fi
-              echo "- $message (commit: $hash)" >> CHANGELOG.md
-            done < CHANGELOG_TEMP.md
-          fi
+          # Create a temporary file to hold the commit logs
+          TEMP_FILE=$(mktemp)
+
+          # Get all commits in reverse order (oldest first)
+          git log --no-merges --pretty=format:"%ad | %h | %s" --date=format:'%Y-%m-%d' > "$TEMP_FILE"
+
+          # Read the temporary file and format the changelog
+          while IFS=' | ' read -r date hash message; do
+            if [[ $current_date != $date ]]; then
+              current_date=$date
+              echo "## $current_date" >> CHANGELOG.md
+            fi
+            echo "- $message (commit: $hash)" >> CHANGELOG.md
+          done < "$TEMP_FILE"
 
           # Clean up temporary file
-          rm CHANGELOG_TEMP.md
+          rm "$TEMP_FILE"
 
           git add CHANGELOG.md
           git commit -m "Update CHANGELOG.md" || echo "No changes to commit"
