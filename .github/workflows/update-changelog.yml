@@ -29,16 +29,16 @@ jobs:
             echo "" >> CHANGELOG.md
           fi
 
-          # Get the last commit hash from the CHANGELOG
-          last_commit_hash=$(git log -1 --pretty=format:"%h" CHANGELOG.md 2>/dev/null)
+          # Get the last commit timestamp from the CHANGELOG
+          last_commit_timestamp=$(git log -1 --pretty=format:"%ct" CHANGELOG.md 2>/dev/null)
 
           # Determine if we should get all commits or only new ones
-          if [ -z "$last_commit_hash" ]; then
+          if [ -z "$last_commit_timestamp" ]; then
             # If CHANGELOG.md is new, get all commits
-            git log --no-merges --pretty=format:"%ad | %h | %s" --date=format:'%Y-%m-%d' > CHANGELOG_TEMP.md
+            git log --no-merges --pretty=format:"%ad | %h | %s" --date=format:'%Y-%m-%d %H:%M:%S' > CHANGELOG_TEMP.md
           else
             # Get all commits after the last commit in CHANGELOG
-            git log --no-merges --pretty=format:"%ad | %h | %s" --date=format:'%Y-%m-%d' "$last_commit_hash"..HEAD > CHANGELOG_TEMP.md
+            git log --no-merges --pretty=format:"%ad | %h | %s" --date=format:'%Y-%m-%d %H:%M:%S' --after="$(date -d @$last_commit_timestamp '+%Y-%m-%d %H:%M:%S')" > CHANGELOG_TEMP.md
           fi
 
           # Format CHANGELOG from temporary file
