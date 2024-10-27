@@ -33,15 +33,14 @@ jobs:
           if [ "${{ env.create }}" == "true" ]; then
             echo "# Changelog" > CHANGELOG.md
             echo "## [$CURRENT_DATE] - Initial Release" >> CHANGELOG.md
-            # 获取所有提交信息并倒序写入，包含哈希
-            git log --reverse --date=short --pretty=format:"- %s (%h)" >> CHANGELOG.md
+            git log --reverse --date=short --pretty=format:"- %s (hash: %h)" >> CHANGELOG.md
           else
             echo "Updating existing CHANGELOG.md"
             echo "" >> CHANGELOG.md
             echo "## [$CURRENT_DATE] - Update" >> CHANGELOG.md
-            # 获取最新提交信息并写入，包含哈希
-            git log -1 --date=short --pretty=format:"- %s (%h)" >> CHANGELOG.md
+            git log -1 --date=short --pretty=format:"- %s (hash: %h)" >> CHANGELOG.md
           fi
+
 
       - name: Commit and push changes
         run: |
