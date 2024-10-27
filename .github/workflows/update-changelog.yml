@@ -3,10 +3,10 @@ name: Update CHANGELOG
 on:
   push:
     branches:
-      - main
-permissions:
-  contents: write  # 允许写入仓库内容，必要用于更新 CHANGELOG.md
+      - dev
 
+permissions:
+  contents: write  # 允许写入仓库内容
 
 jobs:
   update-changelog:
@@ -23,29 +23,40 @@ jobs:
 
       - name: Generate CHANGELOG
         run: |
+          # Initialize CHANGELOG if it doesn't exist
           if [ ! -f CHANGELOG.md ]; then
             echo "# Changelog" > CHANGELOG.md
             echo "" >> CHANGELOG.md
           fi
 
-          # Create a temporary file to hold the commit logs
-          TEMP_FILE=$(mktemp)
+          # Get the last commit hash from the CHANGELOG
+          last_commit_hash=$(git log -1 --pretty=format:"%h" CHANGELOG.md 2>/dev/null)
 
-          # Get all commits in reverse order (oldest first)
-          git log --no-merges --pretty=format:"%ad | %h | %s" --date=format:'%Y-%m-%d' > "$TEMP_FILE"
+          # Determine if we should get all commits or only new ones
+          if [ -z "$last_commit_hash" ]; then
+            # If CHANGELOG.md is new, get all commits
+            git log --no-merges --pretty=format:"%ad | %h | %s" --date=format:'%Y-%m-%d' > CHANGELOG_TEMP.md
+          else
+            # Get all commits after the last commit in CHANGELOG
+            git log --no-merges --pretty=format:"%ad | %h | %s" --date=format:'%Y-%m-%d' "$last_commit_hash"..HEAD > CHANGELOG_TEMP.md
+          fi
 
-          # Read the temporary file and format the changelog
-          while IFS=' | ' read -r date hash message; do
-            if [[ $current_date != $date ]]; then
-              current_date=$date
-              echo "## $current_date" >> CHANGELOG.md
-            fi
-            echo "- $message (commit: $hash)" >> CHANGELOG.md
-          done < "$TEMP_FILE"
+          # Format CHANGELOG from temporary file
+          if [ -s CHANGELOG_TEMP.md ]; then
+            current_date=""
+            while IFS=' | ' read -r date hash message; do
+              if [[ $current_date != $date ]]; then
+                current_date=$date
+                echo "## $current_date" >> CHANGELOG.md
+              fi
+              echo "- $message (commit: $hash)" >> CHANGELOG.md
+            done < CHANGELOG_TEMP.md
+          fi
 
           # Clean up temporary file
-          rm "$TEMP_FILE"
+          rm CHANGELOG_TEMP.md
 
+          # Stage the CHANGELOG.md file
           git add CHANGELOG.md
           git commit -m "Update CHANGELOG.md" || echo "No changes to commit"
 
