@@ -6,7 +6,7 @@ on:
       - dev
 
 permissions:
-  contents: write  # 允许写入内容，以便更新 CHANGELOG.md
+  contents: write
 
 jobs:
   update-changelog:
@@ -21,19 +21,14 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-      - name: Get current date
-        id: current_date
-        run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-
       - name: Get commits
         id: get_commits
         run: |
           if [ -f CHANGELOG.md ]; then
             LAST_UPDATE=$(grep -m 1 "## " CHANGELOG.md | awk '{print $2}' | tr -d '[]')
-            git log --since="$LAST_UPDATE" --pretty=format:"- %h: %s" > commits.txt || echo "No new commits"
+            git log --since="$LAST_UPDATE" --pretty=format:"%ad - %h: %s (PR #%G)" --date=format:"%Y-%m-%d" > commits.txt || echo "No new commits"
           else
-            # 如果没有 CHANGELOG.md，获取所有提交
-            git log --pretty=format:"- %h: %s" > commits.txt || echo "No commits found"
+            git log --pretty=format:"%ad - %h: %s (PR #%G)" --date=format:"%Y-%m-%d" > commits.txt || echo "No commits found"
           fi
 
           if [[ -s commits.txt ]]; then
@@ -48,13 +43,26 @@ jobs:
             if [ ! -f CHANGELOG.md ]; then
               echo "# Changelog" > CHANGELOG.md
             fi
-            echo "## [${{ env.DATE }}] - Update" >> CHANGELOG.md
-            echo "${{ env.Commits }}" >> CHANGELOG.md
-            echo "" >> CHANGELOG.md
+
+            # 分组提交，并按时间降序排列
+            echo "${{ env.Commits }}" | awk -F ' - ' '
+            {
+              date=$1; 
+              commit=$2;
+              commits[date] = (commits[date] ? commits[date] ORS : "") "- " commit;
+            }
+            END {
+              n = asorti(commits, dates);
+              for (i = n; i > 0; i--) {
+                print "## [" dates[i] "] - Update";
+                print commits[dates[i]];
+                print "";
+              }
+            }' >> CHANGELOG.md
           fi
 
       - name: Commit and Push Changes
         run: |
           git add CHANGELOG.md
-          git commit -m "Update CHANGELOG.md with latest commits" || echo "No changes to commit"
+          git commit -m "Update CHANGELOG.md with latest commits $(git rev-parse --short HEAD)" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Passer1072/RookieAI_yolov8 HEAD:dev
