@@ -10,29 +10,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Update Changelog
-        run: |
-          CHANGELOG_FILE="CHANGELOG.md"
-
-          COMMITS=$(git log --pretty=format:'- %s (%h)' --date=format:'%Y-%m-%d' -1)
-
-          if [ ! -f $CHANGELOG_FILE ]; then
-            echo "# Changelog" > $CHANGELOG_FILE
-          fi
-
-          TODAY=$(date +'%Y-%m-%d')
-
-          echo -e "\n## $TODAY\n$COMMITS" >> $CHANGELOG_FILE
-
-      - name: Commit and push changes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Git
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add $CHANGELOG_FILE
-          git commit -m "Update CHANGELOG.md with latest commit" || echo "No changes to commit"
-          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} HEAD:${{ github.ref }}
+
+      - name: Get current date
+        id: current_date
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Get commits
+        id: get_commits
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            LAST_UPDATE=$(grep -m 1 "## " CHANGELOG.md | awk '{print $2}' | tr -d '[]')
+            git log --since="$LAST_UPDATE" --pretty=format:"- %s" > commits.txt || echo "No new commits"
+          else
+            git log --pretty=format:"- %s" > commits.txt || echo "No commits found"
+          fi
+
+          if [[ -s commits.txt ]]; then
+            echo "Commits=$(cat commits.txt)" >> $GITHUB_ENV
+          else
+            echo "Commits=No new commits" >> $GITHUB_ENV
+          fi
+
+      - name: Update or create CHANGELOG.md
+        run: |
+          if [[ "$(echo ${{ env.Commits }})" != "No new commits" ]]; then
+            if [ ! -f CHANGELOG.md ]; then
+              echo "# Changelog" > CHANGELOG.md
+            fi
+            echo "## [${{ env.DATE }}] - Update" >> CHANGELOG.md
+            echo "${{ env.Commits }}" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+          fi
+
+      - name: Commit and Push Changes
+        run: |
+          git add CHANGELOG.md
+          git commit -m "Update CHANGELOG.md with latest commits" || echo "No changes to commit"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Passer1072/RookieAI_yolov8 HEAD:dev
