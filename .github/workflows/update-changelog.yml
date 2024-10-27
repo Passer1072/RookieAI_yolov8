@@ -1,4 +1,4 @@
-name: Update Changelog
+name: Update CHANGELOG
 
 on:
   push:
@@ -6,14 +6,14 @@ on:
       - dev
 
 permissions:
-  contents: write  # 允许写入内容，以便更新 CHANGELOG.md
+  contents: write  # 允许写入仓库内容
 
 jobs:
   update-changelog:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Set up Git
@@ -21,39 +21,46 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-      - name: Get current date
-        id: current_date
-        run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-
-      - name: Get commits
-        id: get_commits
+      - name: Generate CHANGELOG
         run: |
-          if [ -f CHANGELOG.md ]; then
-            LAST_UPDATE=$(grep -m 1 "## " CHANGELOG.md | awk '{print $2}' | tr -d '[]')
-            git log --since="$LAST_UPDATE" --pretty=format:"- %s" > commits.txt || echo "No new commits"
-          else
-            git log --pretty=format:"- %s" > commits.txt || echo "No commits found"
-          fi
-
-          if [[ -s commits.txt ]]; then
-            echo "Commits=$(cat commits.txt)" >> $GITHUB_ENV
-          else
-            echo "Commits=No new commits" >> $GITHUB_ENV
-          fi
-
-      - name: Update or create CHANGELOG.md
-        run: |
-          if [[ "$(echo ${{ env.Commits }})" != "No new commits" ]]; then
-            if [ ! -f CHANGELOG.md ]; then
-              echo "# Changelog" > CHANGELOG.md
-            fi
-            echo "## [${{ env.DATE }}] - Update" >> CHANGELOG.md
-            echo "${{ env.Commits }}" >> CHANGELOG.md
+          # Initialize CHANGELOG if it doesn't exist
+          if [ ! -f CHANGELOG.md ]; then
+            echo "# Changelog" > CHANGELOG.md
             echo "" >> CHANGELOG.md
           fi
 
-      - name: Commit and Push Changes
-        run: |
+          # Get the last commit timestamp from the CHANGELOG
+          last_commit_timestamp=$(git log -1 --pretty=format:"%ct" CHANGELOG.md 2>/dev/null)
+
+          # Determine if we should get all commits or only new ones
+          if [ -z "$last_commit_timestamp" ]; then
+            # If CHANGELOG.md is new, get all commits
+            git log --no-merges --pretty=format:"%ad | %h | %s" --date=format:'%Y-%m-%d %H:%M:%S' > CHANGELOG_TEMP.md
+          else
+            # Get all commits after the last commit in CHANGELOG
+            git log --no-merges --pretty=format:"%ad | %h | %s" --date=format:'%Y-%m-%d %H:%M:%S' --after="$(date -d @$last_commit_timestamp '+%Y-%m-%d %H:%M:%S')" > CHANGELOG_TEMP.md
+          fi
+
+          # Format CHANGELOG from temporary file
+          if [ -s CHANGELOG_TEMP.md ]; then
+            current_date=""
+            while IFS=' | ' read -r date hash message; do
+              if [[ $current_date != $date ]]; then
+                current_date=$date
+                echo "## $current_date" >> CHANGELOG.md
+              fi
+              echo "- $message (commit: $hash)" >> CHANGELOG.md
+            done < CHANGELOG_TEMP.md
+          fi
+
+          # Clean up temporary file
+          rm CHANGELOG_TEMP.md
+
+          # Stage the CHANGELOG.md file
           git add CHANGELOG.md
-          git commit -m "Update CHANGELOG.md with latest commits" || echo "No changes to commit"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Passer1072/RookieAI_yolov8 HEAD:dev
+          git commit -m "Update CHANGELOG.md" || echo "No changes to commit"
+
+      - name: Push changes
+        run: git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

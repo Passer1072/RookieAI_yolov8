@@ -1,7 +1,4 @@
 # Changelog
-## [2024-10-27] - Update
-- update CHANGELOG.md
-
 ## [2024-09-14] - Version V2.5.7
 - 尝试在AMD GPU上使用兼容模式运行
 
