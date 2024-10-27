@@ -3,10 +3,10 @@ name: Generate Changelog
 on:
   push:
     branches:
-      - dev  # 根据需要修改分支
-
+      - dev
 permissions:
   contents: write  # 允许写入内容
+
 
 jobs:
   generate-changelog:
@@ -16,38 +16,43 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Check for existing CHANGELOG.md
-        id: check_changelog
-        run: |
-          if [ ! -f CHANGELOG.md ]; then
-            echo "CHANGELOG.md does not exist."
-            echo "create=true" >> $GITHUB_ENV
-          else
-            echo "CHANGELOG.md exists."
-            echo "create=false" >> $GITHUB_ENV
-          fi
-
-      - name: Generate or Update CHANGELOG.md
-        run: |
-          CURRENT_DATE=$(date +%Y-%m-%d)
-          if [ "${{ env.create }}" == "true" ]; then
-            echo "# Changelog" > CHANGELOG.md
-            echo "## [$CURRENT_DATE] - Initial Release" >> CHANGELOG.md
-            git log --reverse --date=short --pretty=format:"- %s (hash: %h)" >> CHANGELOG.md
-          else
-            echo "Updating existing CHANGELOG.md"
-            echo "" >> CHANGELOG.md
-            echo "## [$CURRENT_DATE] - Update" >> CHANGELOG.md
-            git log -1 --date=short --pretty=format:"- %s (hash: %h)" >> CHANGELOG.md
-          fi
-
-
-      - name: Commit and push changes
+      - name: Set up Git
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+
+      - name: Append to CHANGELOG.md
+        run: |
+          CURRENT_DATE=$(date +%Y-%m-%d)
+          NEW_ENTRIES="## [$CURRENT_DATE] - New Updates\n"
+
+          # 获取上次推送的提交哈希
+          LAST_COMMIT=$(git rev-parse $GITHUB_SHA^)
+
+          # 获取自上次推送以来的所有新提交的日志
+          COMMIT_LOG=$(git log --pretty=format:"- %s (hash: %h)" "$LAST_COMMIT"..HEAD)
+          
+          if [ -z "$COMMIT_LOG" ]; then
+            echo "No new commits to add to CHANGELOG."
+          else
+            NEW_ENTRIES+="$COMMIT_LOG\n"
+          fi
+          
+          # 读取现有内容
+          HEAD_CONTENT=$(head -n 1 CHANGELOG.md)
+          TAIL_CONTENT=$(tail -n +2 CHANGELOG.md)
+          
+          # 创建新的 CHANGELOG 内容
+          echo -e "$HEAD_CONTENT\n$NEW_ENTRIES$TAIL_CONTENT" > CHANGELOG.md
+          
+      - name: Display CHANGELOG.md
+        run: |
+          cat CHANGELOG.md
+
+      - name: Commit and push changes
+        run: |
           git add CHANGELOG.md
-          git commit -m "Update CHANGELOG.md with new entries (hash: $(git rev-parse --short HEAD))" || echo "No changes to commit"
+          git commit -m "Update CHANGELOG.md with new entries" || echo "No changes to commit"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
