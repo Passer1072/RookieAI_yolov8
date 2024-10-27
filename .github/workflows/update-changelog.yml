@@ -26,10 +26,10 @@ jobs:
         run: |
           if [ -f CHANGELOG.md ]; then
             LAST_UPDATE=$(grep -m 1 "## " CHANGELOG.md | awk '{print $2}' | tr -d '[]')
-            git log --since="$LAST_UPDATE" --pretty=format:"%ad - %h: %s (PR #%G)" --date=format:"%Y-%m-%d" > commits.txt || echo "No new commits"
+            git log --since="$LAST_UPDATE" --pretty=format:"%ad - (%h): %s (PR #%G)" --date=format:"%Y-%m-%d" > commits.txt || echo "No new commits"
           else
             # 如果没有 CHANGELOG.md，获取所有提交
-            git log --pretty=format:"%ad - %h: %s (PR #%G)" --date=format:"%Y-%m-%d" > commits.txt || echo "No commits found"
+            git log --pretty=format:"%ad - (%h): %s (PR #%G)" --date=format:"%Y-%m-%d" --reverse > commits.txt || echo "No commits found"
           fi
 
           if [[ -s commits.txt ]]; then
@@ -59,11 +59,11 @@ jobs:
                 print commits[dates[i]];
                 print "";
               }
-            }' >> CHANGELOG.md
+            }' >> CHANGELOG.md  # 直接追加到 CHANGELOG.md
           fi
 
       - name: Commit and Push Changes
         run: |
           git add CHANGELOG.md
-          git commit -m "Update CHANGELOG.md with latest commits $(git rev-parse --short HEAD)" || echo "No changes to commit"
+          git commit -m "Update CHANGELOG.md with latest commits $(git rev-parse --short HEAD) (PR #${{ github.event.pull_request.number }})" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Passer1072/RookieAI_yolov8 HEAD:dev
