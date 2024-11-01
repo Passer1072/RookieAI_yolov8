@@ -28,8 +28,8 @@ jobs:
           # 检查 CHANGELOG.md 中是否存在相同日期的条目
           if grep -q "## \[$CURRENT_DATE\] - New Updates" CHANGELOG.md; then
             # 存在相同日期的条目，追加新的提交信息
-            HEAD_CONTENT=$(sed -n '1,/^## \[(20[0-9]{2}-[0-9]{2}-[0-9]{2})\] - New Updates/p' CHANGELOG.md)
-            TAIL_CONTENT=$(sed -n '/^## \[(20[0-9]{2}-[0-9]{2}-[0-9]{2})\] - New Updates/,$p' CHANGELOG.md | tail -n +2)
+            HEAD_CONTENT=$(head -n 2 CHANGELOG.md)
+            TAIL_CONTENT=$(tail -n +3 CHANGELOG.md)
             NEW_SECTION="$HEAD_CONTENT\n$NEW_ENTRIES\n$TAIL_CONTENT"
             echo -e "$NEW_SECTION" > CHANGELOG.md
             echo "追加新的提交信息到现有日期条目"
