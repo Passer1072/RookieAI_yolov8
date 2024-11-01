@@ -1,5 +1,4 @@
 import gc
-import json
 import os
 import threading
 import time
@@ -18,12 +17,14 @@ from multiprocessing import freeze_support
 import cv2
 import numpy as np
 import pyautogui
-from typing import Union, Any
 import win32api
 import win32con
 import customtkinter as ctk
 from mss import mss
 from ultralytics import YOLO
+from utils.config import Option
+from utils.logger import Logger
+from utils.exception import handle_exception
 import ctypes
 import string
 import random
@@ -82,79 +83,6 @@ class AutoFire:
         self.destroyed = True
         self.thread = None
 
-
-class Option:
-    def __init__(self):
-        self.default = {
-            'aimbot': True,
-            'lockSpeed': 0.7,
-            'triggerType': "按下",
-            'arduinoMode': False,
-            'lockKey': "右键",
-            'mouse_Side_Button_Witch': True,
-            'method_of_prediction': "倍率预测",
-            'confidence': 0.5,
-            # 'extra_offset_x': 5,
-            # 'extra_offset_y': 5,
-            'prediction_factor': 0.5,
-            'closest_mouse_dist': 160,
-            'screen_width': 360,
-            'screen_height': 360,
-            'aimOffset': 0.4,
-            'aimOffset_Magnification_x': 0,
-            'model_file': "yolov8n.pt",
-            'test_window_frame': False,
-            "crawl_information": True,
-            "screenshot_mode": False,
-            "DXcam_screenshot": 360,
-            'dxcam_maxFPS': 30,
-            'segmented_aiming_switch': False,
-            'mouse_control': 'win32',
-            'stage1_scope': 50,
-            'stage1_intensity': 0.8,
-            'stage2_scope': 170,
-            'stage2_intensity': 0.4,
-            "enable_random_offset": False,
-            "time_interval": 1,
-            "tolerance": 63.0,
-            "ignore_colors": [[62, 203, 236]],
-            "offset_range": [0, 1],
-            "recoil_switch": False,
-            "recoil_interval": 0.1,
-            "recoil_boosted_distance": 5,
-            "recoil_boosted_distance_time": 0.5,
-            "recoil_standard_distance": 1,
-            "recoil_transition_time": 0.2,
-        }
-        self.content = self.read()
-
-    def read(self) -> dict:
-        try:
-            with open("settings.json", "r", encoding='utf-8') as f:
-                return json.load(f)
-        except FileNotFoundError:
-            return self.default
-
-    def get(self, key: str, default: Any = None) -> Union[int, str, list, float, bool]:
-        """
-        获取配置项的值，如果不存在则返回默认值。
-
-        :param key: 配置项的键
-        :param default: 默认值
-        :return: 返回配置项的值，类型可能是 int, str, list, float 或 bool
-        """
-        if default is not None:
-            return self.content.get(key, default)
-        return self.content.get(key, self.default.get(key))
-
-    def update(self, key: str, value: Any) -> None:
-        self.content[key] = value
-        self.save()
-
-    def save(self) -> None:
-        with open("settings.json", "w", encoding='utf8') as f:
-            f.write(json.dumps(self.content, ensure_ascii=False, indent=4))
-
 # ------------------------------------------函数声明---------------------------------------------------------------------
 
 # 根据按键名称获取对应的虚拟键码
@@ -172,7 +100,7 @@ def get_lock_key(key: str) -> int | None:
         '左Alt': 0xA4,
         '右Alt': 0xA5,
     }
-    return KEY_MAP.get(key, None)
+    return KEY_MAP.get(key)
 
 
 # ------------------------------------------全局变量---------------------------------------------------------------------
@@ -429,7 +357,7 @@ def update_and_display_fps(frame_, frame_counter, start_time, end_time):
     # 每2秒在控制台打印帧率
     current_time = time.time()
     if current_time - last_console_update > 2:
-        print(f"FPS: {frame_rate:.0f}")  # 在控制台打印帧率
+        Logger.debug(f"FPS: {frame_rate:.0f}")  # 在控制台打印帧率
         last_console_update = current_time
 
     # 每1秒在图形用户界面上更新帧率
@@ -457,6 +385,10 @@ def capture_screen(monitor, sct):
 def DXcam():
     # 获取屏幕的宽度和高度
     screen_width, screen_height = pyautogui.size()
+    
+    assert isinstance(screen_width, int)
+    assert isinstance(DXcam_screenshot, int)
+    assert isinstance(dxcam_maxFPS, int)
 
     # 计算截图区域
     left, top = (
@@ -492,13 +424,13 @@ def get_desired_size(screen_width_1, screen_height_1):
 
 
 def fetch_readme():  # 从github更新公告
-    print("开始获取公告......")
+    Logger.info("开始获取公告......")
     try:
         readme_url = "https://api.github.com/repos/Passer1072/RookieAI_yolov8/readme"
         response = requests.get(readme_url, timeout=10)
         response_text = base64.b64decode(
             response.json()['content']).decode('utf-8')
-        print("获取成功")
+        Logger.info("获取成功")
 
         # 找到 "更新日志：" 在字符串中的位置
         update_log_start = response_text.find("更新日志：")
@@ -512,18 +444,18 @@ def fetch_readme():  # 从github更新公告
         return update_log
 
     except Exception as e:
-        print("获取失败：", e)
+        Logger.warn("获取失败：", e)
         return "无法加载最新的 README 文件，这可能是因为网络问题或其他未知错误。"
 
 
 def fetch_readme_version_number():  # 从github更新公告
-    print("开始获取版本号......")
+    Logger.info("开始获取版本号......")
     try:
         readme_url = "https://api.github.com/repos/Passer1072/RookieAI_yolov8/readme"
         response = requests.get(readme_url, timeout=10)
         response_text = base64.b64decode(
             response.json()['content']).decode('utf-8')
-        print("获取成功")
+        Logger.info("获取成功")
 
         # 创建搜索字符串
         search_str = "Current latest version:"
@@ -546,7 +478,7 @@ def fetch_readme_version_number():  # 从github更新公告
             return update_log
 
     except Exception as e:
-        print("获取失败：", e)
+        Logger.warn("获取失败：", e)
         return "版本号获取失败"
 
 
@@ -554,23 +486,21 @@ def fetch_readme_version_number():  # 从github更新公告
 def load_DLL():  # 加载易键鼠DLL
     global dll, hdl, startup_successful
     # 加载DLL文件
-    print("开始加载飞易来盒子文件...")
+    Logger.debug("开始加载飞易来盒子文件...")
     dll = ctypes.windll.LoadLibrary('./x64_msdk.dll')  # 加载DLL
-    print("启动飞易来盒子...")
+    Logger.info("启动飞易来盒子...")
     dll.M_Open_VidPid.restype = ctypes.c_uint64  # 声明M_Open函数的返回类型为无符号整数
     hdl = dll.M_Open_VidPid(u_vid, u_pid)  # 打开端口代码
-    print("open handle = " + str(hdl))  # 打开端口并打印端口开启状态
+    Logger.debug(f"open handle = {str(hdl)}")
 
     # 盒子启动测试
     # print("鼠标移动:" + str(dll.M_MoveR(ctypes.c_uint64(hdl), 100, 100) == 0))  # 相对移动
     startup_successful = True  # 初始化启动状态
     if dll.M_MoveR(ctypes.c_uint64(hdl), 100, 100) == 0:
-        print("鼠标移动:True")
-        print("启动盒子成功")
+        Logger.info("鼠标移动:True", "启动盒子成功")
         startup_successful = True  # 纪律启动状态为True
     else:
-        print("鼠标移动:False")
-        print("启动盒子失败")
+        Logger.warn("鼠标移动:False", "启动盒子失败")
         startup_successful = False  # 记录启动状态为False
 
 
@@ -589,7 +519,7 @@ def load_lg_dll():  # 加载罗技移动dll
 
 def check_Ubox_startup():
     if not startup_successful:
-        print("未检测到盒子或盒子启动失败无法使用")
+        Logger.error("未检测到盒子或盒子启动失败无法使用")
         messagebox.showerror("错误", "未检测到盒子或盒子启动失败无法使用")
         mouseMove_var.set('win32')
 
@@ -632,22 +562,20 @@ def load_model_file():  # 加载模型文件
     # 默认的模型文件地址
     default_model_file = "yolov8n.pt"
     model_file = Opt.get('model_file', default_model_file)
+    assert isinstance(model_file, str)
     # 检查文件是否存在，如果不存在，使用默认模型文件
     if not os.path.isfile(model_file):
-        print("[WARNING] 设置文件中的模型文件路径无效; 使用默认模型文件")
+        Logger.warn("设置文件中的模型文件路径无效; 使用默认模型文件")
         model_file = default_model_file
 
     # 检测文件后缀名并设置 half_precision_model
     file_extension = os.path.splitext(model_file)[1].lower()  # 获取文件扩展名并转换为小写
-    if file_extension == ".onnx":
-        half_precision_model = False
-    elif file_extension in [".pt", ".engine"]:
-        half_precision_model = True
-    else:
-        half_precision_model = False  # 默认情况下，非 .onnx 文件将 half_precision_model 设置为 False
-
-    print(f"加载模型文件: {model_file}")
-    print(f"半精度推理 设置为: {half_precision_model}")
+    half_precision_model = file_extension != ".onnx" and file_extension in [
+        ".pt",
+        ".engine",
+    ]
+    Logger.info(f"加载模型文件: {model_file}")
+    Logger.info(f"半精度推理 设置为: {half_precision_model}")
 
     # 如果 model_file 为 None 或者空，我们返回 None，否则我们返回对应的 YOLO 模型
     return YOLO(model_file) if model_file else None
@@ -781,7 +709,7 @@ def random_offset_set_window():  # 随机瞄准偏移配置窗口
     def load_random_offset():  # 加载随机瞄准参数
         global model_file, test_window_frame, screenshot_mode, crawl_information, DXcam_screenshot, dxcam_maxFPS, \
             loaded_successfully, stage1_scope, stage1_intensity, stage2_scope, stage2_intensity, segmented_aiming_switch
-        print('加载随机瞄准参数...')
+        Logger.debug('加载随机瞄准参数...')
         random_offset_mode_var.set(Opt.get(
             "enable_random_offset", False))  # 随机瞄准偏移开关
         offset_time_entry.insert(
@@ -791,12 +719,12 @@ def random_offset_set_window():  # 随机瞄准偏移配置窗口
         max_offset_entry.insert(0, str(offset_range[1]))  # 插入瞄准偏移最大值
         min_offset_entry.insert(0, str(offset_range[0]))  # 插入瞄准偏移最小值
 
-        print("设置加载成功！")
+        Logger.debug("设置加载成功！")
         loaded_successfully = True  # 加载成功标识符
 
     def save_random_offset():  # 保存设置
         global model_file
-        print("保存随机瞄准部位参数...")
+        Logger.debug("保存随机瞄准部位参数...")
         Opt.update('enable_random_offset', random_offset_mode_var.get())
         Opt.update('time_interval', float(offset_time_entry.get()))
         Opt.update('offset_range', [
@@ -873,7 +801,7 @@ def recoil_set_window():  # 辅助压枪配置窗口
 
     def load_recoil():  # 加载辅助压枪参数
         global loaded_successfully, recoil_interval_entry, recoil_boosted_distance_time_entry, recoil_boosted_distance_entry, recoil_standard_distance_entry, recoil_transition_time_entry
-        print('加载辅助压枪参数...')
+        Logger.debug('加载辅助压枪参数...')
         recoil_interval_entry.insert(
             0, str(Opt.get("recoil_interval", 0.1)))  # 压枪间隔
         recoil_boosted_distance_entry.insert(
@@ -885,12 +813,12 @@ def recoil_set_window():  # 辅助压枪配置窗口
         recoil_transition_time_entry.insert(
             0, str(Opt.get("recoil_transition_time", 0.2)))  # 缓冲时间
 
-        print("设置加载成功！")
+        Logger.debug("设置加载成功！")
         loaded_successfully = True  # 加载成功标识符
 
     def save_recoil():  # 保存设置
         global model_file
-        print("保存辅助压枪参数...")
+        Logger.debug("保存辅助压枪参数...")
         Opt.update('recoil_interval', float(recoil_interval_entry.get()))
         Opt.update('recoil_boosted_distance', float(
             recoil_boosted_distance_entry.get()))
@@ -1774,7 +1702,7 @@ def update_values(*args):
         ignore_colors = [list(map(int, color.strip('()').split(','))) for color in
                          ignore_colors_variable.get().strip('[]').split('), (')]
     except ValueError:
-        print("颜色输入无效")
+        Logger.error("颜色输入无效")
         messagebox.showerror("错误", "颜色输入无效，回到默认值")
         ignore_colors = 0, 0, 0  # valor padrão
         ignore_colors_string = ','.join(
@@ -1782,7 +1710,7 @@ def update_values(*args):
         ignore_colors_variable.set(str(ignore_colors_string))  # 设置默认值
 
     # 数据应用
-    print("update_values function was called（配置已更新）")
+    Logger.debug("update_values function was called（配置已更新）")
     aimbot = aimbot_var.get()
     lockSpeed = lockSpeed_scale.get()
     triggerType = triggerType_var.get()
@@ -1915,7 +1843,7 @@ def save_settings():  # 保存设置
 
 def load_prefix_variables():  # 加载前置参数
     global model_file, screenshot_mode, segmented_aiming_switch, crawl_information, random_name, offset_range, time_interval, enable_random_offset, deactivate_dxcam
-    print('Loading prefix variables...')
+    Logger.debug('Loading prefix variables...')
     try:
         deactivate_dxcam = Opt.get("deactivate_dxcam", False)  # 加载是否禁用加载dxcam
         screenshot_mode = Opt.get("screenshot_mode", False)  # 加载截图方式
@@ -1924,9 +1852,9 @@ def load_prefix_variables():  # 加载前置参数
         crawl_information = Opt.get("crawl_information", False)  # 加载公告获取开关
         random_name = Opt.get("random_name", False)  # 随机软件标题开关
 
-        print("前置变量加载成功！")
+        Logger.debug("前置变量加载成功！")
     except Exception as e:
-        print(f'[ERROR] 加载设置时出错: {e}')
+        Logger.error(f'[ERROR] 加载设置时出错: {e}')
 
 
 def load_settings():  # 加载主程序参数设置
@@ -1934,7 +1862,7 @@ def load_settings():  # 加载主程序参数设置
         loaded_successfully, stage1_scope, stage1_intensity, stage2_scope, stage2_intensity, segmented_aiming_switch, \
         recoil_interval, recoil_switch, recoil_boosted_distance_time, recoil_boosted_distance, recoil_standard_distance, \
         recoil_transition_time
-    print('Loading settings...')
+    Logger.debug('Loading settings...')
     aimbot_var.set(Opt.get('aimbot', True))
     lockSpeed_scale.set(Opt.get('lockSpeed', 0.7))
     triggerType_var.set(Opt.get('triggerType', "\u6309\u4e0b"))
@@ -2002,7 +1930,7 @@ def load_settings():  # 加载主程序参数设置
     # 颜色忽略指定颜色，将转换后格式的字符串写入ignore_colors_entry
     ignore_colors_entry.insert(0, ignore_colors_string)
 
-    print("设置加载成功！")
+    Logger.debug("设置加载成功！")
     loaded_successfully = True  # 加载成功标识符
 
 
@@ -2196,7 +2124,7 @@ def calculate_distances(
                 box_centerx, minBox_width, min_x1, min_x2, previous_centerx, direction)
             previous_centerx = box_centerx
         elif predict_model == "手动预测":
-            print("开发中...")
+            Logger.debug("开发中...")
 
         # 计算垂直瞄准偏移
         distance_to_top_border = box_centery - min_y1
@@ -2561,7 +2489,7 @@ def sparse_optical_flow_inference(frame, prev_gray, prev_points, screen_width, s
 
                 except cv2.error as e:
                     # 处理cv2.calcOpticalFlowPyrLK中发生的错误
-                    print(f"[ERROR]光流计算错误: {e}")
+                    Logger.error(f"光流计算错误: {e}")
                     prev_points = cv2.goodFeaturesToTrack(
                         gray, maxCorners=300, qualityLevel=0.2, minDistance=5, blockSize=7)
 
@@ -2582,20 +2510,20 @@ def main_program_loop(model):  # 主程序流程代码
     # 等待加载完成再开启DXcam截图确保DXcam接收的参数正确
     while True:
         time.sleep(2)
-        print("正在等待加载完成")
+        Logger.debug("正在等待加载完成")
         if loaded_successfully:
             if deactivate_dxcam:
-                print("[INFO]已禁用DXcam")
+                Logger.info("已禁用DXcam")
                 break
             if not deactivate_dxcam:
-                print("尝试开启DXcam...")
+                Logger.debug("尝试开启DXcam...")
                 DXcam()
                 break
 
     # 如果选择mss截图则关闭DXcam
     if deactivate_dxcam is False:
         if not screenshot_mode:
-            print("已选择MSS截图，关闭dxcam")
+            Logger.info("已选择MSS截图，关闭dxcam")
             camera.stop()
 
     if test_window_frame:
@@ -2613,7 +2541,7 @@ def main_program_loop(model):  # 主程序流程代码
         try:
             target_selection = target_mapping[target_selection_str]
         except KeyError:
-            print(
+            Logger.debug(
                 f"Key {target_selection_str} not found in target_mapping.（加载中）")
 
         # 截图方式选择
@@ -2621,14 +2549,14 @@ def main_program_loop(model):  # 主程序流程代码
             # 每2秒打印一次当前截图模式
             current_time = time.time()
             if current_time - last_screenshot_mode_update > 10:
-                print("当前截图模式：mss")
+                Logger.debug("当前截图模式：mss")
                 last_screenshot_mode_update = current_time
             frame = capture_screen(monitor, sct)  # mss截图方式
         elif screenshot_mode:
             # 每2秒打印一次当前截图模式
             current_time = time.time()
             if current_time - last_screenshot_mode_update > 10:
-                print("当前截图模式：dxcam")
+                Logger.debug("当前截图模式：dxcam")
                 last_screenshot_mode_update = current_time
             frame = camera.get_latest_frame()  # DXcam截图方式
 
@@ -2651,9 +2579,10 @@ def main_program_loop(model):  # 主程序流程代码
         try:
             frame_ = calculate_distances(
                 monitor, results, frame_, aimbot, lockSpeed, arduinoMode, lockKey, triggerType)
-        except TypeError:
+        except TypeError as e:
             # 当 TypeError 出现时
-            print('[ERROR]未知数值错误')
+            Logger.error('[ERROR]未知数值错误')
+            Logger.error(handle_exception(e))
 
         # 获取并显示帧率
         try:
@@ -2661,7 +2590,7 @@ def main_program_loop(model):  # 主程序流程代码
             frame_, frame_counter, start_time = update_and_display_fps(
                 frame_, frame_counter, start_time, end_time)
         except NameError:
-            print("ERROR:帧率显示失败(加载中)")
+            Logger.error("帧率显示失败(加载中)")
 
         if test_window_frame:
             # 图像调试窗口（外部cv2.imshow）
@@ -2700,12 +2629,13 @@ def stop_program():  # 停止子线程
         root.quit()
         root.destroy()  # 销毁窗口
     try:
-        print("关闭端口:" + str(dll.M_Close(ctypes.c_uint64(hdl)) == 0))  # 关闭端口
+        Logger.info("关闭端口:" + str(dll.M_Close(ctypes.c_uint64(hdl)) == 0))  # 关闭端口
     except OSError as e:
         if 'access violation reading' in str(e):
-            print("关闭U盘端口错误")
+            Logger.warn("关闭U盘端口错误")
         else:
-            print("未知错误类型：", e)  # 输出未知错误类型的提示
+            Logger.error("未知错误类型：", e)  # 输出未知错误类型的提示
+            Logger.error(handle_exception(e))
             raise e  # 如果不是我们期望的错误类型，重新引发异常
 
     os._exit(0)  # 强制结束进程
