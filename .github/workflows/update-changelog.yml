@@ -23,7 +23,7 @@ jobs:
       - name: Append to CHANGELOG.md
         run: |
           CURRENT_DATE=$(date +%Y-%m-%d)
-          NEW_ENTRIES="- $(git log -1 --pretty=format:"%s (hash: %h)")
+          NEW_ENTRIES: "- $(git log -1 --pretty=format:'%s (hash: %h)')"
 
           # 检查 CHANGELOG.md 中是否存在相同日期的条目
           if grep -q "## \[$CURRENT_DATE\] - New Updates" CHANGELOG.md; then
