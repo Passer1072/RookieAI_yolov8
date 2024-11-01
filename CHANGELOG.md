@@ -1,5 +1,6 @@
 # Changelog
 ## [2024-11-01] - New Updates
+- ci: 优化 CHANGELOG.md 更新流程，提高了脚本的可读性和维护性，同时减少了出错的可能性 `09ba22a`
 - ci: 优化 CHANGELOG.md 自动更新流程 `e4e315f`
 - refactor(RookieAI_YOLOv8): 初步分离主程序并添加日志功能 `0a134e7`
 
@@ -165,4 +166,3 @@
 
 ## [2024-01-28] - Release
 - 初次创建基于yolov8实现本地视频预处理项目。
-
