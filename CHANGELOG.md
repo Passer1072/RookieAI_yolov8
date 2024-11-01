@@ -1,5 +1,6 @@
 # Changelog
 ## [2024-11-01] - New Updates
+n- ci: 优化 CHANGELOG.md 自动更新流程 `e4e315f`
 - refactor(RookieAI_YOLOv8): 初步分离主程序并添加日志功能 `0a134e7`
 
 ## [2024-09-14] - Version V2.5.7
