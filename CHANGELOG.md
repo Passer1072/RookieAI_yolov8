@@ -1,6 +1,7 @@
 # Changelog
 ## [2024-11-01] - New Updates
-- ci: 修复 CHANGELOG.md 自动更新流程中的变量格式 (hash: 682d240)
+- refactor(RookieAI_YOLOv8): 初步分离主程序并添加日志功能 `0a134e7`
+
 ## [2024-09-14] - Version V2.5.7
 - 尝试在AMD GPU上使用兼容模式运行
 
