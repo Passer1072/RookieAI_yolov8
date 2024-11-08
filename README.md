@@ -1,9 +1,20 @@
-# RookieAI_yolov8日志
+# RookieAI_yolov8
+
+## 版本要求
+
+| Version | Python |
+|---------|--------|
+| `2.4.3或更早`   | 3.7+   |
+| `2.4.4.2或更新`   | 3.10+   |
+
 ## 使用方法：
 前言：为维护环境不提供直接打包成型的软件，开源代码鼓励自学。
 使用前务必查看[参数说明文档](Parameter_explanation.txt)
 
-> [Note]
+> [!Warning]
+>
+> 如果你只是想使用，请直接下载打包好的exe文件，使用前请先阅读[参数解释文档](Parameter_explanation.txt)
+>
 > 如果你只是本地运行该项目，请**不要使用**pyinstaller打包 
 > 
 > 打包方法尚未完善，遇到问题也**不要提交**Issues，请自行解决
@@ -12,91 +23,47 @@
 
 1. ### 使用以下代码获取本代码需要的库与Pytorch库：
 
-<details>
-<summary>CUDA 12.4或更高(无镜像)</summary>
+   **✨ 超高速无痛下载 ✨**
    
-
-```shell
-pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu124
-```
-</details>
-
-<details>
-<summary>CUDA 12.0及以上(镜像源)</summary>
-
-#### 对于python3.8版本，使用以下代码：
-
-```shell
-pip install -r requirements.txt
-pip install torchvision==0.17.0 torchaudio==2.2.0
-pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp38-cp38-win_amd64.whl --no-warn-script-location
-```
-
-#### 对于python3.9版本，使用以下代码：
-
-```shell
-pip install -r requirements.txt
-pip install torchvision==0.17.0 torchaudio==2.2.0
-pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp39-cp39-win_amd64.whl --no-warn-script-location
-```
-
-#### 对于python3.10版本，使用以下代码：
-
-```shell
-pip install -r requirements.txt
-pip install torchvision==0.17.0 torchaudio==2.2.0
-pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp310-cp310-win_amd64.whl --no-warn-script-location
-```
-
-#### 对于python3.11版本，使用以下代码：
-
-```shell
-pip install -r requirements.txt
-pip install torchvision==0.17.0 torchaudio==2.2.0
-pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp311-cp311-win_amd64.whl --no-warn-script-location
-```
-
-#### 对于python3.12版本，使用以下代码：
-
-```shell
-pip install -r requirements.txt
-pip install torchvision==0.17.0 torchaudio==2.2.0
-pip install https://mirrors.aliyun.com/pytorch-wheels/cu121/torch-2.2.0+cu121-cp312-cp312-win_amd64.whl --no-warn-script-location
-```
-
-</details>
+   ```shell
+   pip install -r requirements.txt -i https://pypi.doubanio.com/simple/
+   pip install torch torchvision torchaudio -f https://mirror.sjtu.edu.cn/pytorch-wheels/torch_stable.html --no-index
+   ```
 
 2. ### 你还需要一个自己的模型（目前支持.pt/.engine/.onnx模型），如果没有可暂时使用ultralytics官方模型。
 
 3. **当未找到模型时会自动下载YOLOv8n模型，你也可以⬇️**
 
-_访问[YOLOv8GitHub界面](https://docs.ultralytics.com/)获取更多官方yolov8模型以快速开始_
-
-_访问[ultralytics官网](https://docs.ultralytics.com/)查看官方网站帮助文档_
+   访问[YOLOv8GitHub界面](https://docs.ultralytics.com/)获取更多官方yolov8模型以快速开始
+   
+   访问[ultralytics官网](https://docs.ultralytics.com/)查看官方网站帮助文档
 
 4. ### 使用你的模型
-打开软件>选择模型文件>保存设置>关闭软件，重启软件。
 
-即可加载上选择的模型文件
-
-或者：
-
-修改默认文件地址：
-
-```
-#默认的模型文件地址
-default_model_file="yolov8n.pt"
-```
+   打开软件>选择模型文件>保存设置>关闭软件，重启软件。
+   
+   即可加载上选择的模型文件
+   
+   或者：
+   
+   修改默认文件地址：
+   
+   ```
+   #默认的模型文件地址
+   default_model_file="yolov8n.pt"
+   ```
 
 ### 针对想直接使用者：
+
+> 此处教程未更新，**仅供参考**
 
 > 如果您是开发者，无需阅读此步骤，使用终端运行即可
 
 1. ### 使用以下代码获取本代码需要的库与Pytorch库：
-```shell
-pip install -r requirements.txt
-pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
-```
+   ```shell
+   pip install -r requirements.txt
+   pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
+   ```
 
 2. ### 下载pyinstaller库(打包用)
 
@@ -104,45 +71,45 @@ pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https
 
 3. ### 使用pyinstaller打包代码
 
-`pyinstaller xxxxx.py`
+   `pyinstaller xxxxx.py`
+   
+   将xxxxx替换为代码实际名称。
+   
+   更多打包参数介绍：[Pythonpyinstaller打包exe最完整教程](https://blog.csdn.net/qq_48979387/article/details/132359366)
 
-将xxxxx替换为代码实际名称。
-
-更多打包参数介绍：[Pythonpyinstaller打包exe最完整教程](https://blog.csdn.net/qq_48979387/article/details/132359366)
-
-❗必定会遇到的问题：
-
-Q：运行提示`FileNotFoundError:`，问题：缺少库
-
-A：把编译器虚拟环境里的库全部复制粘贴到打包出的文件夹<_internal>里就可以了。
-
-参考：[打包后库不全解决办法](https://github.com/Passer1072/RookieAI_yolov8/issues/1#issuecomment-2041157885)
+   ❗必定会遇到的问题：
+   
+   Q：运行提示`FileNotFoundError:`，问题：缺少库
+   
+   A：把编译器虚拟环境里的库全部复制粘贴到打包出的文件夹<_internal>里就可以了。
+   
+   参考：[打包后库不全解决办法](https://github.com/Passer1072/RookieAI_yolov8/issues/1#issuecomment-2041157885)
 
 4. ### 关于模型文件
 
-建议自行训练
-
-学习资料：
-
-[Bilibili](https://search.bilibili.com/all?keyword=%E5%A6%82%E4%BD%95%E8%AE%AD%E7%BB%83%E6%A8%A1%E5%9E%8B&from_source=webtop_search&spm_id_from=333.1007&search_source=5)
-
-[YouTube](https://www.youtube.com/results?search_query=how+to+train+yolov8+model)
-
-❗在软件中选择完模型文件后需保存重启后才会生效，因为需要重新加载模型。
+   建议自行训练
+   
+   学习资料：
+   
+   [Bilibili](https://search.bilibili.com/all?keyword=%E5%A6%82%E4%BD%95%E8%AE%AD%E7%BB%83%E6%A8%A1%E5%9E%8B&from_source=webtop_search&spm_id_from=333.1007&search_source=5)
+   
+   [YouTube](https://www.youtube.com/results?search_query=how+to+train+yolov8+model)
+   
+   ❗在软件中选择完模型文件后需保存重启后才会生效，因为需要重新加载模型。
 
 5. ### 文件整理
 
-将
-```txt
-_internal(包含软件环境/库)
-body_photo.png（软件需要的图片1）
-logo-bird.png（软件需要的图片2）
-程序.exe（主程序）
-settings.json(参数保存)
-模型文件.pt（模型文件）
-```
-
-放在同一目录下，直接运行exe文件即可。
+   将
+   ```txt
+   _internal(包含软件环境/库)
+   body_photo.png（软件需要的图片1）
+   logo-bird.png（软件需要的图片2）
+   程序.exe（主程序）
+   settings.json(参数保存)
+   模型文件.pt（模型文件）
+   ```
+   
+   放在同一目录下，直接运行exe文件即可。
 
 oldGUI版与newGUI版对比图：
 
@@ -152,6 +119,14 @@ Ps:二者在最终使用效果上无任何区别，仅视觉差异
 🎉全新V2.0版本，全新布局，更好优化，更多设置
 
 ![V2.4.3](images/V2.4.3.png)
+
+V3.o预告
+
+![V3.0](images/V3.0.png)
+
+3.0版本注重使用多线程进行优化，理论上可以提升截图效率与推理效率，但是可能会导致延迟问题。当然也提供原始的单进程推理模式可供选择。
+该版本从底层代码到UI界面进行了完全重构，多线程也可以带来更多使用上的优化，例如可随意调整鼠标移动的频率，不再受到推理帧数的限制等。目前测试主系统空载YOLO使用YOLO11n模型推理的帧数从55提升到了80，有明显提升。配合独立的鼠标移动进程，理论上可以带来不错的使用体验。
+对电脑配置的要求也会有一定程度的降低。代码目前处于早期开发阶段，未集成Aimbot等基础功能，开发进度与源代码请稍后关注对应文档。
 
 ### 推荐使用Atlas游戏系统配合boosterX性能优化软件获得更好体验
 
@@ -177,9 +152,45 @@ Ps:二者在最终使用效果上无任何区别，仅视觉差异
 
 **🎉🎉🎉非常感谢由RicardoJoaquim提供的英文特别版本🎉🎉🎉**
 
+### 最后想说的：
+
+**！！由于底层代码问题，推理帧数始终优化不上去，目前的代码也找不到更多可优化的空间（已经有些屎山代码了），我正在考虑完全重写整个程序，包括但不限于：使用PyQt6重写UI界面，使用多进程优化程序，优化整体代码逻辑架构等。敬请期待。！！**
+
+**目前学业繁忙，随缘更新，敬请谅解 :(**
+
 
 ### 更新日志：
 
+10/27/2024通知：
+
+概要：支持YOLO11模型
+
+经过测试，软件依然适用于最新YOLO11模型，通过以下命令升级ultralytics库，替换ultralytics运行环境文件夹即可。
+
+`pip install -U ultralytics`
+
+❗注意：如果当前模型用着挺好的就没必要使用最新的YOLO模型，使用新模型无法保证带来更好的使用体验！
+
+因为新模型可能会以使用更多性能为代价换来更好识别准确率，意味着需要更多性能来喂饱Ai，但在Ai自瞄中我们追求推理速度与准确率的平衡，所以请根据自己的设备性能自行衡量使用的YOLO版本。
+
+___
+
+9/14/2024更新：
+
+🎛️版本更新：V2.5.7
+
+概要：尝试在AMD GPU上使用兼容模式运行
+
+___
+9/6/2024更新:
+
+🎛️版本更新：V2.5.6.1(beta)
+
+概要：新增一些热键
+
+新增热键`左Ctrl` `右Ctrl` `左Shift` `右Shift` `左Alt` `右Alt`
+
+___
 8/26/2024更新：
 
 🎛️版本更新：V2.5.6(beta)
@@ -612,4 +623,4 @@ ___
 
 ___
 
-Current latest version: V2.4.3
+Current latest version: V2.5.7

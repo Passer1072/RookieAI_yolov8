@@ -1,0 +1,50 @@
+name: Generate Changelog
+
+on:
+  push:
+    branches:
+      - dev
+permissions:
+  contents: write  # 允许写入内容
+
+jobs:
+  generate-changelog:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Append to CHANGELOG.md
+        run: |
+          CURRENT_DATE=$(date +%Y-%m-%d)
+          NEW_ENTRIES="- $(git log -1 --pretty=format:"%s (hash: %h)")
+
+          # 检查 CHANGELOG.md 中是否存在相同日期的条目
+          if grep -q "## \[$CURRENT_DATE\] - New Updates" CHANGELOG.md; then
+            # 存在相同日期的条目，追加新的提交信息
+            sed -i "/## \[$CURRENT_DATE\] - New Updates/a \n$NEW_ENTRIES" CHANGELOG.md
+          else
+            # 不存在相同日期的条目，创建新的条目
+            HEAD_CONTENT=$(head -n 1 CHANGELOG.md)
+            TAIL_CONTENT=$(tail -n +2 CHANGELOG.md)
+            NEW_SECTION="## [$CURRENT_DATE] - New Updates\n$NEW_ENTRIES\n"
+            echo -e "$HEAD_CONTENT\n$NEW_SECTION$TAIL_CONTENT" > CHANGELOG.md
+          fi
+          
+      - name: Display CHANGELOG.md
+        run: |
+          cat CHANGELOG.md
+
+      - name: Commit and push changes
+        run: |
+          git add CHANGELOG.md
+          git commit -m "Update CHANGELOG.md with new entries" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
