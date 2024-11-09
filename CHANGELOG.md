@@ -1,4 +1,7 @@
 # Changelog
+## [2024-11-09] - New Updates
+- 整理开发文档 `7669530`
+
 ## [2024-11-01] - New Updates
 - ci: 优化 CHANGELOG.md 更新流程，提高了脚本的可读性和维护性，同时减少了出错的可能性 `09ba22a`
 - ci: 优化 CHANGELOG.md 自动更新流程 `e4e315f`
