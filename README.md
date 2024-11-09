@@ -158,6 +158,9 @@ V3.0预告
 
 **目前学业繁忙，随缘更新，敬请谅解 :(**
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Passer1072/RookieAI_yolov8)](https://star-history.com/#Passer1072/RookieAI_yolov8)
 
 ### 更新日志：
 
