@@ -25,14 +25,14 @@ from ultralytics import YOLO
 from utils.config import Option
 from utils.logger import Logger
 from utils.exception import handle_exception
+from module.const import *
 import ctypes
-import string
 import random
 
 # ------------------------------------------判断AMD显卡-----------------------------------------------------------------
 import torch
-if not torch.cuda.is_available():
-    torch.backends.cudnn.enabled = False
+#if not torch.cuda.is_available():
+#    torch.backends.cudnn.enabled = False
 # ------------------------------------------类声明----------------------------------------------------------------------
 
 
@@ -121,15 +121,6 @@ AFe = AutoFire()
 # Primary monitor's BetterCam instance
 camera = dxcam.create(output_idx=0, output_color="BGR", max_buffer_len=2048)
 
-# 截图模式（请勿更改）
-screenshot_mode = False
-
-# MSS默认截图长宽(像素)
-screen_width = 640
-screen_height = 640
-
-# DXcam截图分辨率
-DXcam_screenshot = 360
 
 # 初始化帧数计时器（帧数计算）
 frame_counter = 0
@@ -142,180 +133,15 @@ last_screenshot_mode_update = time.time()
 # 初始化gc计时器（垃圾清理）
 gc_time = time.time()
 
-# 初始化DXcam最大FPS
-dxcam_maxFPS = 30
-deactivate_dxcam = False  # 是否禁止加载dxcam
-
-# onnx模型开关
-half_precision_model = False
-
-# 颜色忽略部分
-tolerance = 80  # Default value
-ignore_colors = [[62, 203, 236]]  # Default value, list of BGR tuples
-
-# 自瞄范围
-closest_mouse_dist = 100
-
-# 置信度设置
-confidence = 0.65
-
-# 垂直瞄准偏移
-aimOffset = 0.5
-
-# 停止自瞄范围（百分比）
-stop_aim = 1
-stop_aim_variety = None  # 变化值
-stop_aim_target = 0  # 目标值
-stop_aim_variety_state = True  # 停止自瞄范围是否需要回到默认值
-slow_aim_speed = 0.5  # 初始化慢速（停止）瞄准数值
-expansion_ratio = 1.5  # 扩张强锁范围面积%
-
-# 水平瞄准偏移。最左为1，最右为-1，中间（默认）为0，可为小数
-aimOffset_Magnification_x = 0
-
-# 水平瞄准偏移
-aimOffset_x = 0
-
-# 预测因子
-prediction_factor = 0.1
-
-# 跟踪目标的上一个位置（在程序运行中保存和更新）
-previous_centerx = 0
-previous_centery = 0
-
-# 鼠标移动平滑
-mouse_movement_smoothing_switch = False  # 鼠标移动平滑开关
-threshold = 2.0  # threshold: 检测目标是否“停止”的速度阈值。
-slowDownFactor = 0.3  # slowDownFactor: 目标停止时的减速因子。
-# 预设的阈值和参数
-reverse_threshold_x = 4  # 短时间内反向移动的阈值 x 轴
-reverse_threshold_y = 2  # 短时间内反向移动的阈值 y 轴
-smoothing_factor = 0.6  # 平滑因子，接近1表示更平滑的跟踪
-# 新倍率预测：记录上一个方向的目标偏移量和时间
-previous_direction = None
-transition_start_x = None
-transition_duration = 10  # 过渡时间（帧数或时间单位）
-direction = "静止"
-coordinate_movement_switch = False  # 坐标移动模式开关
-# 定义稀疏流光缓存用于存储5次推理结果
-direction_cache = []
-
-# 软件页面大小
-_win_width = 350
-_win_height = 825
-
-# 识别对象限制（敌我识别）
-classes = 0
-
-# 锁定对象ID
-locked_id = None
-
-# 分阶段瞄准
-stage1_scope = 55  # 强锁范围
-stage1_intensity = 0.8  # 强锁力度
-stage2_scope = 170  # 软锁范围
-stage2_intensity = 0.4  # 软锁力度
-
-# 初始化压枪参数
-recoil_switch = False  # 压枪开关
-recoil_interval = 0.01  # 压枪间隔（s）
-recoil_boosted_distance_time = 0.5  # 一阶段时间
-recoil_boosted_distance = 4  # 一阶段力度
-recoil_standard_distance = 1  # 二阶段力度
-recoil_transition_time = 0.2  # 一阶段到二阶段缓冲时间
-
-# 跟踪框ID相关变量
-counter_id = 0  # 分配唯一 ID 的计数器
-buffer_tracks = {}  # 保存位置和时间的元组
-last_updated = {}  # 初始化 last_updated 字典
-identification_range = 30  # 连续框判断误差（像素）
-unupdated_timeout = 0.1  # 未更新的轨迹存在时间（秒）
-crossed_boxes = {}
-
-# 分段瞄准开关
-segmented_aiming_switch = False
-
-# 是否开启外部测试窗口（小幅影响性能）
-test_window_frame = False
-
-# 是否打开内部测试画面（大幅影响性能）
-test_images_GUI = False
-
-# 是否跳过公告获取
-crawl_information = False
-
-# 初始化加载成功标识
-loaded_successfully = False
-
-# 自动扳机开关
-automatic_Trigger = False
-
-# 选择鼠标控制方式
-mouse_control = 'win32'
-
-# 飞易来U盘设置
-u_vid = 0x1532
-u_pid = 0x98
-
-
-# 目标列表
-num_classes = 10  # 假设模型识别10个类别
-target_all = list(range(num_classes))
-target_mapping = {'敌人': 0, '倒地': 1, '队友': 2, '全部': target_all}
 
 # 人体示意图
 img = Image.open("body_photo.png")
 
-# 定义触发器类型和其他参数
-# 在全局范围声明 GUI 控件的变量
-aimbot_var = None
-circle_var = None
-lockSpeed_scale = None
-triggerType_var = None
-arduinoMode_var = None
-lockKey_var = None
-confidence_scale = None
-closest_mouse_dist_scale = None
-screen_width_scale = None
-screen_height_scale = None
-root = None
-aimOffset_scale = None
-mouse_Side_Button_Witch_var = None
-value_label = None
-LookSpeed_label_text = None
-target_selection = None
-target_selection_var = None
-target_selection_str = None
-method_of_prediction_var = None
-readme_content = ""
-random_offset_mode_var = None
-
-# 其他全局变量
-Thread_to_join = None
-restart_thread = False
-run_threads = True
-draw_center = True
-random_name = False
-dll_lg_loaded = False  # 初始化lg_dll加载标识符
-recoil_start_time = None
-
-# 随机偏移Y轴状态变量
-current_target = None
-current_target_dist = float('inf')
-aim_offset_x = 0
-aim_offset_y = 0
-offset_range = (0, 1)  # 偏移范围
-time_interval = 0.5  # 时间间隔，单位：秒
 last_offset_time = time.time()
 last_recoil_time = time.time()  # 压枪间隔时间初始化
-enable_random_offset = False  # 随机偏移功能开关
 
 
 # ------------------------------------------def部分---------------------------------------------------------------------
-
-def random_string(length):  # 随即软件名称
-    letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for _ in range(length))
 
 
 def calculate_screen_monitor(capture_width=640, capture_height=640):  # 截图区域
@@ -955,10 +781,6 @@ def create_gui_tkinter():  # 软件主题GUI界面
     root.update()
 
     root.title("RookieTIM")  # 标题名称
-
-    if random_name:  # 随机标题名称
-        random_title = random_string(10)  # 生成长度为 10 的随机字符串
-        root.title(random_title)  # 将标题设置为随机字符串
 
     root.geometry(f"{_win_width}x{_win_height}")
 
@@ -1842,7 +1664,7 @@ def save_settings():  # 保存设置
 
 
 def load_prefix_variables():  # 加载前置参数
-    global model_file, screenshot_mode, segmented_aiming_switch, crawl_information, random_name, offset_range, time_interval, enable_random_offset, deactivate_dxcam
+    global model_file, screenshot_mode, segmented_aiming_switch, crawl_information, offset_range, time_interval, enable_random_offset, deactivate_dxcam
     Logger.debug('Loading prefix variables...')
     try:
         deactivate_dxcam = Opt.get("deactivate_dxcam", False)  # 加载是否禁用加载dxcam
@@ -1850,7 +1672,6 @@ def load_prefix_variables():  # 加载前置参数
         segmented_aiming_switch = Opt.get(
             "segmented_aiming_switch", False)  # 加载分段瞄准开关
         crawl_information = Opt.get("crawl_information", False)  # 加载公告获取开关
-        random_name = Opt.get("random_name", False)  # 随机软件标题开关
 
         Logger.debug("前置变量加载成功！")
     except Exception as e:
