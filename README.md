@@ -71,12 +71,6 @@ python RookieAI_YOLOv8.py
 
 ❗在软件中选择完模型文件后需保存重启后才会生效，因为需要重新加载模型。
 
-
-oldGUI版与newGUI版对比图：
-
-![logo](images/oldGUI&newGUI.png)
-Ps:二者在最终使用效果上无任何区别，仅视觉差异
-
 🎉全新V2.0版本，全新布局，更好优化，更多设置
 
 ![V2.4.3](images/V2.4.3.png)
