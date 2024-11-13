@@ -1,4 +1,7 @@
 # Changelog
+## [2024-11-13] - New Updates
+- 更新文档 [`20816e3`](20816e3)
+
 ## [2024-11-09] - New Updates
 - Merge branch 'dev' of https://github.com/Passer1072/RookieAI_yolov8.git [`57f8e8a`](57f8e8a)
 - 分离常量，移除无用代码 [`e5197d5`](e5197d5)
