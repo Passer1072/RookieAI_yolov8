@@ -23,7 +23,7 @@ jobs:
         id: read_version
         run: |
           version_line=$(grep '__version__' __version__)
-          version=$(echo $version_line | sed -E 's/__version__:\s*v([0-9]+\.[0-9]+\.[0-9]+)(-.+)?/\1/')
+          version=$(echo $version_line | sed -E 's/__version__:\s*v([0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?)(-.+)?/\1/')
           echo "Current version: $version"
           echo "current_version=$version" >> $GITHUB_OUTPUT
 
