@@ -4,7 +4,6 @@ import os
 import queue
 import sys
 import time
-import json
 from multiprocessing import Pipe, Process, Queue, shared_memory, Event
 import cv2
 import mss
@@ -820,8 +819,8 @@ class RookieAiAPP:  # 主进程 (UI进程)
         self.pipe_child = None
         self.pipe_parent = None
         self.app = QtWidgets.QApplication(sys.argv)
-        self.window = uic.loadUi(Root / "data" / "RookieAiWindow.ui") # 加载UI文件
-        #assert self.window is not None
+        self.window = uic.loadUi(Root / "data" / "RookieAiWindow.ui") # type: ignore # 加载UI文件
+        assert self.window is not None
         self.window.setWindowTitle("YOLO识别系统")  # 设置窗口名称
         self.window.setWindowIcon(QIcon(str(Root / "data" / "ico" / "ultralytics-botAvatarSrcUrl-1729379860806.png")))  # type: ignore  # 替换为图标文件路径
         # self.window.resize(1290, 585)  # 设置窗口的大小
@@ -960,7 +959,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 初始化遮罩透明度效果
         self.window.overlay_opacity = QGraphicsOpacityEffect(self.window.overlay)
         self.window.overlay.setGraphicsEffect(self.window.overlay_opacity)
-        self.window.overlay_animation = QPropertyAnimation(self.window.overlay_opacity, b"opacity")
+        self.window.overlay_animation = QPropertyAnimation(self.window.overlay_opacity, b"opacity") # type: ignore
 
         # 初始隐藏设置面板，并将其移动到屏幕左侧外
         self.window.settingsPanel.hide()
@@ -1030,17 +1029,17 @@ class RookieAiAPP:  # 主进程 (UI进程)
         - selected_class: 选中的类别 (0, 1, 2, 或 "ALL")
         """
         print(f"选择的检测类别: {selected_class}")
-        self.information_output_queue.put(("UI_process_log", f"选择的检测类别: {selected_class}"))
+        self.information_output_queue.put(("UI_process_log", f"选择的检测类别: {selected_class}")) # type: ignore
 
         # 发送类别更改信号到 YOLO 处理进程
-        self.YoloSignal_queue.put(("change_class", selected_class))
+        self.YoloSignal_queue.put(("change_class", selected_class)) # type: ignore
 
     '''瞄准范围 滑动条'''
     def on_aimRange_slider_value_changed(self, value):
         """当 aimRange 滑动条的值改变时调用"""
         # 将滑块的值映射到 20-300 范围
         mapped_value = 20 + value
-        self.window.aimRangeLcdNumber.display(mapped_value)
+        self.window.aimRangeLcdNumber.display(mapped_value) # type: ignore
         self.aim_range = mapped_value  # 更新 aimRange 值
         # 如果定时器未启动，启动定时器
         if not self.aimRange_slider_update_timer.isActive():
@@ -1055,7 +1054,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         """当 aimRange 滑动条被拖动时调用"""
         # 将滑块的值映射到 20-300 范围
         mapped_value = 20 + value
-        self.window.aimRangeLcdNumber.display(mapped_value)
+        self.window.aimRangeLcdNumber.display(mapped_value) # type: ignore
         self.aim_range = mapped_value  # 更新 aimRange 值
 
     def on_aimRange_slider_released(self):
@@ -1066,7 +1065,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
     def send_aimRange_update(self):
         """每 200ms 发送一次最新的 aimRange 值"""
         self.mouseMoveProssesSignal_queue.put(("aim_range_change", self.aim_range))
-        self.YoloSignal_queue.put(("aim_range_change", self.aim_range))
+        self.YoloSignal_queue.put(("aim_range_change", self.aim_range)) # type: ignore
         print(f"定时发送 aimRange 更新信号: {self.aim_range}")
         if not self.is_aimRange_slider_pressed:
             # 用户已停止拖动滑动条，停止定时器
@@ -1076,7 +1075,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
     def on_lockSpeed_slider_value_changed(self, value):
         """当 lockSpeed 滑动条的值改变时调用"""
         value = value / 100  # 将值缩放到 [0, 1] 范围
-        self.window.lockSpeedLcdNumber.display(f"{value:.2f}")  # 在 LCD 上显示两位小数的值
+        self.window.lockSpeedLcdNumber.display(f"{value:.2f}") # type: ignore  # 在 LCD 上显示两位小数的值
         self.lock_speed = value  # 更新锁定速度
         # 如果定时器未启动，启动定时器
         if not self.slider_update_timer_lockSpeed.isActive():
@@ -1090,7 +1089,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
     def on_lockSpeed_slider_moved(self, value):
         """当 lockSpeed 滑动条被拖动时调用"""
         value = value / 100  # 将值缩放到 [0, 1] 范围
-        self.window.lockSpeedLcdNumber.display(f"滑动条的值: {value:.2f}")  # 在 LCD 上显示实时的值
+        self.window.lockSpeedLcdNumber.display(f"滑动条的值: {value:.2f}") # type: ignore  # 在 LCD 上显示实时的值
         self.lock_speed = value  # 更新锁定速度
 
     def on_lockSpeed_slider_released(self):
@@ -1111,7 +1110,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
     def on_slider_value_changed(self, value):
         """当滑动条的值改变时调用"""
         value = value / 100
-        self.window.confNumber.display(f"{value:.2f}")
+        self.window.confNumber.display(f"{value:.2f}") # type: ignore
         self.yolo_confidence = value  # 更新置信度值
 
         # 如果定时器未启动，启动定时器
@@ -1126,7 +1125,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
     def on_slider_moved(self, value):
         """当滑动条被拖动时调用"""
         value = value / 100
-        self.window.confNumber.display(f"滑动条的值: {value:.2f}")
+        self.window.confNumber.display(f"滑动条的值: {value:.2f}") # type: ignore
         self.yolo_confidence = value  # 更新置信度值
 
     def on_slider_released(self):
@@ -1136,7 +1135,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
     def send_update(self):
         """每200ms发送一次最新的置信度值"""
-        self.YoloSignal_queue.put(("change_conf", self.yolo_confidence))
+        self.YoloSignal_queue.put(("change_conf", self.yolo_confidence)) # type: ignore
         print(f"定时发送 YOLO 置信度更新信号: {self.yolo_confidence}")
 
         if not self.is_slider_pressed:
@@ -1147,7 +1146,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         """重启当前应用程序。"""
         # 显示警告对话框
         reply = QMessageBox.warning(
-            self.window,
+            self.window, # type: ignore
             "确认重启",
             "软件即将重启，未保存的参数将丢失，是否继续？",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -1174,12 +1173,12 @@ class RookieAiAPP:  # 主进程 (UI进程)
             self.process_video_signal.terminate()
             self.process_video_signal.join()
         if hasattr(self, 'process_videoprocessing'):
-            self.process_videoprocessing.terminate()
-            self.process_videoprocessing.join()
+            self.process_videoprocessing.terminate() # type: ignore
+            self.process_videoprocessing.join() # type: ignore
         # 关闭共享内存
         if hasattr(self, 'shm_video'):
-            self.shm_video.close()
-            self.shm_video.unlink()
+            self.shm_video.close() # type: ignore
+            self.shm_video.unlink() # type: ignore
         # 关闭应用程序
         self.app.quit()
 
@@ -1190,7 +1189,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
             # 获取 "ProcessMode" 的状态
             self.ProcessMode = Config.get("ProcessMode", "single_process")
             print("ProcessMode状态:", self.ProcessMode)
-            self.information_output_queue.put(("UI_process_log", f"ProcessMode状态: {self.ProcessMode}"))
+            self.information_output_queue.put(("UI_process_log", f"ProcessMode状态: {self.ProcessMode}")) # type: ignore
             # 获取 "window_always_on_top" 的状态
             self.window_always_on_top =Config.get("window_always_on_top", False)
             print("窗口置顶状态:", self.window_always_on_top)
@@ -1200,37 +1199,37 @@ class RookieAiAPP:  # 主进程 (UI进程)
             # 获取 YOLO 置信度设置
             yolo_confidence = Config.get('confidence', 0.5)  # 默认值为0.5
             self.yolo_confidence = yolo_confidence
-            self.window.confSlider.setValue(int(yolo_confidence * 100))  # 将置信度转换为滑动条值
+            self.window.confSlider.setValue(int(yolo_confidence * 100)) # type: ignore  # 将置信度转换为滑动条值
             print(f"读取保存的YOLO置信度: {yolo_confidence}")
             # 获取 瞄准速度
             aim_speed = Config.get('lockSpeed', 0.5)
             self.aim_speed = aim_speed
-            self.window.lockSpeedHorizontalSlider.setValue(int(aim_speed * 100))
+            self.window.lockSpeedHorizontalSlider.setValue(int(aim_speed * 100)) # type: ignore
             print(f"读取保存的瞄准速度: {aim_speed}")
             # 获取 瞄准范围
             aim_range = Config.get('aim_range', 100)
             self.aim_range = aim_range
-            self.window.aimRangeHorizontalSlider.setValue(int(aim_range))
+            self.window.aimRangeHorizontalSlider.setValue(int(aim_range)) # type: ignore
             print(f"读取保存的瞄准范围: {aim_range}")
             # 获取 Aimbot 开启状态
             aimbot_switch = Config.get("aimbot", False)
-            self.window.aimBotCheckBox.setChecked(aimbot_switch)
+            self.window.aimBotCheckBox.setChecked(aimbot_switch) # type: ignore
             self.mouseMoveProssesSignal_queue.put(("aimbot_switch_change", aimbot_switch))
             print(f"读取自瞄状态: {aimbot_switch}")
             # 获取 侧键瞄准 开启状态
             mouse_Side_Button_Witch = Config.get("mouse_Side_Button_Witch", False)
-            self.window.sideButtonCheckBox.setChecked(mouse_Side_Button_Witch)
+            self.window.sideButtonCheckBox.setChecked(mouse_Side_Button_Witch) # type: ignore
             self.mouseMoveProssesSignal_queue.put(("mouse_Side_Button_Witch_change", mouse_Side_Button_Witch))
             print(f"读取侧键瞄准开启状态: {mouse_Side_Button_Witch}")
             # 获取 detectionTargetComboBox 的值
             target_class = Config.get('target_class', "ALL")
             print(f"读取保存的检测类别: {target_class}")
-            self.window.detectionTargetComboBox.setCurrentText(target_class)
-            self.YoloSignal_queue.put(("change_class", target_class))
+            self.window.detectionTargetComboBox.setCurrentText(target_class) # type: ignore
+            self.YoloSignal_queue.put(("change_class", target_class)) # type: ignore
 
         except Exception as e:
             print("配置文件读取失败:", e)
-            self.information_output_queue.put(("UI_process_log", f"配置文件读取失败: {e}"))
+            self.information_output_queue.put(("UI_process_log", f"配置文件读取失败: {e}")) # type: ignore
             self.settings = {}
             self.ProcessMode = "single_process"  # 设置默认值
 
@@ -1240,13 +1239,13 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 获取当前 ProcessModeComboBox 的选项
         current_process_mode = self.choose_process_model_comboBox()
         # 获取当前 topWindowCheckBox 的状态
-        current_window_on_top = self.window.topWindowCheckBox.isChecked()
+        current_window_on_top = self.window.topWindowCheckBox.isChecked() # type: ignore
         # 获取当前 detectionTargetComboBox 的选项
-        current_target_class = self.window.detectionTargetComboBox.currentText()
+        current_target_class = self.window.detectionTargetComboBox.currentText() # type: ignore
         # 获取当前 aimBotCheckBox 的选项
-        aimbot_switch = self.window.aimBotCheckBox.isChecked()
+        aimbot_switch = self.window.aimBotCheckBox.isChecked() # type: ignore
         # 获取当前 sideButtonCheckBox 的选项
-        mouse_Side_Button_Witch = self.window.sideButtonCheckBox.isChecked()
+        mouse_Side_Button_Witch = self.window.sideButtonCheckBox.isChecked() # type: ignore
 
         '''保存参数'''
         # 更新 settings 字典
@@ -1283,58 +1282,58 @@ class RookieAiAPP:  # 主进程 (UI进程)
         """根据配置文件初始化界面"""
         # 设置 ProcessModeComboBox 的当前选项
         if self.ProcessMode == "single_process":
-            self.window.ProcessModeComboBox.setCurrentText("单进程模式")
+            self.window.ProcessModeComboBox.setCurrentText("单进程模式") # type: ignore
         elif self.ProcessMode == "multi_process":
-            self.window.ProcessModeComboBox.setCurrentText("多进程模式")
+            self.window.ProcessModeComboBox.setCurrentText("多进程模式") # type: ignore
         else:
-            self.window.ProcessModeComboBox.setCurrentText("单进程模式")  # 默认值
+            self.window.ProcessModeComboBox.setCurrentText("单进程模式") # type: ignore  # 默认值
 
         # 设置 topWindowCheckBox 的状态
-        self.window.topWindowCheckBox.setChecked(self.window_always_on_top)
+        self.window.topWindowCheckBox.setChecked(self.window_always_on_top) # type: ignore
         # 根据设置，更新窗口置顶状态
         self.update_window_on_top_state()
 
     def update_window_on_top_state(self):
         """根据复选框状态更新窗口的置顶状态"""
-        if self.window.topWindowCheckBox.isChecked():
-            self.window.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
+        if self.window.topWindowCheckBox.isChecked(): # type: ignore
+            self.window.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True) # type: ignore
         else:
-            self.window.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, False)
-        self.window.show()  # 需要调用 show() 以应用窗口标志的更改
+            self.window.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, False) # type: ignore
+        self.window.show() # type: ignore  # 需要调用 show() 以应用窗口标志的更改
 
     def update_unlock_window_size(self):
         """根据复选框状态更新窗口大小锁定的状态"""
-        if self.window.unlockWindowSizeCheckBox.isChecked():
+        if self.window.unlockWindowSizeCheckBox.isChecked(): # type: ignore
             # 解锁窗口大小：允许调整
-            self.window.setFixedSize(QSize())  # 移除固定大小限制
-            self.window.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-            self.window.setMinimumSize(300, 400)  # 设置合理的最小尺寸，视具体需求调整
-            self.window.setMaximumSize(QSize(16777215, 16777215))  # 设置最大的尺寸限制
+            self.window.setFixedSize(QSize()) # type: ignore  # 移除固定大小限制
+            self.window.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred) # type: ignore
+            self.window.setMinimumSize(300, 400) # type: ignore  # 设置合理的最小尺寸，视具体需求调整
+            self.window.setMaximumSize(QSize(16777215, 16777215)) # type: ignore  # 设置最大的尺寸限制
         else:
             # 锁定窗口大小：设置固定大小为当前尺寸
-            self.window.setFixedSize(self.window.size())
-            self.window.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+            self.window.setFixedSize(self.window.size()) # type: ignore
+            self.window.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed) # type: ignore
 
     def reset_window_size(self):
         """重置窗口大小为 (1290, 585)"""
         target_size = QSize(1290, 585)
 
-        if self.window.unlockWindowSizeCheckBox.isChecked():
+        if self.window.unlockWindowSizeCheckBox.isChecked(): # type: ignore
             # 如果窗口大小已解锁，直接调整窗口大小
-            self.window.resize(target_size)
+            self.window.resize(target_size) # type: ignore
         else:
             # 如果窗口大小已锁定，设置固定大小为目标大小
-            self.window.setFixedSize(target_size)
+            self.window.setFixedSize(target_size) # type: ignore
 
         # 如果需要在重置大小后更新大小策略，可以在这里进行
-        if self.window.unlockWindowSizeCheckBox.isChecked():
-            self.window.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        if self.window.unlockWindowSizeCheckBox.isChecked(): # type: ignore
+            self.window.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred) # type: ignore
         else:
-            self.window.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+            self.window.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed) # type: ignore
 
     def choose_process_model_comboBox(self):
         """选择进程模式"""
-        ProcessMode = self.window.ProcessModeComboBox.currentText()  # 获取当前选项文本
+        ProcessMode = self.window.ProcessModeComboBox.currentText() # type: ignore  # 获取当前选项文本
         if ProcessMode == "单进程模式":
             return "single_process"
         elif ProcessMode == "多进程模式":
@@ -1345,8 +1344,8 @@ class RookieAiAPP:  # 主进程 (UI进程)
     def apply_rounded_mask_to_show_video(self):
         """对 show_video 应用带圆角的遮罩"""
         radius = 20  # 设置圆角半径
-        width = self.window.show_video.width()
-        height = self.window.show_video.height()
+        width = self.window.show_video.width() # type: ignore
+        height = self.window.show_video.height() # type: ignore
 
         # 创建带圆角的遮罩
         mask = QBitmap(width, height)
@@ -1358,22 +1357,22 @@ class RookieAiAPP:  # 主进程 (UI进程)
         painter.end()
 
         # 将遮罩应用到 show_video
-        self.window.show_video.setMask(mask)
+        self.window.show_video.setMask(mask) # type: ignore
 
     def update_button_text(self):
         """更新按钮文本"""
         if self.is_video_running:
-            self.window.OpVideoButton.setText("关闭视频预览")
+            self.window.OpVideoButton.setText("关闭视频预览") # type: ignore
         else:
-            self.window.OpVideoButton.setText("打开视频预览")
+            self.window.OpVideoButton.setText("打开视频预览") # type: ignore
 
     def update_video_frame(self):
         """更新视频帧到QLabel"""
         frame = None  # 初始化 frame 为 None
-        if not self.processedVideo_queue.empty():
+        if not self.processedVideo_queue.empty(): # type: ignore
             # 清空队列，只保留最新的帧
-            while not self.processedVideo_queue.empty():
-                frame = self.processedVideo_queue.get()
+            while not self.processedVideo_queue.empty(): # type: ignore
+                frame = self.processedVideo_queue.get() # type: ignore
 
         # 如果 frame 为空，直接返回以跳过更新
         if frame is None:
@@ -1399,23 +1398,23 @@ class RookieAiAPP:  # 主进程 (UI进程)
         cv2.putText(frame, f'FPS: {self.fps:.1f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
         # 更新 QLabel，保持等比填充
         pixmap = QPixmap.fromImage(q_img)
-        pixmap = pixmap.scaled(self.window.show_video.size(), aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio,
+        pixmap = pixmap.scaled(self.window.show_video.size(), aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio, # type: ignore
                                transformMode=Qt.TransformationMode.SmoothTransformation)
 
-        self.window.show_video.setPixmap(pixmap)
+        self.window.show_video.setPixmap(pixmap) # type: ignore
 
     def toggle_YOLO_button(self):
         """切换 YOLO 处理状态并更新按钮文本"""
         if self.is_yolo_running:
             # 停止 YOLO 处理
-            self.YoloSignal_queue.put(('YOLO_stop', None))
-            self.window.OpYoloButton.setText("开启 YOLO")
+            self.YoloSignal_queue.put(('YOLO_stop', None)) # type: ignore
+            self.window.OpYoloButton.setText("开启 YOLO") # type: ignore
             self.is_yolo_running = False
             print("YOLO 处理已停止。")
         else:
             # 开启 YOLO 处理
-            self.YoloSignal_queue.put(('YOLO_start', None))
-            self.window.OpYoloButton.setText("关闭 YOLO")
+            self.YoloSignal_queue.put(('YOLO_start', None)) # type: ignore
+            self.window.OpYoloButton.setText("关闭 YOLO") # type: ignore
             self.is_yolo_running = True
             print("YOLO 处理已启动。")
 
@@ -1426,9 +1425,9 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
         if self.is_video_running:
             print("关闭视频源:", video_source)
-            self.window.OpVideoButton.setText("关闭视频显示中...")  # 更新按钮文本
-            self.pipe_parent.send(('stop_video', video_source))  # 发送停止视频信号
-            self.window.status_widget.display_message("预览已关闭", bg_color="Yellow", text_color="black",
+            self.window.OpVideoButton.setText("关闭视频显示中...") # type: ignore  # 更新按钮文本
+            self.pipe_parent.send(('stop_video', video_source)) # type: ignore  # 发送停止视频信号
+            self.window.status_widget.display_message("预览已关闭", bg_color="Yellow", text_color="black", # type: ignore
                                                       auto_hide=1500)
             # 启动清理定时器
             if not hasattr(self, 'clear_timer'):
@@ -1438,9 +1437,9 @@ class RookieAiAPP:  # 主进程 (UI进程)
             self.is_video_running = False  # 更新状态
         else:
             print("启动视频源:", video_source)
-            self.window.OpVideoButton.setText("打开视频显示中...")  # 更新按钮文本
-            self.pipe_parent.send(("start_video", video_source))  # 发送启动视频信号
-            self.window.status_widget.display_message("预览已开启", bg_color="#55ff00", text_color="black",
+            self.window.OpVideoButton.setText("打开视频显示中...") # type: ignore  # 更新按钮文本
+            self.pipe_parent.send(("start_video", video_source)) # type: ignore  # 发送启动视频信号
+            self.window.status_widget.display_message("预览已开启", bg_color="#55ff00", text_color="black", # type: ignore
                                                       auto_hide=1500)
             # 停止清理定时器
             if hasattr(self, 'clear_timer'):
@@ -1454,85 +1453,85 @@ class RookieAiAPP:  # 主进程 (UI进程)
         """隐藏设置面板"""
 
         # 获取当前设置面板的位置
-        start_pos = self.window.settingsPanel.pos()
+        start_pos = self.window.settingsPanel.pos() # type: ignore
         # 计算结束位置，使面板移出屏幕（左侧）
-        end_pos = QPoint(-self.window.settingsPanel.width(), start_pos.y())
+        end_pos = QPoint(-self.window.settingsPanel.width(), start_pos.y()) # type: ignore
 
         # 创建一个属性动画，控制设置面板的位置
-        self.window.animation = QPropertyAnimation(self.window.settingsPanel, b"pos")
-        self.window.animation.setDuration(500)  # 动画持续时间为 500 毫秒
-        self.window.animation.setStartValue(start_pos)  # 动画开始位置
-        self.window.animation.setEndValue(end_pos)  # 动画结束位置
-        self.window.animation.setEasingCurve(QEasingCurve.Type.InQuad)  # 设置动画效果为缓入
+        self.window.animation = QPropertyAnimation(self.window.settingsPanel, b"pos") # type: ignore
+        self.window.animation.setDuration(500) # type: ignore  # 动画持续时间为 500 毫秒
+        self.window.animation.setStartValue(start_pos) # type: ignore  # 动画开始位置
+        self.window.animation.setEndValue(end_pos)  # type: ignore # 动画结束位置
+        self.window.animation.setEasingCurve(QEasingCurve.Type.InQuad) # type: ignore  # 设置动画效果为缓入
 
         # 启动面板位置动画
-        self.window.animation.start()
+        self.window.animation.start() # type: ignore
 
         # 设置遮罩动画属性
-        self.window.overlay_animation.setDuration(500)  # 遮罩动画持续时间为 500 毫秒
-        self.window.overlay_animation.setStartValue(1)  # 遮罩的初始透明度
-        self.window.overlay_animation.setEndValue(0)  # 遮罩的结束透明度（完全透明）
-        self.window.overlay_animation.setEasingCurve(QEasingCurve.Type.InQuad)  # 设置动画效果为缓入
+        self.window.overlay_animation.setDuration(500)  # type: ignore # 遮罩动画持续时间为 500 毫秒
+        self.window.overlay_animation.setStartValue(1)  # type: ignore # 遮罩的初始透明度
+        self.window.overlay_animation.setEndValue(0)  # type: ignore # 遮罩的结束透明度（完全透明）
+        self.window.overlay_animation.setEasingCurve(QEasingCurve.Type.InQuad)  # type: ignore # 设置动画效果为缓入
 
         # 启动遮罩透明度动画
-        self.window.overlay_animation.start()
+        self.window.overlay_animation.start() # type: ignore
 
         # 在面板隐藏动画完成后，隐藏面板并使主窗口可用
-        self.window.animation.finished.connect(self.window.settingsPanel.hide)
-        self.window.animation.finished.connect(lambda: (
-            self.window.settingsPanel.hide(),
-            self.window.overlay.hide(),  # 隐藏遮罩
-            self.window.setEnabled(True)  # 使主窗口重新可用
+        self.window.animation.finished.connect(self.window.settingsPanel.hide) # type: ignore
+        self.window.animation.finished.connect(lambda: ( # type: ignore
+            self.window.settingsPanel.hide(), # type: ignore
+            self.window.overlay.hide(),  # 隐藏遮罩 # type: ignore
+            self.window.setEnabled(True) # type: ignore  # 使主窗口重新可用
         ))
 
     def show_settings(self):
         """显示设置面板和半透明遮罩"""
 
         # 显示遮罩组件
-        self.window.overlay.show()
+        self.window.overlay.show() # type: ignore
 
         # 设置遮罩动画属性
-        self.window.overlay_animation.setDuration(500)  # 遮罩动画持续时间为 500 毫秒
-        self.window.overlay_animation.setStartValue(0)  # 遮罩的初始透明度（完全透明）
-        self.window.overlay_animation.setEndValue(1)  # 遮罩的结束透明度（完全不透明）
-        self.window.overlay_animation.setEasingCurve(QEasingCurve.Type.OutQuad)  # 设置动画效果为缓出
+        self.window.overlay_animation.setDuration(500) # type: ignore  # 遮罩动画持续时间为 500 毫秒
+        self.window.overlay_animation.setStartValue(0) # type: ignore  # 遮罩的初始透明度（完全透明）
+        self.window.overlay_animation.setEndValue(1) # type: ignore  # 遮罩的结束透明度（完全不透明）
+        self.window.overlay_animation.setEasingCurve(QEasingCurve.Type.OutQuad) # type: ignore  # 设置动画效果为缓出
 
         # 启动遮罩透明度动画
-        self.window.overlay_animation.start()
+        self.window.overlay_animation.start() # type: ignore
 
         # 设置允许鼠标事件通过遮罩
-        self.window.overlay.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)
-        self.window.settingsPanel.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)
+        self.window.overlay.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False) # type: ignore
+        self.window.settingsPanel.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False) # type: ignore
 
         # 显示设置面板
-        self.window.settingsPanel.show()
+        self.window.settingsPanel.show() # type: ignore
 
         # 获取当前设置面板的位置
-        start_pos = self.window.settingsPanel.pos()
+        start_pos = self.window.settingsPanel.pos() # type: ignore
         # 计算结束位置，使面板从左侧进入屏幕
         end_pos = QPoint(0, start_pos.y())
 
         # 创建一个属性动画，控制设置面板的位置
-        self.window.animation = QPropertyAnimation(self.window.settingsPanel, b"pos")
-        self.window.animation.setDuration(500)  # 动画持续时间为 500 毫秒
-        self.window.animation.setStartValue(start_pos)  # 动画开始位置
-        self.window.animation.setEndValue(end_pos)  # 动画结束位置
-        self.window.animation.setEasingCurve(QEasingCurve.Type.OutQuad)  # 设置动画效果为缓出
+        self.window.animation = QPropertyAnimation(self.window.settingsPanel, b"pos") # type: ignore
+        self.window.animation.setDuration(500) # type: ignore  # 动画持续时间为 500 毫秒
+        self.window.animation.setStartValue(start_pos) # type: ignore  # 动画开始位置
+        self.window.animation.setEndValue(end_pos) # type: ignore  # 动画结束位置
+        self.window.animation.setEasingCurve(QEasingCurve.Type.OutQuad) # type: ignore  # 设置动画效果为缓出
 
         # 启动面板位置动画
-        self.window.animation.start()
+        self.window.animation.start() # type: ignore
 
     def disable_buttons(self):
         """禁用按钮，防止在动画进行时重复点击"""
-        self.window.advancedSettingsPushButton.setEnabled(False)
-        self.window.basicSettingsPushButton.setEnabled(False)
-        self.window.softwareInformationPushButton.setEnabled(False)
+        self.window.advancedSettingsPushButton.setEnabled(False) # type: ignore
+        self.window.basicSettingsPushButton.setEnabled(False) # type: ignore
+        self.window.softwareInformationPushButton.setEnabled(False) # type: ignore
 
     def enable_buttons(self):
         """启用按钮"""
-        self.window.advancedSettingsPushButton.setEnabled(True)
-        self.window.basicSettingsPushButton.setEnabled(True)
-        self.window.softwareInformationPushButton.setEnabled(True)
+        self.window.advancedSettingsPushButton.setEnabled(True) # type: ignore
+        self.window.basicSettingsPushButton.setEnabled(True) # type: ignore
+        self.window.softwareInformationPushButton.setEnabled(True) # type: ignore
 
     def on_animation_finished(self):
         """动画结束后的处理"""
@@ -1566,7 +1565,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
             end_pos = QPoint(start_pos.x() + offset, start_pos.y())
 
             # 创建动画
-            animation = QPropertyAnimation(frame, b"pos")
+            animation = QPropertyAnimation(frame, b"pos") # type: ignore
             animation.setDuration(duration)
             animation.setStartValue(start_pos)
             animation.setEndValue(end_pos)
@@ -1591,10 +1590,10 @@ class RookieAiAPP:  # 主进程 (UI进程)
         self.item_animations.clear()
 
         # 获取按钮和红线控件
-        basic_button = self.window.basicSettingsPushButton
-        advanced_button = self.window.advancedSettingsPushButton
-        software_button = self.window.softwareInformationPushButton
-        red_line = self.window.redLine
+        basic_button = self.window.basicSettingsPushButton # type: ignore
+        advanced_button = self.window.advancedSettingsPushButton # type: ignore
+        software_button = self.window.softwareInformationPushButton # type: ignore
+        red_line = self.window.redLine # type: ignore
 
         # 创建一个字典，方便根据类型获取按钮
         buttons = {
@@ -1620,10 +1619,10 @@ class RookieAiAPP:  # 主进程 (UI进程)
         duration = 200  # 可以根据需要调整
 
         # 移动红线到目标按钮下方
-        red_line_animation = QPropertyAnimation(red_line, b"geometry")
+        red_line_animation = QPropertyAnimation(red_line, b"geometry") # type: ignore
         red_line_animation.setDuration(duration)
         red_line_animation.setStartValue(red_line.geometry())
-        target_red_line_geometry = QRect(target_button.x(), red_line.y(), target_button.width(), red_line.height())
+        target_red_line_geometry = QRect(target_button.x(), red_line.y(), target_button.width(), red_line.height()) # type: ignore
         red_line_animation.setEndValue(target_red_line_geometry)
         red_line_animation.setEasingCurve(QEasingCurve.Type.OutQuad)
         red_line_animation.start()
@@ -1631,7 +1630,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
         # 移动按钮位置
         for button in all_buttons:
-            button_animation = QPropertyAnimation(button, b"geometry")
+            button_animation = QPropertyAnimation(button, b"geometry") # type: ignore
             button_animation.setDuration(duration)
             button_animation.setStartValue(button.geometry())
 
@@ -1649,8 +1648,8 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
     def clear_video_display(self):
         """清空视频显示窗口直到清空干净"""
-        if self.window.show_video.pixmap():
-            self.window.show_video.setPixmap(QPixmap())  # 清空显示窗口
+        if self.window.show_video.pixmap(): # type: ignore
+            self.window.show_video.setPixmap(QPixmap()) # type: ignore  # 清空显示窗口
         else:
             self.clear_timer.stop()  # 停止定时器
 
@@ -1660,7 +1659,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 检查模型文件路径是否为空
         if not getattr(self, 'model_file', None):  # 如果 model_file 属性不存在或为空
             log_msg = "未选择模型文件，无法重新加载模型。"
-            self.window.status_widget.display_message(log_msg, bg_color="Red", text_color="black", auto_hide=6000)
+            self.window.status_widget.display_message(log_msg, bg_color="Red", text_color="black", auto_hide=6000) # type: ignore
             return  # 退出方法，不执行后续操作
 
         # 如果此时 视频预览 在开启状态，则进行关闭。
@@ -1672,15 +1671,15 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
         if self.ProcessMode == "multi_process":
             # 发送更改模型信号 与 模型路径(多进程)
-            self.YoloSignal_queue.put(("change_model", self.model_file))
-            self.information_output_queue.put(("UI_process_log", "向 YoloSignal_queue 发送 change_model"))
+            self.YoloSignal_queue.put(("change_model", self.model_file)) # type: ignore
+            self.information_output_queue.put(("UI_process_log", "向 YoloSignal_queue 发送 change_model")) # type: ignore
         else:
             # 发送更改模型信号 与 模型路径(单进程)
-            self.videoSignal_queue.put(("change_model", self.model_file))
-            self.information_output_queue.put(("UI_process_log", "向 videoSignal_queue 发送 change_model"))
+            self.videoSignal_queue.put(("change_model", self.model_file)) # type: ignore
+            self.information_output_queue.put(("UI_process_log", "向 videoSignal_queue 发送 change_model")) # type: ignore
 
         # 显示模型已重新加载的消息
-        self.window.status_widget.display_message("模型已重新加载", bg_color="#55ff00", text_color="black",
+        self.window.status_widget.display_message("模型已重新加载", bg_color="#55ff00", text_color="black", # type: ignore
                                                   auto_hide=1500)
 
     def choose_model(self):
@@ -1693,32 +1692,32 @@ class RookieAiAPP:  # 主进程 (UI进程)
         )
         if model_file:  # 如果用户选择了文件
             self.file_name = os.path.basename(model_file)  # 只提取文件名和后缀
-            self.window.modelFileLabel.setText(self.file_name)  # 更新UI中的标签文本
+            self.window.modelFileLabel.setText(self.file_name)  # 更新UI中的标签文本 # type: ignore
             self.model_file = model_file  # 保存模型文件路径到类属性
             print(f"选择的模型文件: {self.file_name}")
 
     def show(self):
         """显示窗口"""
-        self.window.show()
+        self.window.show() # type: ignore
 
         self.show_loading_animation()  # 显示加载信息悬浮窗
 
         self.show_log_output()  # 开启 调试信息 输出监听
 
         # 更新 modelFileLabel 显示的模型名称
-        file_name = os.path.basename(self.model_file)  # 只提取文件名和后缀
-        self.window.modelFileLabel.setText(file_name)  # 更新UI中的标签文本
+        file_name = os.path.basename(self.model_file)  # 只提取文件名和后缀 # type: ignore
+        self.window.modelFileLabel.setText(file_name)  # 更新UI中的标签文本 # type: ignore
 
         # 发送最新 置信度
-        self.YoloSignal_queue.put(("change_conf", self.yolo_confidence))
+        self.YoloSignal_queue.put(("change_conf", self.yolo_confidence)) # type: ignore
 
-        self.information_output_queue.put(("UI_process_log", "UI主进程 初始化完毕"))
+        self.information_output_queue.put(("UI_process_log", "UI主进程 初始化完毕")) # type: ignore
 
         sys.exit(self.app.exec())
 
     def show_loading_animation(self):
         # 提示加载信息框
-        self.window.status_widget.show_status_widget("加载中...", bg_color="Yellow", text_color="black")
+        self.window.status_widget.show_status_widget("加载中...", bg_color="Yellow", text_color="black") # type: ignore
 
         # 创建定时器，用来周期性地检查队列
         self.timer_check_queue = QTimer(self.window)  # 将 self.window 作为 QTimer 的父对象
@@ -1727,20 +1726,20 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
     def check_floating_information_signal_queue(self):
         """检查 floating_information_signal_queue 是否有加载完毕的信号"""
-        if not self.floating_information_signal_queue.empty():
-            message = self.floating_information_signal_queue.get_nowait()  # 非阻塞地获取消息
+        if not self.floating_information_signal_queue.empty(): # type: ignore
+            message = self.floating_information_signal_queue.get_nowait()  # 非阻塞地获取消息 # type: ignore
             if message[0] == "loading_complete" and message[1] is True:
                 print("软件初始化完毕，停止检查队列")
                 # 停止定时器检查队列
                 # self.timer_check_queue.stop()
                 # 更新UI或执行其他操作
-                self.window.status_widget.display_message("加载完毕", bg_color="#55ff00", text_color="black",
+                self.window.status_widget.display_message("加载完毕", bg_color="#55ff00", text_color="black", # type: ignore
                                                           auto_hide=3000)
             elif message[0] == "error_log":
-                self.window.status_widget.display_message(message[1], bg_color="Yellow", text_color="black",
+                self.window.status_widget.display_message(message[1], bg_color="Yellow", text_color="black", # type: ignore
                                                           auto_hide=3000)
             elif message[0] == "red_error_log":
-                self.window.status_widget.show_status_widget(message[1], bg_color="Red", text_color="black")
+                self.window.status_widget.show_status_widget(message[1], bg_color="Red", text_color="black") # type: ignore
 
     def show_log_output(self):
         """调试信息输出 计时循环"""
@@ -1751,8 +1750,8 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
     def log_output(self):
         """调试信息输出"""
-        if not self.information_output_queue.empty():
-            message = self.information_output_queue.get_nowait()
+        if not self.information_output_queue.empty(): # type: ignore
+            message = self.information_output_queue.get_nowait() # type: ignore
             print("information_output_queue 队列接收信息:", message)
 
             if message[0] == "UI_process_log":  # UI主进程 调试信息输出
@@ -1761,8 +1760,8 @@ class RookieAiAPP:  # 主进程 (UI进程)
                 if not isinstance(log_msg, str):
                     log_msg = str(log_msg)
 
-                self.window.log_output_00.append(f"[INFO]UI主进程 日志: {log_msg}")
-                self.window.log_output_00.ensureCursorVisible()
+                self.window.log_output_00.append(f"[INFO]UI主进程 日志: {log_msg}") # type: ignore
+                self.window.log_output_00.ensureCursorVisible() # type: ignore
 
             if message[0] == "log_output_main":  # 主通信进程 调试信息输出
                 log_msg = message[1]  # 提取信息段
@@ -1771,8 +1770,8 @@ class RookieAiAPP:  # 主进程 (UI进程)
                 if not isinstance(log_msg, str):
                     log_msg = str(log_msg)  # 如果不是字符串类型，则转换为字符串
 
-                self.window.log_output_01.append(f"[INFO]通信进程 收到信号: {log_msg}")  # 添加新的日志信息
-                self.window.log_output_01.ensureCursorVisible()  # 确保光标可见
+                self.window.log_output_01.append(f"[INFO]通信进程 收到信号: {log_msg}")  # 添加新的日志信息 # type: ignore
+                self.window.log_output_01.ensureCursorVisible()  # 确保光标可见 # type: ignore
 
             if message[0] == "video_processing_log":  # 视频处理进程 调试信息输出
                 log_msg = message[1]
@@ -1780,8 +1779,8 @@ class RookieAiAPP:  # 主进程 (UI进程)
                 if not isinstance(log_msg, str):
                     log_msg = str(log_msg)
 
-                self.window.log_output_02.append(f"[INFO]视频处理进程 收到信号: {log_msg}")
-                self.window.log_output_02.ensureCursorVisible()
+                self.window.log_output_02.append(f"[INFO]视频处理进程 收到信号: {log_msg}") # type: ignore
+                self.window.log_output_02.ensureCursorVisible() # type: ignore
 
             if message[0] == "video_signal_acquisition_log":  # 视频信号接收进程 调试信息输出
                 log_msg = message[1]
@@ -1790,8 +1789,8 @@ class RookieAiAPP:  # 主进程 (UI进程)
                 if not isinstance(log_msg, str):
                     log_msg = str(log_msg)
 
-                self.window.log_output_03.append(f"[INFO]动作: {operate}  信号源: {signal_source}")
-                self.window.log_output_03.ensureCursorVisible()
+                self.window.log_output_03.append(f"[INFO]动作: {operate}  信号源: {signal_source}") # type: ignore
+                self.window.log_output_03.ensureCursorVisible() # type: ignore
 
             if message[0] == "error_log":  # 报错信息提示
                 log_msg = message[1]
@@ -1799,7 +1798,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
                 if not isinstance(log_msg, str):
                     log_msg = str(log_msg)
 
-                self.window.status_widget.display_message(log_msg, bg_color="Red", text_color="black", auto_hide=6000)
+                self.window.status_widget.display_message(log_msg, bg_color="Red", text_color="black", auto_hide=6000) # type: ignore
 
     def main(self):
         """程序启动初始化"""
