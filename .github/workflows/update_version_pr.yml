@@ -4,12 +4,15 @@ on:
   push:
     branches:
       - dev
+
 permissions:
-  contents: write  # 声明对仓库内容的写权限
+  contents: write
+  pull-requests: write
 
 jobs:
   update-version:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,7 +27,7 @@ jobs:
           echo "Current version: $version"
           echo "current_version=$version" >> $GITHUB_OUTPUT
 
-      - name: Check for version file changes
+      - name: Check for changes in version file
         id: check_diff
         run: |
           if git diff --name-only HEAD~1 HEAD | grep -q '__version__'; then
@@ -50,11 +53,11 @@ jobs:
           echo "Updating version to: $new_version"
           echo "__version__: $new_version" > __version__
 
-      - name: Check updated version
+      - name: Print updated version
         if: steps.check_diff.outputs.version_changed == 'false'
         run: cat __version__
 
-      - name: Create or update PR
+      - name: Create or update pull request
         if: steps.check_diff.outputs.version_changed == 'false'
         uses: peter-evans/create-pull-request@v7
         with:
@@ -65,5 +68,5 @@ jobs:
           commit-message: ":tada: chore(version): Update version to ${{ steps.update_version.outputs.new_version }}"
           add-paths: __version__
           author: "GitHub Action <action@github.com>"
-          committer: "${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"  # 修正了邮箱地址
+          committer: "${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
           labels: automated-update

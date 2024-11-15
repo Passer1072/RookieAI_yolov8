@@ -4,8 +4,9 @@ on:
   push:
     branches:
       - dev
+
 permissions:
-  contents: write  # 允许写入内容
+  contents: write
 
 jobs:
   generate-changelog:
@@ -23,22 +24,16 @@ jobs:
       - name: Append to CHANGELOG.md
         run: |
           CURRENT_DATE=$(date +%Y-%m-%d)
-          NEW_ENTRIES="- $(git log -1 --pretty=format:'%s [`%h`](%h)')"
+          NEW_ENTRIES="- $(git log -1 --pretty=format:'%s [`%h`](%H)')"
 
           # 检查 CHANGELOG.md 中是否存在相同日期的条目
-          if grep -q "## \[$CURRENT_DATE\] - New Updates" CHANGELOG.md; then
+          if grep -q "## $$CURRENT_DATE$ - New Updates" CHANGELOG.md; then
             # 存在相同日期的条目，追加新的提交信息
-            HEAD_CONTENT=$(head -n 2 CHANGELOG.md)
-            TAIL_CONTENT=$(tail -n +3 CHANGELOG.md)
-            NEW_SECTION="$HEAD_CONTENT\n$NEW_ENTRIES\n$TAIL_CONTENT"
-            echo -e "$NEW_SECTION" > CHANGELOG.md
+            echo -e "\n$NEW_ENTRIES" >> CHANGELOG.md
             echo "追加新的提交信息到现有日期条目"
           else
             # 不存在相同日期的条目，创建新的条目
-            HEAD_CONTENT=$(head -n 1 CHANGELOG.md)
-            TAIL_CONTENT=$(tail -n +2 CHANGELOG.md)
-            NEW_SECTION="## [$CURRENT_DATE] - New Updates\n$NEW_ENTRIES\n"
-            echo -e "$HEAD_CONTENT\n$NEW_SECTION\n$TAIL_CONTENT" > CHANGELOG.md
+            echo -e "## [$CURRENT_DATE] - New Updates\n$NEW_ENTRIES\n" >> CHANGELOG.md
             echo "创建新的日期条目并添加提交信息"
           fi
           
