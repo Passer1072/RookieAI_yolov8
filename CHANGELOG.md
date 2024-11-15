@@ -1,5 +1,6 @@
 # Changelog
 ## [2024-11-15] - New Updates
+- 合并ui文件 [`f58534d`](f58534d)
 - Create RookieAiWindow.ui [`3f52164`](3f52164)
 - 优化V3版本模块调用 [`d3cd1c8`](d3cd1c8)
 - 补传 [`8915777`](8915777)
