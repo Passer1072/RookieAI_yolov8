@@ -1,5 +1,6 @@
 # Changelog
 ## [2024-11-15] - New Updates
+- ci: 更新版本解析正则表达式 [`f97b7fd`](f97b7fd25d13cee995a397f89ecb8d41e987b762)
 - Merge pull request #72 from Passer1072/create-pr/update_version [`8a5421c`](8a5421cb3e9553aaad95c112d384c3054ac32f4a)
 - 更新公告内容，增加对YOLO 11模型的支持说明，删除之前的日志文件和UI管理器，添加新的启动器脚本，并引入异步操作以优化效果，更新相关信息和方法以支持最新需求。 [`4d32681`](4d32681ca6b47fa17b222a4cb12d30f28df431ab)
 - 更新 CHANGELOG 和版本更新工作流程，修正日期格式检查，优化条件判断逻辑，添加对拉取请求的写权限，调整步骤名称以提高清晰度。 [`941f3be`](941f3be7adba7e462432bc3c5f62b712a45d18b1)
