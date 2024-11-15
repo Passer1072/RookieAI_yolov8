@@ -1,0 +1,12 @@
+{
+    "aim_range": 135,
+    "aimbot": true,
+    "closest_mouse_dist": 160.8,
+    "confidence": 0.32,
+    "lockSpeed": 0.2,
+    "model_file": "yolov8n.pt",
+    "mouse_Side_Button_Witch": true,
+    "ProcessMode": "multi_process",
+    "window_always_on_top": false,
+    "target_class": "0"
+}
