@@ -1,4 +1,7 @@
 # Changelog
+## [2024-11-25] - New Updates
+- 瞄准逻辑优化 [`1661dd6`](1661dd66395b7c371fc072b7d005c21e422d2675)
+
 ## [2024-11-15] - New Updates
 - ci: 更新版本解析正则表达式 [`f97b7fd`](f97b7fd25d13cee995a397f89ecb8d41e987b762)
 - Merge pull request #72 from Passer1072/create-pr/update_version [`8a5421c`](8a5421cb3e9553aaad95c112d384c3054ac32f4a)
