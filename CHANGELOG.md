@@ -1,4 +1,7 @@
 # Changelog
+## [2024-11-26] - New Updates
+- 补上传自定义动画库 [`3bbcd39`](3bbcd399701782ddcd3b75d4200c9c06b0094f45)
+
 ## [2024-11-25] - New Updates
 - 瞄准逻辑优化 [`1661dd6`](1661dd66395b7c371fc072b7d005c21e422d2675)
 
