@@ -1,4 +1,7 @@
 # Changelog
+## [2024-11-29] - New Updates
+- 整理 [`2e11232`](2e11232c422e56a523570d7ef5cef86cdf42dddf)
+
 ## [2024-11-26] - New Updates
 - 补上传自定义动画库 [`3bbcd39`](3bbcd399701782ddcd3b75d4200c9c06b0094f45)
 
