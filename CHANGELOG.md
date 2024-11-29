@@ -1,5 +1,6 @@
 # Changelog
 ## [2024-11-29] - New Updates
+- [`2d32c16`](2d32c16cb534bd5b3b11b7e81ace30d959c6c6fe) Merge branch 'dev' of github.com:Passer1072/RookieAI_yolov8 into dev
 - [`30f79f6`](30f79f648d25951f1ad2dbd804ec1bbda1c89241) refactor(module): 重构配置文件保存路径并简化导入
 - [`83b20ea`](83b20ea8760b04c87414d2139bc22c8add85e15c) Merge pull request #73 from Passer1072/create-pr/update_version
 - [`b5a7ce6`](b5a7ce64f19603f1a0ac1963e787bf1f5bfaa59f) refactor(RookieAI): 重构代码并添加新功能
