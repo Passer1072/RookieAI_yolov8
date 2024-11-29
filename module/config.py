@@ -1,4 +1,3 @@
-from math import e
 import os
 from pathlib import Path
 import sys
@@ -61,7 +60,7 @@ class _Config:
             self.save()
 
     def save(self) -> None:
-        with open(Root / "settings.json", "w", encoding="utf8") as f:
+        with open(Root / "Data" / "settings.json", "w", encoding="utf8") as f:
             f.write(json.dumps(self.content, ensure_ascii=False, indent=4))
 
     def __getitem__(self, key: str) -> Any:
