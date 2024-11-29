@@ -1,5 +1,6 @@
 # Changelog
 ## [2024-11-29] - New Updates
+- [`b5a7ce6`](b5a7ce64f19603f1a0ac1963e787bf1f5bfaa59f) refactor(RookieAI): 重构代码并添加新功能
 - Merge branch 'dev' of https://github.com/Passer1072/RookieAI_yolov8 into dev [`be7f202`](be7f2027c145aa4c04a75d1968a4551ee835409e)
 - 整理 [`2e11232`](2e11232c422e56a523570d7ef5cef86cdf42dddf)
 
