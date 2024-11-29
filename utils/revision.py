@@ -1,7 +1,7 @@
 import aiohttp
 import base64
 import re
-from utils.config import Root
+from Module.config import Root
 
 
 async def get_release_version_with_date() -> tuple[str, str]:

@@ -1,3 +1,4 @@
+import contextlib
 import math
 import multiprocessing
 import os
@@ -12,15 +13,16 @@ import numpy as np
 import pyautogui
 import win32api
 import win32con
-import matplotlib.pyplot as plt
 from math import sqrt
 from ultralytics import YOLO
-from PyQt6 import QtWidgets, uic, QtCore
+from PyQt6 import QtWidgets, uic
 from PyQt6.QtCore import QTimer, Qt, QPropertyAnimation, QPoint, QEasingCurve, QParallelAnimationGroup, QRect, QSize
 from PyQt6.QtGui import QIcon, QImage, QPixmap, QBitmap, QPainter
 from PyQt6.QtWidgets import QGraphicsOpacityEffect, QFileDialog, QMessageBox, QSizePolicy
 from customLib.animated_status import AnimatedStatus  # 导入 带动画的状态提示浮窗 库
-
+from Module.const import keys_code, method_mode
+from Module.config import Config, Root
+import Module.mouse as mouse
 
 def communication_Process(pipe, videoSignal_queue, videoSignal_stop_queue, floating_information_signal_queue,
                           information_output_queue):
@@ -162,7 +164,7 @@ def start_capture_process_single(videoSignal_queue, videoSignal_stop_queue, info
     model = initialization_Yolo(model_file, information_output_queue)  # 初始化YOLO
     pipe_parent.send(("loading_complete", True))  # 初始化加载完成标志
 
-    try:
+    with contextlib.suppress(KeyboardInterrupt):
         while True:
             """开始监听视频开关信号"""
             try:
@@ -188,12 +190,10 @@ def start_capture_process_single(videoSignal_queue, videoSignal_stop_queue, info
             except Exception as e:
                 print(f"获取视频信号时发生错误: {e}")
                 information_output_queue.put(("error_log", f"获取视频信号时发生错误: {e}"))
-    except KeyboardInterrupt:
-        pass
 
 
 def open_screen_video(shared_frame, frame_available_event, videoSignal_stop_queue):
-    """（多进程）打开屏幕捕获并显示视频帧"""
+    """（多进程）打开屏幕捕获并显示视频帧，限制截图速率为100 FPS"""
     # 清空 videoSignal_stop_queue 队列
     while not videoSignal_stop_queue.empty():
         try:
@@ -216,8 +216,18 @@ def open_screen_video(shared_frame, frame_available_event, videoSignal_stop_queu
             "height": capture_height
         }
 
+        # 初始化 'frame' 以避免引用前未赋值
+        frame = np.zeros((capture_height, capture_width, 3), dtype=np.uint8)
+
+        # 定义帧率控制参数
+        target_fps = 100
+        frame_interval = 1.0 / target_fps  # 每帧的时间间隔，秒
+
         while True:
-            if not videoSignal_stop_queue.empty():  # 检查信号队列
+            frame_start_time = time.time()  # 记录帧开始时间
+
+            # 检查是否收到停止信号
+            if not videoSignal_stop_queue.empty():
                 command, _ = videoSignal_stop_queue.get()
                 print(f"videoSignal_stop_queue（多进程） 队列接收信息 {command}")
                 if command == 'stop_video':
@@ -231,12 +241,25 @@ def open_screen_video(shared_frame, frame_available_event, videoSignal_stop_queu
             frame = np.frombuffer(img.rgb, dtype=np.uint8)
             frame = frame.reshape((img.height, img.width, 3))
 
-            # 如果需要，可以跳过颜色空间转换
+            # 转换颜色空间，从 BGRA 到 RGB
             frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
 
-            # 将视频帧放入队列
+            # 将视频帧放入共享内存
             np.copyto(shared_frame, frame)
             frame_available_event.set()
+
+            # 计算已用时间
+            frame_end_time = time.time()
+            elapsed_time = frame_end_time - frame_start_time
+
+            # 计算剩余时间
+            remaining_time = frame_interval - elapsed_time
+            if remaining_time > 0:
+                time.sleep(remaining_time)
+            else:
+                # 如果处理时间超过了帧间隔，可能需要记录或优化
+                print(f"警告: 帧处理时间 {elapsed_time:.4f} 秒超过目标间隔 {frame_interval:.4f} 秒")
+
 
 
 def screen_capture_and_yolo_processing(processedVideo_queue, videoSignal_stop_queue, YoloSignal_queue, pipe_parent,
@@ -269,7 +292,7 @@ def screen_capture_and_yolo_processing(processedVideo_queue, videoSignal_stop_qu
         except Exception:
             break
 
-    with mss.mss() as sct:
+    with mss.mss(backend='directx') as sct:
         # 获取屏幕分辨率
         screen_width, screen_height = pyautogui.size()
         print("屏幕分辨率:", screen_width, screen_height)
@@ -317,7 +340,7 @@ def screen_capture_and_yolo_processing(processedVideo_queue, videoSignal_stop_qu
                 # 获取屏幕帧
                 img = sct.grab(capture_area)
                 # 转换为 numpy 数组
-                frame = np.frombuffer(img.rgb, dtype=np.uint8).reshape((img.height, img.width, 3)).copy()
+                frame = np.frombuffer(img.rgb, dtype=np.uint8).reshape((img.height, img.width, 3))
                 # 转换颜色空间从 BGRA 到 RGB
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
                 # 如果启用了 YOLO，执行推理并写入共享内存
@@ -483,6 +506,7 @@ def YOLO_process_frame(model, frame, yolo_confidence=0.1, target_class="ALL",
         # 获取检测结果
         boxes = results[0].boxes.xyxy  # 获取所有 Box 的 xyxy 坐标
         distances = []  # 用于存储每个 Box 到帧中心的距离
+        frame = results[0].plot()  # 绘制检测框信息
 
         # 计算帧中心点
         frame_height, frame_width = frame.shape[:2]
@@ -730,16 +754,16 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
                     last_aim_speed = round(last_aim_speed, 2)
 
                     # 调试输出
-                    print(
-                        f"Offset Distance: {offset_distance}, Base Aim Speed: {base_aim_speed}, Max Aim Speed: {max_aim_speed}, Last Aim Speed: {last_aim_speed}")
+                    # print(
+                    #     f"Offset Distance: {offset_distance}, Base Aim Speed: {base_aim_speed}, Max Aim Speed: {max_aim_speed}, Last Aim Speed: {last_aim_speed}")
 
                     # 保留小数点后两位
                     last_aim_speed = round(last_aim_speed, 2)
                     # print(f"Distance: {distance}, Aim Speed: {last_aim_speed}")
 
-                    move_x = angle_offset_x * last_aim_speed
-                    move_y = angle_offset_y * last_aim_speed
-                    print(f"最终aim_speed: {last_aim_speed}")
+                    move_x = angle_offset_x * last_aim_speed * 2
+                    move_y = angle_offset_y * last_aim_speed * 2
+                    # print(f"最终aim_speed: {last_aim_speed}")
                     # print(f"单次鼠标移动距离: {move_x}, {move_y}")
 
                     # 判断目标是否在瞄准范围内
@@ -781,7 +805,7 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
                         move_y_int = int(move_y)
                         if move_x_int != 0 or move_y_int != 0:
                             # 移动鼠标
-                            win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, move_x_int, move_y_int, 0, 0)
+                            mouse.move(move_x_int, move_y_int)
                             # print(f"鼠标移动: X={move_x_int}, Y={move_y_int}")
             else:
                 pass
@@ -812,7 +836,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         self.pipe_child = None
         self.pipe_parent = None
         self.app = QtWidgets.QApplication(sys.argv)
-        self.window = uic.loadUi('RookieAiWindow.ui')  # 加载UI文件
+        self.window = uic.loadUi(Root / "UI" / 'RookieAiWindow.ui')  # 加载UI文件
         self.window.setWindowTitle("YOLO识别系统")  # 设置窗口名称
         self.window.setWindowIcon(QIcon("ico/ultralytics-botAvatarSrcUrl-1729379860806.png"))  # 替换为图标文件路径
         # self.window.resize(1290, 585)  # 设置窗口的大小
@@ -1034,55 +1058,13 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 创建并应用遮罩到 show_video
         self.apply_rounded_mask_to_show_video()
 
-        # 初始化key_code对照表
-        self.key_code = {
-            "鼠标左键": 0x1,
-            "鼠标右键": 0x2,
-            "鼠标中键": 0x4,
-            "SHIFT": 0x10,
-            "CTRL": 0x11,
-            "CAPS LOCK": 0x14,
-            "A": 65,
-            "B": 66,
-            "C": 67,
-            "D": 68,
-            "E": 69,
-            "F": 70,
-            "G": 71,
-            "H": 72,
-            "I": 73,
-            "J": 74,
-            "K": 75,
-            "L": 76,
-            "M": 77,
-            "N": 78,
-            "O": 79,
-            "P": 80,
-            "Q": 81,
-            "R": 82,
-            "S": 83,
-            "T": 84,
-            "U": 85,
-            "V": 86,
-            "W": 87,
-            "X": 88,
-            "Y": 89,
-            "Z": 90,
-        }
-
-        # 初始化 触发模式
-        self.method_mode = {
-                "按下": "press",
-                "切换": "toggle",
-                "shift+按下": "shift+press"
-            }
 
     def on_trigger_method_changed(self, selected_method):
         """
         当 triggerMethodComboBox 的选中值发生变化时调用
         """
         # 选项到触发模式的映射
-        method_to_mode = self.method_mode
+        method_to_mode = method_mode
 
         # 获取对应的触发模式
         trigger_mode = method_to_mode.get(selected_method, "press")  # 默认值为 "press"
@@ -1094,7 +1076,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
     def on_trigger_hotkey_changed(self, selected_button):
         """当 ComboBox 的选中值发生变化时调用"""
         # 按钮名称到键代码的映射
-        button_to_key_code = self.key_code
+        button_to_key_code = keys_code
 
         # 获取键代码
         lockKey = button_to_key_code.get(selected_button, None)
@@ -1340,9 +1322,6 @@ class RookieAiAPP:  # 主进程 (UI进程)
             # 使用 os.execl 重启应用程序
             python = sys.executable
             os.execl(python, python, *sys.argv)
-        else:
-            # 用户选择了“否”，取消重启操作
-            pass
 
     def clean_up(self):
         """终止子进程并清理资源。"""
@@ -1363,101 +1342,109 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 关闭应用程序
         self.app.quit()
 
+    def req_config(self):
+        """单进程推理模式 手动请求推理参数(补丁)"""
+        # 获取当前 detectionTargetComboBox 的选项
+        current_target_class = self.window.detectionTargetComboBox.currentText()
+        self.YoloSignal_queue.put(("change_class", current_target_class))  # 检测目标
+        self.YoloSignal_queue.put(("change_conf", self.yolo_confidence))  # 置信度
+        self.YoloSignal_queue.put(("aim_range_change", self.aim_range))  # 瞄准范围
+
     def load_settings(self):
         """加载配置文件 settings.json"""
-        import json
         try:
-            with open('settings.json', 'r', encoding='utf-8') as f:
-                self.settings = json.load(f)
-            print("配置文件读取成功")
-            self.information_output_queue.put(("UI_process_log", "配置文件读取成功"))
-
-            '''读取参数'''
-            # 获取 "ProcessMode" 的状态
-            self.ProcessMode = self.settings.get("ProcessMode", "single_process")
-            print("ProcessMode状态:", self.ProcessMode)
-            self.information_output_queue.put(("UI_process_log", f"ProcessMode状态: {self.ProcessMode}"))
-            # 获取 "window_always_on_top" 的状态
-            self.window_always_on_top = self.settings.get("window_always_on_top", False)
-            print("窗口置顶状态:", self.window_always_on_top)
-            # 获取 "model_file" 模型文件的路径
-            self.model_file = self.settings.get("model_file", "yolo11n")
-            print(f"读取模型文件路径: {self.model_file}")
-            # 获取 YOLO 置信度设置
-            yolo_confidence = self.settings.get('confidence', 0.5)  # 默认值为0.5
-            self.yolo_confidence = yolo_confidence
-            self.window.confSlider.setValue(int(yolo_confidence * 100))  # 将置信度转换为滑动条值
-            print(f"读取保存的YOLO置信度: {yolo_confidence}")
-            # 获取 瞄准速度
-            aim_speed = self.settings.get('lockSpeed', 5)
-            self.aim_speed = aim_speed
-            self.window.lockSpeedHorizontalSlider.setValue(int(aim_speed * 10))
-            print(f"读取保存的瞄准速度: {aim_speed}")
-            # 获取 瞄准范围
-            aim_range = self.settings.get('aim_range', 100)
-            self.aim_range = aim_range
-            self.window.aimRangeHorizontalSlider.setValue(int(aim_range))
-            print(f"读取保存的瞄准范围: {aim_range}")
-            # 获取 Aimbot 开启状态
-            aimbot_switch = self.settings.get("aimbot", False)
-            self.window.aimBotCheckBox.setChecked(aimbot_switch)
-            self.mouseMoveProssesSignal_queue.put(("aimbot_switch_change", aimbot_switch))
-            print(f"读取自瞄状态: {aimbot_switch}")
-            # 获取 侧键瞄准 开启状态
-            mouse_Side_Button_Witch = self.settings.get("mouse_Side_Button_Witch", False)
-            self.window.sideButtonCheckBox.setChecked(mouse_Side_Button_Witch)
-            self.mouseMoveProssesSignal_queue.put(("mouse_Side_Button_Witch_change", mouse_Side_Button_Witch))
-            print(f"读取侧键瞄准开启状态: {mouse_Side_Button_Witch}")
-            # 获取 detectionTargetComboBox 的值
-            target_class = self.settings.get('target_class', "ALL")
-            print(f"读取保存的检测类别: {target_class}")
-            self.window.detectionTargetComboBox.setCurrentText(target_class)
-            self.YoloSignal_queue.put(("change_class", target_class))
-            # 获取 Y轴偏移 值
-            offset_centery = self.settings.get('offset_centery', 0.3)
-            print(f"读取保存的Y轴偏移: {offset_centery}")
-            self.offset_centery = offset_centery
-            self.window.offset_centeryVerticalSlider.setValue(int(offset_centery * 100))
-            # 获取 Y轴偏移 值
-            offset_centerx = self.settings.get('offset_centerx', 0)
-            print(f"读取保存的X轴偏移: {offset_centerx}")
-            self.offset_centerx = offset_centerx
-            slider_value = int((1 - offset_centerx) * 50)  # 映射公式：slider_value = (1 - offset_centerx) * 50
-            self.window.offset_centerxVerticalSlider.setValue(int(slider_value))  # 将逻辑值 (1 到 -1) 映射到滑动条值 (0 到 100)
-            # 获取 触发热键代码 值
-            lockKey = self.settings.get('lockKey', "鼠标左键")
-            print(f"读取保存的触发热键: {lockKey}")
-            self.window.triggerHotkeyComboBox.setCurrentText(lockKey)
-            key_code = self.key_code.get(lockKey, 0x01)  # 如果未找到，默认使用鼠标左键 (0x01)
-            print(f"加载触发热键代码: {key_code}")
-            self.mouseMoveProssesSignal_queue.put(("lock_key_change", key_code))
-            # 获取 触发方式
-            triggerType = (self.settings.get('triggerType', "press"))
-            print(f"读取保存的触发方式: {triggerType}")
-            self.window.triggerMethodComboBox.setCurrentText(triggerType)
-            # 获取 游戏内X轴360度视角像素
-            screen_pixels_for_360_degrees = self.settings.get('screen_pixels_for_360_degrees', 1800)
-            print(f"读取游戏内一周像素: {screen_pixels_for_360_degrees}")
-            self.mouseMoveProssesSignal_queue.put(("screen_pixels_for_360_degrees", screen_pixels_for_360_degrees))
-            # 获取 游戏内Y轴180度视角像素
-            screen_height_pixels = self.settings.get('screen_height_pixels', 900)
-            print(f"读取游戏内一周像素: {screen_height_pixels}")
-            self.mouseMoveProssesSignal_queue.put(("screen_height_pixels", screen_height_pixels))
-            # 获取 近点瞄准速率倍率
-            near_speed_multiplier = self.settings.get('near_speed_multiplier', 2)
-            print(f"读取近点瞄准速率倍率: {near_speed_multiplier}")
-            self.mouseMoveProssesSignal_queue.put(("near_speed_multiplier", near_speed_multiplier))
-            # 获取 瞄准减速区域
-            slow_zone_radius = self.settings.get("slow_zone_radius", 10)
-            print(f"读取瞄准减速区域: {slow_zone_radius}")
-            self.mouseMoveProssesSignal_queue.put(("slow_zone_radius", slow_zone_radius))
-
-
+            self._extracted_from_load_settings_4()
         except Exception as e:
             print("配置文件读取失败:", e)
             self.information_output_queue.put(("UI_process_log", f"配置文件读取失败: {e}"))
             self.settings = {}
             self.ProcessMode = "single_process"  # 设置默认值
+
+    # TODO Rename this here and in `load_settings`
+    def _extracted_from_load_settings_4(self):
+        self.settings = Config
+        print("配置文件读取成功")
+        self.information_output_queue.put(("UI_process_log", "配置文件读取成功"))
+
+        '''读取参数'''
+        # 获取 "ProcessMode" 的状态
+        self.ProcessMode = self.settings.get("ProcessMode", "single_process")
+        print("ProcessMode状态:", self.ProcessMode)
+        self.information_output_queue.put(("UI_process_log", f"ProcessMode状态: {self.ProcessMode}"))
+        # 获取 "window_always_on_top" 的状态
+        self.window_always_on_top = self.settings.get("window_always_on_top", False)
+        print("窗口置顶状态:", self.window_always_on_top)
+        # 获取 "model_file" 模型文件的路径
+        self.model_file = self.settings.get("model_file", "yolo11n")
+        print(f"读取模型文件路径: {self.model_file}")
+        # 获取 YOLO 置信度设置
+        yolo_confidence = self.settings.get('confidence', 0.5)  # 默认值为0.5
+        self.yolo_confidence = yolo_confidence
+        self.window.confSlider.setValue(int(yolo_confidence * 100))  # 将置信度转换为滑动条值
+        print(f"读取保存的YOLO置信度: {yolo_confidence}")
+        # 获取 瞄准速度
+        aim_speed = self.settings.get('lockSpeed', 5)
+        self.aim_speed = aim_speed
+        self.window.lockSpeedHorizontalSlider.setValue(int(aim_speed * 10))
+        print(f"读取保存的瞄准速度: {aim_speed}")
+        # 获取 瞄准范围
+        aim_range = self.settings.get('aim_range', 100)
+        self.aim_range = aim_range
+        self.window.aimRangeHorizontalSlider.setValue(int(aim_range))
+        print(f"读取保存的瞄准范围: {aim_range}")
+        # 获取 Aimbot 开启状态
+        aimbot_switch = self.settings.get("aimbot", False)
+        self.window.aimBotCheckBox.setChecked(aimbot_switch)
+        self.mouseMoveProssesSignal_queue.put(("aimbot_switch_change", aimbot_switch))
+        print(f"读取自瞄状态: {aimbot_switch}")
+        # 获取 侧键瞄准 开启状态
+        mouse_Side_Button_Witch = self.settings.get("mouse_Side_Button_Witch", False)
+        self.window.sideButtonCheckBox.setChecked(mouse_Side_Button_Witch)
+        self.mouseMoveProssesSignal_queue.put(("mouse_Side_Button_Witch_change", mouse_Side_Button_Witch))
+        print(f"读取侧键瞄准开启状态: {mouse_Side_Button_Witch}")
+        # 获取 detectionTargetComboBox 的值
+        target_class = self.settings.get('target_class', "ALL")
+        print(f"读取保存的检测类别: {target_class}")
+        self.window.detectionTargetComboBox.setCurrentText(target_class)
+        self.YoloSignal_queue.put(("change_class", target_class))
+        # 获取 Y轴偏移 值
+        offset_centery = self.settings.get('offset_centery', 0.3)
+        print(f"读取保存的Y轴偏移: {offset_centery}")
+        self.offset_centery = offset_centery
+        self.window.offset_centeryVerticalSlider.setValue(int(offset_centery * 100))
+        # 获取 Y轴偏移 值
+        offset_centerx = self.settings.get('offset_centerx', 0)
+        print(f"读取保存的X轴偏移: {offset_centerx}")
+        self.offset_centerx = offset_centerx
+        slider_value = int((1 - offset_centerx) * 50)  # 映射公式：slider_value = (1 - offset_centerx) * 50
+        self.window.offset_centerxVerticalSlider.setValue(slider_value)
+        # 获取 触发热键代码 值
+        lockKey = self.settings.get('lockKey', "鼠标左键")
+        print(f"读取保存的触发热键: {lockKey}")
+        self.window.triggerHotkeyComboBox.setCurrentText(lockKey)
+        key_code = self.key_code.get(lockKey, 0x01)  # 如果未找到，默认使用鼠标左键 (0x01)
+        print(f"加载触发热键代码: {key_code}")
+        self.mouseMoveProssesSignal_queue.put(("lock_key_change", key_code))
+        # 获取 触发方式
+        triggerType = (self.settings.get('triggerType', "press"))
+        print(f"读取保存的触发方式: {triggerType}")
+        self.window.triggerMethodComboBox.setCurrentText(triggerType)
+        # 获取 游戏内X轴360度视角像素
+        screen_pixels_for_360_degrees = self.settings.get('screen_pixels_for_360_degrees', 1800)
+        print(f"读取游戏内一周像素: {screen_pixels_for_360_degrees}")
+        self.mouseMoveProssesSignal_queue.put(("screen_pixels_for_360_degrees", screen_pixels_for_360_degrees))
+        # 获取 游戏内Y轴180度视角像素
+        screen_height_pixels = self.settings.get('screen_height_pixels', 900)
+        print(f"读取游戏内一周像素: {screen_height_pixels}")
+        self.mouseMoveProssesSignal_queue.put(("screen_height_pixels", screen_height_pixels))
+        # 获取 近点瞄准速率倍率
+        near_speed_multiplier = self.settings.get('near_speed_multiplier', 2)
+        print(f"读取近点瞄准速率倍率: {near_speed_multiplier}")
+        self.mouseMoveProssesSignal_queue.put(("near_speed_multiplier", near_speed_multiplier))
+        # 获取 瞄准减速区域
+        slow_zone_radius = self.settings.get("slow_zone_radius", 10)
+        print(f"读取瞄准减速区域: {slow_zone_radius}")
+        self.mouseMoveProssesSignal_queue.put(("slow_zone_radius", slow_zone_radius))
 
     def save_settings(self):
         """保存当前设置到 settings.json 文件"""
@@ -1510,13 +1497,13 @@ class RookieAiAPP:  # 主进程 (UI进程)
     def init_ui_from_settings(self):
         """根据配置文件初始化界面"""
         # 设置 ProcessModeComboBox 的当前选项
-        if self.ProcessMode == "single_process":
+        if (
+            self.ProcessMode == "single_process"
+            or self.ProcessMode != "multi_process"
+        ):
             self.window.ProcessModeComboBox.setCurrentText("单进程模式")
-        elif self.ProcessMode == "multi_process":
-            self.window.ProcessModeComboBox.setCurrentText("多进程模式")
         else:
-            self.window.ProcessModeComboBox.setCurrentText("单进程模式")  # 默认值
-
+            self.window.ProcessModeComboBox.setCurrentText("多进程模式")
         # 设置 topWindowCheckBox 的状态
         self.window.topWindowCheckBox.setChecked(self.window_always_on_top)
         # 根据设置，更新窗口置顶状态
@@ -1563,12 +1550,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
     def choose_process_model_comboBox(self):
         """选择进程模式"""
         ProcessMode = self.window.ProcessModeComboBox.currentText()  # 获取当前选项文本
-        if ProcessMode == "单进程模式":
-            return "single_process"
-        elif ProcessMode == "多进程模式":
-            return "multi_process"
-        else:
-            return "single_process"  # 默认返回单进程
+        return "multi_process" if ProcessMode == "多进程模式" else "single_process"
 
     def apply_rounded_mask_to_show_video(self):
         """对 show_video 应用带圆角的遮罩"""
@@ -1606,7 +1588,6 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 如果 frame 为空，直接返回以跳过更新
         if frame is None:
             # print("未接收到视频帧，跳过更新")
-            pass
             return
 
         # 更新 FPS 计数
@@ -1637,17 +1618,23 @@ class RookieAiAPP:  # 主进程 (UI进程)
     def toggle_YOLO_button(self):
         """切换 YOLO 处理状态并更新按钮文本"""
         if self.is_yolo_running:
-            # 停止 YOLO 处理
-            self.YoloSignal_queue.put(('YOLO_stop', None))
-            self.window.OpYoloButton.setText("开启 YOLO")
-            self.is_yolo_running = False
-            print("YOLO 处理已停止。")
+            self._extracted_from_toggle_YOLO_button_5(
+                'YOLO_stop', "开启 YOLO", False, "YOLO 处理已停止。"
+            )
         else:
             # 开启 YOLO 处理
-            self.YoloSignal_queue.put(('YOLO_start', None))
-            self.window.OpYoloButton.setText("关闭 YOLO")
-            self.is_yolo_running = True
-            print("YOLO 处理已启动。")
+            self.req_config()  # 手动请求数据
+            self._extracted_from_toggle_YOLO_button_5(
+                'YOLO_start', "关闭 YOLO", True, "YOLO 处理已启动。"
+            )
+
+    # TODO Rename this here and in `toggle_YOLO_button`
+    def _extracted_from_toggle_YOLO_button_5(self, arg0, arg1, arg2, arg3):
+            # 停止 YOLO 处理
+        self.YoloSignal_queue.put((arg0, None))
+        self.window.OpYoloButton.setText(arg1)
+        self.is_yolo_running = arg2
+        print(arg3)
 
     def toggle_video_button(self):
         """切换视频状态并更新按钮文本"""
@@ -1854,11 +1841,9 @@ class RookieAiAPP:  # 主进程 (UI进程)
         red_line_animation.setDuration(duration)
         red_line_animation.setStartValue(red_line.geometry())
         target_red_line_geometry = QRect(target_button.x(), red_line.y(), target_button.width(), red_line.height())
-        red_line_animation.setEndValue(target_red_line_geometry)
-        red_line_animation.setEasingCurve(QEasingCurve.Type.OutQuad)
-        red_line_animation.start()
-        self.item_animations.append(red_line_animation)
-
+        self._extracted_from_on_item_button_clicked_59(
+            red_line_animation, target_red_line_geometry
+        )
         # 移动按钮位置
         for button in all_buttons:
             button_animation = QPropertyAnimation(button, b"geometry")
@@ -1872,10 +1857,16 @@ class RookieAiAPP:  # 主进程 (UI进程)
                 # 其他按钮回到默认 y 位置
                 target_geometry = QRect(button.x(), self.button_default_y, button.width(), button.height())
 
-            button_animation.setEndValue(target_geometry)
-            button_animation.setEasingCurve(QEasingCurve.Type.OutQuad)
-            button_animation.start()
-            self.item_animations.append(button_animation)
+            self._extracted_from_on_item_button_clicked_59(
+                button_animation, target_geometry
+            )
+
+    # TODO Rename this here and in `on_item_button_clicked`
+    def _extracted_from_on_item_button_clicked_59(self, arg0, arg1):
+        arg0.setEndValue(arg1)
+        arg0.setEasingCurve(QEasingCurve.Type.OutQuad)
+        arg0.start()
+        self.item_animations.append(arg0)
 
     def clear_video_display(self):
         """清空视频显示窗口直到清空干净"""
@@ -2095,10 +2086,9 @@ class RookieAiAPP:  # 主进程 (UI进程)
                                             args=(self.pipe_child, self.videoSignal_queue, self.videoSignal_stop_queue,
                                                   self.floating_information_signal_queue,
                                                   self.information_output_queue,))
-        process_signal_processing.daemon = True
-        process_signal_processing.start()
-        self.information_output_queue.put(("UI_process_log", "process_signal_processing 进程创建完毕"))
-
+        self._extracted_from_main_65(
+            process_signal_processing, "process_signal_processing 进程创建完毕"
+        )
         # 2.视频信号获取进程
         if self.ProcessMode == "multi_process":  # 多进程模式
             target_function = start_capture_process_multie
@@ -2120,10 +2110,9 @@ class RookieAiAPP:  # 主进程 (UI进程)
             raise ValueError(f"未知的 ProcessMode: {self.ProcessMode}")
         # 创建并启动进程
         process_video_signal = Process(target=target_function, args=args)
-        process_video_signal.daemon = True  # 设置为守护进程
-        process_video_signal.start()
-        self.information_output_queue.put(("UI_process_log", "process_video_signal 进程创建完毕"))
-
+        self._extracted_from_main_65(
+            process_video_signal, "process_video_signal 进程创建完毕"
+        )
         # 3.视频处理进程(仅在多进程时启动)
         if self.ProcessMode == "multi_process":
             process_videoprocessing = Process(target=video_processing,
@@ -2139,16 +2128,19 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 4.鼠标移动进程
         process_mouse_move = Process(target=mouse_move_prosses,
                                      args=(box_shm.name, box_lock, self.mouseMoveProssesSignal_queue))
-        process_mouse_move.daemon = True
-        process_mouse_move.start()
-        self.information_output_queue.put(("UI_process_log", "process_mouse_move 进程创建完毕"))
-
+        self._extracted_from_main_65(process_mouse_move, "process_mouse_move 进程创建完毕")
         # 启动进程后，保存引用
         self.process_signal_processing = process_signal_processing
         self.process_video_signal = process_video_signal
 
         '''显示软件页面'''
         self.show()  # 初始化完毕 显示 UI窗口
+
+    # TODO Rename this here and in `main`
+    def _extracted_from_main_65(self, arg0, arg1):
+        arg0.daemon = True
+        arg0.start()
+        self.information_output_queue.put(("UI_process_log", arg1))
 
 
 if __name__ == '__main__':

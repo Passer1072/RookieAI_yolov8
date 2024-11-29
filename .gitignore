@@ -1,6 +1,5 @@
-# Action Test Files
-act.exe
-
+logs
+Data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
