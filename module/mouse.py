@@ -3,7 +3,7 @@ import ctypes
 import win32api
 import win32con
 import os
-from Module.config import Config
+from module.config import Config
 
 dll = ctypes.windll.LoadLibrary("./x64_msdk.dll")
 dll.M_Open_VidPid.restype = ctypes.c_uint64  # 声明M_Open函数的返回类型为无符号整数

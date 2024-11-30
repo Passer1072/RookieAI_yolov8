@@ -20,9 +20,12 @@ from PyQt6.QtCore import QTimer, Qt, QPropertyAnimation, QPoint, QEasingCurve, Q
 from PyQt6.QtGui import QIcon, QImage, QPixmap, QBitmap, QPainter
 from PyQt6.QtWidgets import QGraphicsOpacityEffect, QFileDialog, QMessageBox, QSizePolicy
 from customLib.animated_status import AnimatedStatus  # 导入 带动画的状态提示浮窗 库
-from Module.const import keys_code, method_mode
-from Module.config import Config, Root
-import Module.mouse as mouse
+# from Module.const import keys_code, method_mode
+# from Module.config import Config, Root
+# import Module.mouse as mouse
+from module.const import keys_code, method_mode
+from module.config import Config, Root
+import module.mouse as mouse
 
 def communication_Process(pipe, videoSignal_queue, videoSignal_stop_queue, floating_information_signal_queue,
                           information_output_queue):
