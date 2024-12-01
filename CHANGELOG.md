@@ -1,4 +1,7 @@
 # Changelog
+## [2024-12-01] - New Updates
+- [`689b808`](689b8089ed90088d12ca78af881ac83d4418ce99) Merge pull request #80 from NovaShen555/dev
+
 ## [2024-11-29] - New Updates
 - [`2d32c16`](2d32c16cb534bd5b3b11b7e81ace30d959c6c6fe) Merge branch 'dev' of github.com:Passer1072/RookieAI_yolov8 into dev
 - [`30f79f6`](30f79f648d25951f1ad2dbd804ec1bbda1c89241) refactor(module): 重构配置文件保存路径并简化导入
