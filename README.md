@@ -580,5 +580,9 @@ ___
 👼初次创建基于yolov8实现本地视频预处理项目
 
 ___
+<div align="center">
+  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
+  <a href="https://discord.gg/pGM882sr"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-discord.png" width="3%" alt="Ultralytics Discord"></a>
+</div>
 
 Current latest version: V2.5.7
