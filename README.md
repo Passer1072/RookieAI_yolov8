@@ -1,7 +1,7 @@
 # RookieAI_yolov8
 
 <div>
-  <a href="https://discord.gg/pGM882sr"><img alt="Discord" src="https://img.shields.io/discord/1089800235347353640?logo=discord&logoColor=white&label=Discord&color=blue"></a>
+  <a href="https://discord.gg/pGM882sr"><img alt="Discord" src="https://img.shields.io/discord/1256285394539118634?logo=discord&logoColor=white&label=Discord&color=blue"></a>
 <div>
 
 ## 版本要求
