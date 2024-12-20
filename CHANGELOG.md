@@ -1,5 +1,6 @@
 # Changelog
 ## [2024-12-20] - New Updates
+- [`5716fea`](5716fea574737df21de1ae72cf859deadb6a0b8d) Merge branch 'dev' of github.com:Passer1072/RookieAI_yolov8 into dev
 - [`7340c7f`](7340c7f450e9a98cb97ce6987c2414fa329bb622) refactor(Module): 移除配置文件中的默认值设置,初始化公告和渠道
 - [`9176ef6`](9176ef66f229ef93002e9aef8ed57a2a73dce619) refactor(mouse): 修复路径问题
 
