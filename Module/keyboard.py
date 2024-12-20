@@ -1,4 +1,6 @@
 import tkinter as tk
+import threading
+import queue
 from pynput import keyboard, mouse
 
 
@@ -61,8 +63,22 @@ class KeyCaptureApp:
         return self.event_result
 
 
-def get_keyboard_event():
-    return KeyCaptureApp(tk.Tk()).capture_event()
+def get_keyboard_event(text="UNKNOWN"):
+    result_queue = queue.Queue()
+
+    def capture_key():
+        key = KeyCaptureApp(tk.Tk()).capture_event()
+        result_queue.put(key)
+
+    thread = threading.Thread(target=capture_key)
+    thread.start()
+    # 等待线程完成
+    thread.join()
+
+    # 获取结果
+    key = 'UNKNOWN' if result_queue.empty() else result_queue.get()
+    
+    return text if key is None or key == 'UNKNOWN' else key
 
 
 def get_key_name(hex):

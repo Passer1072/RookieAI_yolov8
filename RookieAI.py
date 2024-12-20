@@ -19,7 +19,7 @@ from PyQt6.QtCore import QTimer, Qt, QPropertyAnimation, QPoint, QEasingCurve, Q
 from PyQt6.QtGui import QIcon, QImage, QPixmap, QBitmap, QPainter
 from PyQt6.QtWidgets import QGraphicsOpacityEffect, QFileDialog, QMessageBox, QSizePolicy
 from customLib.animated_status import AnimatedStatus  # 导入 带动画的状态提示浮窗 库
-from Module.const import keys_code, method_mode
+from Module.const import method_mode
 from Module.config import Config, Root
 import Module.mouse as mouse
 import Module.keyboard as keyboard
@@ -933,21 +933,32 @@ class RookieAiAPP:  # 主进程 (UI进程)
             self.on_sideButtonCheckBox_state_changed)
 
         # 连接 热键选择 comboBox
-        self.window.triggerHotkeyComboBox.currentTextChanged.connect(
-            self.on_trigger_hotkey_changed)
+        self.window.HotkeyName.clicked.connect(
+            lambda: self.on_trigger_hotkey_changed(self.window.HotkeyName.text()))
 
-        # 连接 触发方式选择 conboBox
-        self.window.triggerMethodComboBox.currentTextChanged.connect(
-            self.on_trigger_method_changed)
-        
-        # 设置公告内容
         self.window.announcement.setReadOnly(True)
-        self.window.announcement.setHtml("111111")
-        
-        # 设置渠道类型
-        channel = revision.get_channel()
-        ### 未生效#############
-        self.window.channelLabel.setText(channel)
+        # 设置公告内容
+        if Config["allow_network"] is True:
+            self.window.announcement.setMarkdown(
+                revision.get_online_announcement())
+
+            # 设置渠道类型
+            self.window.channelLabel.setText(revision.get_channel())
+
+            # 设置当前版本号
+            self.window.versionLabel.setText(revision.get_local_version())
+
+            # 设置当前版本日期
+            self.window.versionDateLabel.setText(
+                revision.get_local_version_with_date())
+
+            # 设置最新版版本号
+            if revision.is_official_version():
+                _version = revision.get_release_version_with_date()
+            else:
+                _version = revision.get_dev_version_with_date()
+            _version = f"{_version[0]}({_version[1]})"
+            self.window.latestVersionLabel.setText(_version)
 
         '''参数框架切换 代码'''
         # 初始化动画列表和当前框架索引
@@ -1171,21 +1182,19 @@ class RookieAiAPP:  # 主进程 (UI进程)
             ("trigger_mode_change", trigger_mode))
         print(f"触发模式切换为: {trigger_mode}")
 
-    def on_trigger_hotkey_changed(self, selected_button):
-        """当 ComboBox 的选中值发生变化时调用"""
-        # 按钮名称到键代码的映射
-        button_to_key_code = keys_code
+    def on_trigger_hotkey_changed(self, text):
+        """当 LableButton 被点击时调用"""
 
         # 获取键代码
-        lockKey = button_to_key_code.get(selected_button, None)
-        if lockKey is not None:
+        lockKey = keyboard.get_keyboard_event(text)
+        lockKey_name = keyboard.get_key_name(lockKey)
+        if lockKey != "UNKNOWN":
             # 更新鼠标相关的按键
             self.lockKey = lockKey
+            self.window.HotkeyName.setText(lockKey_name)
             # 发送信息到 mouseMoveProssesSignal_queue
             self.mouseMoveProssesSignal_queue.put(("lock_key_change", lockKey))
-            print(f"触发按键已更改为: {selected_button} (代码: {hex(lockKey)})")
-        else:
-            print(f"未找到对应的按键代码: {selected_button}")
+            print(f"触发按键已更改为: {lockKey_name} (代码: {lockKey})")
 
     def on_sideButtonCheckBox_state_changed(self, state):
         # 判断复选框是否被选中
@@ -1483,6 +1492,8 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 获取 "ProcessMode" 的状态
         self.ProcessMode = self.settings.get("ProcessMode", "single_process")
         print("ProcessMode状态:", self.ProcessMode)
+        self.allow_network = self.settings.get("allow_network", False)
+        print("是否允许联网:", self.allow_network)
         self.information_output_queue.put(
             ("UI_process_log", f"ProcessMode状态: {self.ProcessMode}"))
         # 获取 "window_always_on_top" 的状态
@@ -1490,7 +1501,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
             "window_always_on_top", False)
         print("窗口置顶状态:", self.window_always_on_top)
         # 获取 "model_file" 模型文件的路径
-        self.model_file = self.settings.get("model_file", "yolo11n")
+        self.model_file = self.settings.get("model_file", "yolov8n.pt")
         print(f"读取模型文件路径: {self.model_file}")
         # 获取 YOLO 置信度设置
         yolo_confidence = self.settings.get('confidence', 0.5)  # 默认值为0.5
@@ -1542,7 +1553,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 获取 触发热键代码 值
         lockKey = self.settings.get('lockKey', "VK_LBUTTON")
         print(f"读取保存的触发热键: {lockKey}")
-        self.window.triggerHotkeyComboBox.setCurrentText(lockKey)
+        self.window.HotkeyName.setText(lockKey)
         key_code = keyboard.get_key_code(lockKey)
         print(f"加载触发热键代码: {key_code}")
         self.mouseMoveProssesSignal_queue.put(("lock_key_change", key_code))

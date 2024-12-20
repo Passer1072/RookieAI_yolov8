@@ -1,7 +1,9 @@
-import aiohttp
 import base64
 import re
+import requests
 from Module.config import Root
+
+session = requests.Session()
 
 
 def get_release_version_with_date() -> tuple[str, str]:
@@ -14,15 +16,13 @@ def get_release_version_with_date() -> tuple[str, str]:
         tuple: 包含版本号（tag_name）和发布日期（published_at）的元组
     """
     url = "https://api.github.com/repos/Passer1072/RookieAI_yolov8/releases/latest"
-    with aiohttp.ClientSession() as session:
-        with session.get(url) as response:
-            data = response.json()
-            return data["tag_name"], data["published_at"]
+    data = session.get(url).json()
+    return data["tag_name"], data["published_at"]
 
 
 def get_dev_version_with_date() -> tuple[str, str | None]:
     """
-    异步获取指定GitHub仓库中dev分支的版本号和__version__.py文件的最近修改日期。
+    异步获取指定GitHub仓库中dev分支的版本号和最近修改日期。
 
     Returns:
         tuple: 包含版本号和发布日期（如果可用）的元组
@@ -30,52 +30,21 @@ def get_dev_version_with_date() -> tuple[str, str | None]:
     owner = "Passer1072"
     repo = "RookieAI_yolov8"
     branch = "dev"
-    file_path = "utils/__version__.py"
+    file_path = "__version__"
+    _version = "v0.0.0"
+    _date = "1970-01-01 00:00:00"
+    contents_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={branch}"
+    data = session.get(contents_url).json()
+    content = base64.b64decode(
+        data.get("content", b"")).decode("utf-8").split("\n")
+    Line1 = content[0].strip() if len(content) > 0 else ""
+    if Line1.startswith("__version__:"):
+        _version = Line1.split(":", 1)[1].strip()
+    Line2 = content[1].strip() if len(content) > 1 else ""
+    if Line2.startswith("__version_date__:"):
+        _date = Line2.split(":", 1)[1].strip()
 
-    with aiohttp.ClientSession() as session:
-        contents_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={branch}"
-        with session.get(contents_url) as response:
-            data = response.json()
-            version_content = base64.b64decode(
-                data.get("content", b"")).decode("utf-8")
-
-        version = version_content.split(":")[-1].strip()
-
-        commits_url = f"https://api.github.com/repos/{owner}/{repo}/commits?path={file_path}&sha={branch}"
-        with session.get(commits_url) as response:
-            if commits_data := response.json():
-                last_commit = commits_data[0]
-                last_modified_date = last_commit["commit"]["committer"]["date"]
-            else:
-                last_modified_date = None
-
-    return version, last_modified_date
-
-
-def get_dev_version_without_date() -> str:
-    """
-    异步获取指定仓库的开发版本号（不包含日期）。
-
-    通过GitHub API获取指定文件内容，并解析出版本号。
-
-    Returns:
-        str: 仓库的开发版本号（不包含日期）。
-    """
-    owner = "Passer1072"
-    repo = "RookieAI_yolov8"
-    branch = "dev"
-    file_path = "utils/__version__.py"
-
-    with aiohttp.ClientSession() as session:
-        contents_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={branch}"
-        with session.get(contents_url) as response:
-            data = response.json()
-            version_content = base64.b64decode(
-                data.get("content", b"")).decode("utf-8")
-
-        version = version_content.split(":")[-1].strip()
-
-    return version
+    return _version, _date
 
 
 def get_online_announcement(
@@ -97,12 +66,10 @@ def get_online_announcement(
     branch = "dev"
     file_path = "Announcement.md"
 
-    with aiohttp.ClientSession() as session:
-        contents_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={branch}"
-        with session.get(contents_url) as response:
-            data = response.json()
-            announcement = base64.b64decode(
-                data.get("content", b"")).decode("utf-8")
+    contents_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={branch}"
+    data = session.get(contents_url).json()
+    announcement = base64.b64decode(
+        data.get("content", b"")).decode("utf-8")
     if parse_announcement2json:
         published_at_match = re.search(
             r"\$\[(\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2})\]\$", announcement
@@ -129,10 +96,27 @@ def get_local_version() -> str:
         str: 当前版本号
     """
     _version = "v0.0.0"
-    if (Root / "__version__").exists():
-        if text := (Root / "__version__").open(encoding="utf8").readline():
-            _version = text.split(":")[-1].strip()
+    version_file_path = Root / "__version__"
+    with version_file_path.open(encoding="utf8") as version_file:
+        first_line = version_file.readline().strip()
+        if first_line.startswith("__version__:"):
+            _version = first_line.split(":", 1)[1].strip()
     return _version
+
+
+def get_local_version_with_date() -> str:
+    """获取当前版本日期
+
+    返回:
+        str: 当前版本号日期
+    """
+    _date = "1970-01-01 00:00:00"
+    version_file_path = Root / "__version__"
+    with version_file_path.open(encoding="utf8") as version_file:
+        first_line = version_file.readline().strip()
+        if first_line.startswith("__version_date__:"):
+            _date = first_line.split(":", 1)[1].strip()
+    return _date
 
 
 def is_dev_version() -> bool:
@@ -168,9 +152,8 @@ def get_channel() -> str:
         str: 当前渠道
     """
     if is_dev_version():
-        v = "dev"
+        return "预览版"
     elif is_internal_version():
-        v = "internal"
+        return "内部预览版"
     else:
-        v = "official"
-    return f"渠道：{v}"
+        return "正式版"

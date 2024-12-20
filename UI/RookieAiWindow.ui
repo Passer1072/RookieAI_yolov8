@@ -61,7 +61,7 @@
 QFrame {
 	background-color: rgb(63, 63, 63);
     border-radius: 20px;
-    overflow: hidden;  /* 确保内容不会溢出圆角边界 */
+    /* overflow: hidden;  确保内容不会溢出圆角边界 */
 }</string>
     </property>
     <property name="frameShape">
@@ -1603,11 +1603,11 @@ border-color: rgba(0, 0, 0, 0);</string>
         <height>181</height>
        </rect>
       </property>
-      <property name="html">
+      <property name="markdown">
        <string>在这里显示公告！！！</string>
       </property>
      </widget>
-     <widget class="QLabel" name="channelLabel">
+     <widget class="QLabel" name="label_3">
       <property name="geometry">
        <rect>
         <x>30</x>
@@ -1702,7 +1702,7 @@ border-color: rgba(0, 0, 0, 0);</string>
        <string>PASSER</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_21">
+     <widget class="QLabel" name="channelLabel">
       <property name="geometry">
        <rect>
         <x>80</x>
@@ -1721,12 +1721,12 @@ border-color: rgba(0, 0, 0, 0);</string>
        <string>内部预览版/预览版/正式版</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_22">
+     <widget class="QLabel" name="versionLabel">
       <property name="geometry">
        <rect>
         <x>110</x>
         <y>300</y>
-        <width>61</width>
+        <width>300</width>
         <height>21</height>
        </rect>
       </property>
@@ -1737,15 +1737,15 @@ border-color: rgba(0, 0, 0, 0);</string>
        </font>
       </property>
       <property name="text">
-       <string>Version</string>
+       <string>NowVersion</string>
       </property>
      </widget>
-     <widget class="QLabel" name="day">
+     <widget class="QLabel" name="versionDateLabel">
       <property name="geometry">
        <rect>
         <x>110</x>
         <y>340</y>
-        <width>71</width>
+        <width>200</width>
         <height>21</height>
        </rect>
       </property>
@@ -1756,14 +1756,14 @@ border-color: rgba(0, 0, 0, 0);</string>
        </font>
       </property>
       <property name="text">
-       <string>DATE</string>
+       <string>VERSION_DATE</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_24">
       <property name="geometry">
        <rect>
-        <x>190</x>
-        <y>300</y>
+        <x>30</x>
+        <y>320</y>
         <width>71</width>
         <height>21</height>
        </rect>
@@ -1778,12 +1778,12 @@ border-color: rgba(0, 0, 0, 0);</string>
        <string>最新版本：</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_25">
+     <widget class="QLabel" name="latestVersionLabel">
       <property name="geometry">
        <rect>
-        <x>270</x>
-        <y>300</y>
-        <width>61</width>
+        <x>110</x>
+        <y>320</y>
+        <width>650</width>
         <height>21</height>
        </rect>
       </property>
@@ -1794,7 +1794,7 @@ border-color: rgba(0, 0, 0, 0);</string>
        </font>
       </property>
       <property name="text">
-       <string>Version</string>
+       <string>LatestVersion</string>
       </property>
      </widget>
     </widget>
@@ -1935,7 +1935,7 @@ border-color: rgba(0, 0, 0, 0);</string>
        <rect>
         <x>20</x>
         <y>90</y>
-        <width>91</width>
+        <width>200</width>
         <height>31</height>
        </rect>
       </property>
@@ -1949,16 +1949,16 @@ border-color: rgba(0, 0, 0, 0);</string>
        <string notr="true">background-color: rgba(0, 0, 0, 0);</string>
       </property>
       <property name="text">
-       <string>触发热键:</string>
+       <string>触发热键(点击更改):</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
       </property>
      </widget>
-     <widget class="QComboBox" name="triggerHotkeyComboBox">
+     <widget class="QPushButton" name="HotkeyName">
       <property name="geometry">
        <rect>
-        <x>100</x>
+        <x>160</x>
         <y>90</y>
         <width>111</width>
         <height>31</height>
@@ -1972,168 +1972,11 @@ border-color: rgba(0, 0, 0, 0);</string>
        </font>
       </property>
       <property name="styleSheet">
-       <string notr="true">background-color: rgb(44, 44, 44);</string>
+       <string notr="true">background-color: transparent;</string>
       </property>
-      <item>
        <property name="text">
-        <string>鼠标左键</string>
+        <string>HotKeyName</string>
        </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>鼠标右键</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>鼠标中键</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>SHIFT</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>CTRL</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>CAPS LOCK</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>A</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>B</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>C</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>D</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>E</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>F</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>G</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>H</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>I</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>J</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>K</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>L</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>M</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>N</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>O</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>P</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Q</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>R</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>S</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>T</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>U</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>V</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>W</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>X</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Y</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Z</string>
-       </property>
-      </item>
      </widget>
      <widget class="QCheckBox" name="auxiliaryPressureGunCheckBox">
       <property name="enabled">
