@@ -1,4 +1,7 @@
 # Changelog
+## [2024-12-20] - New Updates
+- [`9176ef6`](9176ef66f229ef93002e9aef8ed57a2a73dce619) refactor(mouse): 修复路径问题
+
 ## [2024-12-01] - New Updates
 - [`689b808`](689b8089ed90088d12ca78af881ac83d4418ce99) Merge pull request #80 from NovaShen555/dev
 
