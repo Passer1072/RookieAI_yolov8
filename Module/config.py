@@ -9,21 +9,7 @@ Root = Path(os.path.realpath(sys.argv[0])).parent
 
 class _Config:
     def __init__(self):
-        self.default = {
-            "aim_range": 135,
-            "aimbot": True,
-            "mouse_mode": "mouse",
-            "closest_mouse_dist": 160.8,
-            "confidence": 0.32,
-            "lockSpeed": 0.2,
-            "offset_x": 0,
-            "offset_y": 0,
-            "model_file": "yolov8n.pt",
-            "mouse_Side_Button_Witch": True,
-            "ProcessMode": "multi_process",
-            "window_always_on_top": False,
-            "target_class": "0",
-        }
+        self.default = {}
         self.content = self.read()
 
     def read(self) -> dict:
