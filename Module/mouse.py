@@ -3,12 +3,12 @@ import ctypes
 import win32api
 import win32con
 import os
-from Module.config import Config
+from Module.config import Config, Root
 
-dll = ctypes.windll.LoadLibrary("./x64_msdk.dll")
+dll = ctypes.windll.LoadLibrary(f"{Root}/x64_msdk.dll")
 dll.M_Open_VidPid.restype = ctypes.c_uint64  # 声明M_Open函数的返回类型为无符号整数
 hdl = dll.M_Open_VidPid(0x1532, 0x98)  # 打开端口代码
-dll_path = r".\MouseControl.dll"
+dll_path = f"{Root}/MouseControl.dll"
 if os.path.exists(dll_path):
     LG_driver = ctypes.CDLL(dll_path)
 
