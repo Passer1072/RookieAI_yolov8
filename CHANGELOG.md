@@ -1,5 +1,6 @@
 # Changelog
 ## [2024-12-20] - New Updates
+- [`7340c7f`](7340c7f450e9a98cb97ce6987c2414fa329bb622) refactor(Module): 移除配置文件中的默认值设置,初始化公告和渠道
 - [`9176ef6`](9176ef66f229ef93002e9aef8ed57a2a73dce619) refactor(mouse): 修复路径问题
 
 ## [2024-12-01] - New Updates
