@@ -1,5 +1,6 @@
 # Changelog
 ## [2024-12-23] - New Updates
+- [`32fd597`](32fd597010fff92c3935fc6e8ee6ae8db363eb37) 修改文件夹
 - [`6126ab9`](6126ab9d6a06f253041f2be47d0e0ca0c0e1daf1) 功能添加
 
 ## [2024-12-20] - New Updates
