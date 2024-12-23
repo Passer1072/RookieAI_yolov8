@@ -1208,7 +1208,7 @@ background-color: rgba(0, 0, 0, 0);
     <widget class="QFrame" name="advancedSettingsFrame">
      <property name="geometry">
       <rect>
-       <x>450</x>
+       <x>0</x>
        <y>0</y>
        <width>371</width>
        <height>461</height>
@@ -1296,7 +1296,7 @@ border-color: rgba(0, 0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>280</y>
+        <y>310</y>
         <width>121</width>
         <height>20</height>
        </rect>
@@ -1315,7 +1315,7 @@ border-color: rgba(0, 0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>320</y>
+        <y>350</y>
         <width>91</width>
         <height>20</height>
        </rect>
@@ -1334,7 +1334,7 @@ border-color: rgba(0, 0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>150</x>
-        <y>280</y>
+        <y>310</y>
         <width>21</width>
         <height>21</height>
        </rect>
@@ -1347,7 +1347,7 @@ border-color: rgba(0, 0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>120</x>
-        <y>320</y>
+        <y>350</y>
         <width>21</width>
         <height>21</height>
        </rect>
@@ -1360,7 +1360,7 @@ border-color: rgba(0, 0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>120</x>
-        <y>360</y>
+        <y>390</y>
         <width>21</width>
         <height>21</height>
        </rect>
@@ -1373,7 +1373,7 @@ border-color: rgba(0, 0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>360</y>
+        <y>390</y>
         <width>91</width>
         <height>20</height>
        </rect>
@@ -1543,11 +1543,71 @@ border-color: rgba(0, 0, 0, 0);</string>
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap>body_photo.png</pixmap>
+       <pixmap>ico/body_photo.png</pixmap>
       </property>
       <property name="scaledContents">
        <bool>true</bool>
       </property>
+     </widget>
+     <widget class="QLabel" name="detectionTargetLabel_2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>270</y>
+        <width>71</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Microsoft YaHei</family>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgba(0, 0, 0, 0);</string>
+      </property>
+      <property name="text">
+       <string>移动方式:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="mobileModeQComboBox">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>270</y>
+        <width>111</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Microsoft YaHei</family>
+        <pointsize>10</pointsize>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(44, 44, 44);</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>win32</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>飞易来</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>KmBoxNet</string>
+       </property>
+      </item>
      </widget>
     </widget>
     <widget class="QFrame" name="softwareInformationFrame">
@@ -1604,7 +1664,9 @@ border-color: rgba(0, 0, 0, 0);</string>
        </rect>
       </property>
       <property name="markdown">
-       <string>在这里显示公告！！！</string>
+       <string>在这里显示公告！！！
+
+</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_3">
@@ -1801,7 +1863,7 @@ border-color: rgba(0, 0, 0, 0);</string>
     <widget class="QFrame" name="basicSettingsFrame">
      <property name="geometry">
       <rect>
-       <x>0</x>
+       <x>450</x>
        <y>0</y>
        <width>371</width>
        <height>461</height>
@@ -1974,9 +2036,9 @@ border-color: rgba(0, 0, 0, 0);</string>
       <property name="styleSheet">
        <string notr="true">background-color: transparent;</string>
       </property>
-       <property name="text">
-        <string>HotKeyName</string>
-       </property>
+      <property name="text">
+       <string>HotKeyName</string>
+      </property>
      </widget>
      <widget class="QCheckBox" name="auxiliaryPressureGunCheckBox">
       <property name="enabled">
@@ -2086,8 +2148,8 @@ border-color: rgba(0, 0, 0, 0);</string>
      <widget class="QLabel" name="lockSpeedLabel">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>295</y>
+        <x>15</x>
+        <y>255</y>
         <width>71</width>
         <height>31</height>
        </rect>
@@ -2111,8 +2173,8 @@ border-color: rgba(0, 0, 0, 0);</string>
      <widget class="QLabel" name="aimingRangeLabel">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>335</y>
+        <x>15</x>
+        <y>295</y>
         <width>71</width>
         <height>31</height>
        </rect>
@@ -2136,8 +2198,8 @@ border-color: rgba(0, 0, 0, 0);</string>
      <widget class="QSlider" name="lockSpeedHorizontalSlider">
       <property name="geometry">
        <rect>
-        <x>100</x>
-        <y>302</y>
+        <x>95</x>
+        <y>262</y>
         <width>191</width>
         <height>18</height>
        </rect>
@@ -2149,8 +2211,8 @@ border-color: rgba(0, 0, 0, 0);</string>
      <widget class="QSlider" name="aimRangeHorizontalSlider">
       <property name="geometry">
        <rect>
-        <x>100</x>
-        <y>342</y>
+        <x>95</x>
+        <y>302</y>
         <width>191</width>
         <height>18</height>
        </rect>
@@ -2162,8 +2224,8 @@ border-color: rgba(0, 0, 0, 0);</string>
      <widget class="QLCDNumber" name="lockSpeedLcdNumber">
       <property name="geometry">
        <rect>
-        <x>295</x>
-        <y>300</y>
+        <x>290</x>
+        <y>260</y>
         <width>64</width>
         <height>23</height>
        </rect>
@@ -2181,8 +2243,8 @@ border-color: rgba(0, 0, 0, 0);</string>
      <widget class="QLCDNumber" name="aimRangeLcdNumber">
       <property name="geometry">
        <rect>
-        <x>295</x>
-        <y>340</y>
+        <x>290</x>
+        <y>300</y>
         <width>64</width>
         <height>23</height>
        </rect>
@@ -2197,61 +2259,11 @@ border-color: rgba(0, 0, 0, 0);</string>
        <enum>QLCDNumber::SegmentStyle::Flat</enum>
       </property>
      </widget>
-     <widget class="QCheckBox" name="checkBox">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>260</y>
-        <width>91</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <family>Microsoft YaHei</family>
-        <pointsize>12</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>使用旧版</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_23">
-      <property name="geometry">
-       <rect>
-        <x>120</x>
-        <y>260</y>
-        <width>21</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="toolTip">
-       <string>依赖进程锁的数据传输模式</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="pixmap">
-       <pixmap>ico/warningtriangle_87535-modified.png</pixmap>
-      </property>
-      <property name="scaledContents">
-       <bool>true</bool>
-      </property>
-     </widget>
      <widget class="QToolButton" name="auxiliaryPressureGunToolButton_2">
       <property name="geometry">
        <rect>
-        <x>180</x>
-        <y>380</y>
+        <x>175</x>
+        <y>340</y>
         <width>21</width>
         <height>21</height>
        </rect>
@@ -2266,8 +2278,8 @@ border-color: rgba(0, 0, 0, 0);</string>
       </property>
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>380</y>
+        <x>15</x>
+        <y>340</y>
         <width>151</width>
         <height>20</height>
        </rect>
