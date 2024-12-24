@@ -1,4 +1,7 @@
 # Changelog
+## [2024-12-24] - New Updates
+- [`95e1420`](95e1420bf7f176949330564bf93c2cebd055630b) Merge pull request #78 from Passer1072/create-pr/update_version
+
 ## [2024-12-23] - New Updates
 - [`a5ae43a`](a5ae43a4dd181633f483610cb69611bfbb85252b) Merge branch 'dev' of https://github.com/Passer1072/RookieAI_yolov8 into dev
 - [`32fd597`](32fd597010fff92c3935fc6e8ee6ae8db363eb37) 修改文件夹
