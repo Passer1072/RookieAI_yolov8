@@ -2011,13 +2011,13 @@ border-color: rgba(0, 0, 0, 0);</string>
        <string notr="true">background-color: rgba(0, 0, 0, 0);</string>
       </property>
       <property name="text">
-       <string>触发热键(点击更改):</string>
+       <string>触发热键:</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
       </property>
      </widget>
-     <widget class="QPushButton" name="HotkeyName">
+     <widget class="QPushButton" name="HotkeyPushButton">
       <property name="geometry">
        <rect>
         <x>160</x>
@@ -2032,9 +2032,6 @@ border-color: rgba(0, 0, 0, 0);</string>
         <pointsize>10</pointsize>
         <bold>false</bold>
        </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: transparent;</string>
       </property>
       <property name="text">
        <string>HotKeyName</string>

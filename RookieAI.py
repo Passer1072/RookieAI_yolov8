@@ -8,7 +8,7 @@ import sys
 import time
 from multiprocessing import Pipe, Process, Queue, shared_memory, Event
 import cv2
-import kmNet
+#import kmNet
 import mss
 import numpy as np
 import pyautogui
@@ -23,7 +23,7 @@ from PyQt6.QtWidgets import QGraphicsOpacityEffect, QFileDialog, QMessageBox, QS
 from customLib.animated_status import AnimatedStatus  # 导入 带动画的状态提示浮窗 库
 from Module.const import method_mode
 from Module.config import Config, Root
-import Module.mouse as mouse
+import Module.control as control
 import Module.keyboard as keyboard
 import Utils.revision as revision
 
@@ -832,28 +832,26 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
                     xbutton2_pressed = win32api.GetKeyState(0x05) & 0x8000  # 鼠标侧键
                     shift_pressed = win32api.GetKeyState(win32con.VK_SHIFT) & 0x8000  # Shift 键
 
-                    if trigger_mode == 'toggle':
-                        # 检测按键从未按下变为按下的瞬间
-                        if lockKey_pressed and not prev_lockKey_pressed:
-                            trigger_toggle_state = not trigger_toggle_state  # 切换运行状态
-                            # print(f"切换触发状态已更改为: {trigger_toggle_state}")
-                        # 更新上一次的按键状态
-                        prev_lockKey_pressed = lockKey_pressed
-                    # 判断是否应该移动鼠标
                     if trigger_mode == 'press':
                         # 按下模式：只需检测按键是否被按下
                         should_move = aimbot_switch and target_is_within_range and (
                                 lockKey_pressed or (mouse_Side_Button_Witch and xbutton2_pressed)
                         )
-                    elif trigger_mode == 'toggle':
-                        # 切换模式：运行状态由 `trigger_toggle_state` 控制
-                        should_move = aimbot_switch and target_is_within_range and trigger_toggle_state
                     elif trigger_mode == 'shift+press':
                         # Shift + 按下模式：需要同时按下 Shift 和锁定键
                         should_move = aimbot_switch and target_is_within_range and (
                                 shift_pressed and lockKey_pressed
                         )
 
+                    elif trigger_mode == 'toggle':
+                        # 检测按键从未按下变为按下的瞬间
+                        if lockKey_pressed and not prev_lockKey_pressed:
+                            trigger_toggle_state = not trigger_toggle_state  # 切换运行状态
+                            # print(f"切换触发状态已更改为: {trigger_toggle_state}")
+                        # 更新上一次的按键状态
+                        prev_lockKey_pressed = lockKey_pressed
+                        # 切换模式：运行状态由 `trigger_toggle_state` 控制
+                        should_move = aimbot_switch and target_is_within_range and trigger_toggle_state
                     # 独立的触发逻辑：当仅按下 xbutton2_pressed，mouse_Side_Button_Witch 为 True，同时目标在瞄准范围内
                     if mouse_Side_Button_Witch and xbutton2_pressed and target_is_within_range:
                         should_move = True
@@ -862,16 +860,7 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
                         move_x_int = round(move_x / 2)
                         move_y_int = round(move_y / 2)
                         if move_x_int != 0 or move_y_int != 0:
-                            if mouseMoveMode == 'win32':
-                                # 移动鼠标1 win32
-                                # print("win32移动模式")
-                                win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, move_x_int, move_y_int, 0, 0)
-                            if mouseMoveMode == 'KmBoxNet':
-                                # 移动鼠标2 KmBox
-                                # print("KmBoxNet移动模式")
-                                kmNet.enc_move(move_x_int, move_y_int)
-            else:
-                pass
+                            control.move(move_x_int, move_y_int)
     except KeyboardInterrupt:
         pass
     finally:
@@ -955,9 +944,8 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 连接 触发方式选择 conboBox
         self.window.triggerMethodComboBox.currentTextChanged.connect(self.on_trigger_method_changed)
 
-        # 连接 热键选择 comboBox
-        self.window.HotkeyName.clicked.connect(
-            lambda: self.on_trigger_hotkey_changed(self.window.HotkeyName.text()))
+        # 连接 热键选择 HotkeyPushButton
+        self.window.HotkeyPushButton.clicked.connect(lambda: self.on_trigger_hotkey_changed(self.window.HotkeyPushButton.text()))
 
         self.window.announcement.setReadOnly(True)
         # 设置公告内容
@@ -1234,7 +1222,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         if lockKey != "UNKNOWN":
             # 更新鼠标相关的按键
             self.lockKey = lockKey
-            self.window.HotkeyName.setText(lockKey_name)
+            self.window.HotkeyPushButton.setText(lockKey_name)
             # 发送信息到 mouseMoveProssesSignal_queue
             self.mouseMoveProssesSignal_queue.put(("lock_key_change", lockKey))
             print(f"触发按键已更改为: {lockKey_name} (代码: {lockKey})")
@@ -1596,7 +1584,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 获取 触发热键代码 值
         lockKey = self.settings.get('lockKey', "VK_LBUTTON")
         print(f"读取保存的触发热键: {lockKey}")
-        self.window.HotkeyName.setText(lockKey)
+        self.window.HotkeyPushButton.setText(lockKey)
         key_code = keyboard.get_key_code(lockKey)
         print(f"加载触发热键代码: {key_code}")
         self.mouseMoveProssesSignal_queue.put(("lock_key_change", key_code))
@@ -1640,7 +1628,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 获取当前 sideButtonCheckBox 的选项
         mouse_Side_Button_Witch = self.window.sideButtonCheckBox.isChecked()
         # 获取当前 HotkeyName PushButton 的文字
-        lockKey = self.window.HotkeyName.text()
+        lockKey = self.window.HotkeyPushButton.text()
         # 获取当前 triggerMethodComboBox 的选项
         triggerType = self.window.triggerMethodComboBox.currentText()
 
@@ -2192,59 +2180,60 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
     def log_output(self):
         """调试信息输出"""
-        if not self.information_output_queue.empty():
-            message = self.information_output_queue.get_nowait()
-            print("information_output_queue 队列接收信息:", message)
+        if self.information_output_queue.empty():
+            return
+        message = self.information_output_queue.get_nowait()
+        print("information_output_queue 队列接收信息:", message)
 
-            if message[0] == "UI_process_log":  # UI主进程 调试信息输出
-                log_msg = message[1]
+        if message[0] == "UI_process_log":  # UI主进程 调试信息输出
+            log_msg = message[1]
 
-                if not isinstance(log_msg, str):
-                    log_msg = str(log_msg)
+            if not isinstance(log_msg, str):
+                log_msg = str(log_msg)
 
-                self.window.log_output_00.append(f"[INFO]UI主进程 日志: {log_msg}")
-                self.window.log_output_00.ensureCursorVisible()
+            self.window.log_output_00.append(f"[INFO]UI主进程 日志: {log_msg}")
+            self.window.log_output_00.ensureCursorVisible()
 
-            if message[0] == "log_output_main":  # 主通信进程 调试信息输出
-                log_msg = message[1]  # 提取信息段
+        if message[0] == "log_output_main":  # 主通信进程 调试信息输出
+            log_msg = message[1]  # 提取信息段
 
-                # 确保 log_msg 是字符串类型
-                if not isinstance(log_msg, str):
-                    log_msg = str(log_msg)  # 如果不是字符串类型，则转换为字符串
+            # 确保 log_msg 是字符串类型
+            if not isinstance(log_msg, str):
+                log_msg = str(log_msg)  # 如果不是字符串类型，则转换为字符串
 
-                self.window.log_output_01.append(
-                    f"[INFO]通信进程 收到信号: {log_msg}")  # 添加新的日志信息
-                self.window.log_output_01.ensureCursorVisible()  # 确保光标可见
+            self.window.log_output_01.append(
+                f"[INFO]通信进程 收到信号: {log_msg}")  # 添加新的日志信息
+            self.window.log_output_01.ensureCursorVisible()  # 确保光标可见
 
-            if message[0] == "video_processing_log":  # 视频处理进程 调试信息输出
-                log_msg = message[1]
+        if message[0] == "video_processing_log":  # 视频处理进程 调试信息输出
+            log_msg = message[1]
 
-                if not isinstance(log_msg, str):
-                    log_msg = str(log_msg)
+            if not isinstance(log_msg, str):
+                log_msg = str(log_msg)
 
-                self.window.log_output_02.append(
-                    f"[INFO]视频处理进程 收到信号: {log_msg}")
-                self.window.log_output_02.ensureCursorVisible()
+            self.window.log_output_02.append(
+                f"[INFO]视频处理进程 收到信号: {log_msg}")
+            self.window.log_output_02.ensureCursorVisible()
 
-            if message[0] == "video_signal_acquisition_log":  # 视频信号接收进程 调试信息输出
-                log_msg = message[1]
-                operate, signal_source = log_msg
+        if message[0] == "video_signal_acquisition_log":  # 视频信号接收进程 调试信息输出
+            log_msg = message[1]
+            operate, signal_source = log_msg
 
-                if not isinstance(log_msg, str):
-                    log_msg = str(log_msg)
+            if not isinstance(log_msg, str):
+                log_msg = str(log_msg)
 
-                self.window.log_output_03.append(
-                    f"[INFO]动作: {operate}  信号源: {signal_source}")
-                self.window.log_output_03.ensureCursorVisible()
+            self.window.log_output_03.append(
+                f"[INFO]动作: {operate}  信号源: {signal_source}")
+            self.window.log_output_03.ensureCursorVisible()
 
-            if message[0] == "error_log":  # 报错信息提示
-                log_msg = message[1]
+        if message[0] == "error_log":  # 报错信息提示
+            log_msg = message[1]
 
-                if not isinstance(log_msg, str):
-                    log_msg = str(log_msg)
+            if not isinstance(log_msg, str):
+                log_msg = str(log_msg)
 
-                self.window.status_widget.display_message(
-                    log_msg, bg_color="Red", text_color="black", auto_hide=6000)
+            self.window.status_widget.display_message(
+                log_msg, bg_color="Red", text_color="black", auto_hide=6000)
 
     def main(self):
         """程序启动初始化"""
