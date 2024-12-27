@@ -7,7 +7,7 @@ import ctypes
 import win32api
 import win32con
 import platform
-from Module.config import Config, Root
+from Module.config import Root
 
 #############################################################
 # Pyd files list in                                               #
@@ -57,8 +57,8 @@ LG_driver = ctypes.CDLL(f"{Root}/DLLs/LGmouseControl/MouseControl.dll")
 
 kmNet = path_import("kmNet")
 
-def click():
-    match Config["mouse_mode"]:
+def click(mode):
+    match mode:
         case "飞易来USB":
             msdk_dll.M_KeyDown2(ctypes.c_uint64(msdk_hdl), 1)
             msdk_dll.M_KeyDown2(ctypes.c_uint64(msdk_hdl), 2)
@@ -75,8 +75,8 @@ def click():
             kmNet.enc_left(0)
 
 
-def move(centerx, centery):
-    match Config["mouse_mode"]:
+def move(mode, centerx, centery):
+    match mode:
         case "飞易来USB":
             msdk_dll.M_MoveR2(ctypes.c_uint64(msdk_hdl), int(centerx), int(centery))
         case "win32":
@@ -98,8 +98,8 @@ def move(centerx, centery):
 # Please see:
 # https://github.com/kvmaibox/kmboxnet/issues/14
 ##############################################################
-def press(key):
-    match Config["mouse_mode"]:
+def press(mode, key):
+    match mode:
         case "飞易来USB":
             msdk_dll.M_KeyDown2(ctypes.c_uint64(msdk_hdl), key)
         case "win32":
@@ -110,8 +110,8 @@ def press(key):
             LG_driver.press_key(key)
 
 
-def release(key):
-    match Config["mouse_mode"]:
+def release(mode, key):
+    match mode:
         case "飞易来USB":
             msdk_hdl.M_KeyUp2(ctypes.c_uint64(msdk_hdl), key)
         case "win32":

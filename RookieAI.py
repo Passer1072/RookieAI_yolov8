@@ -6,9 +6,7 @@ import queue
 import subprocess
 import sys
 import time
-from multiprocessing import Pipe, Process, Queue, shared_memory, Event
 import cv2
-#import kmNet
 import mss
 import numpy as np
 import pyautogui
@@ -20,9 +18,11 @@ from PyQt6 import QtWidgets, uic
 from PyQt6.QtCore import QTimer, Qt, QPropertyAnimation, QPoint, QEasingCurve, QParallelAnimationGroup, QRect, QSize
 from PyQt6.QtGui import QIcon, QImage, QPixmap, QBitmap, QPainter
 from PyQt6.QtWidgets import QGraphicsOpacityEffect, QFileDialog, QMessageBox, QSizePolicy
+from multiprocessing import Pipe, Process, Queue, shared_memory, Event
 from customLib.animated_status import AnimatedStatus  # 导入 带动画的状态提示浮窗 库
 from Module.const import method_mode
 from Module.config import Config, Root
+from Module.control import kmNet
 import Module.control as control
 import Module.keyboard as keyboard
 import Utils.revision as revision
@@ -860,7 +860,7 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
                         move_x_int = round(move_x / 2)
                         move_y_int = round(move_y / 2)
                         if move_x_int != 0 or move_y_int != 0:
-                            control.move(move_x_int, move_y_int)
+                            control.move(mouseMoveMode, move_x_int, move_y_int)
     except KeyboardInterrupt:
         pass
     finally:
