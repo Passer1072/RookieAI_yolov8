@@ -1,4 +1,7 @@
 # Changelog
+## [2024-12-27] - New Updates
+- [`b2cc8a9`](b2cc8a9a1ec5c1925b144b585df6f988f660ca76) refactor(RookieAI): 重构鼠标控制逻辑并移除未使用的 DLL 文件
+
 ## [2024-12-24] - New Updates
 - [`95e1420`](95e1420bf7f176949330564bf93c2cebd055630b) Merge pull request #78 from Passer1072/create-pr/update_version
 
