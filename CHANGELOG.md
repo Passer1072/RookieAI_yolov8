@@ -1,5 +1,6 @@
 # Changelog
 ## [2024-12-27] - New Updates
+- [`b950a91`](b950a9117bb9c1348373c63cb16c054035f8ad80) refactor(control): 重构鼠标控制函数并优化鼠标模式参数传递
 - [`b2cc8a9`](b2cc8a9a1ec5c1925b144b585df6f988f660ca76) refactor(RookieAI): 重构鼠标控制逻辑并移除未使用的 DLL 文件
 
 ## [2024-12-24] - New Updates
