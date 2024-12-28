@@ -1,4 +1,7 @@
 # Changelog
+## [2024-12-28] - New Updates
+- [`c662aeb`](c662aebbd64723823bab8afd82bc093a27d3d1b2) refactor(RookieAI): 调整渲染超时时间，优化代码格式和结构
+
 ## [2024-12-27] - New Updates
 - [`0f2b6d2`](0f2b6d22db2b94fddeb846d90e86d0ec92fa29a4) chore: 更新 .gitignore 文件,上传pyd
 - [`b950a91`](b950a9117bb9c1348373c63cb16c054035f8ad80) refactor(control): 重构鼠标控制函数并优化鼠标模式参数传递
