@@ -119,20 +119,29 @@ def draw_line(hdc, x1, y1, x2, y2, color, width):
 
 
 # 绘制文本
+# 绘制文本
 def draw_text(hdc, text, x, y, color, font_size=16):
-    # 创建字体
+    """
+    在指定位置和颜色下绘制文本。
+
+    **参数**:
+    
+    - hdc: 设备上下文句柄。
+    - text: 要绘制的文本内容。
+    - x: 文本的起始x坐标。
+    - y: 文本的起始y坐标。
+    - color: 文本颜色(COLORREF)(Windows API颜色值)
+    - font_size: 字体大小，默认为16点。
+    """
     hfont = gdi32.CreateFontA(
         -font_size, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, 0, b"Arial"
     )
     old_font = SelectObject(hdc, hfont)
 
-    # 设置文本颜色
     old_color = gdi32.SetTextColor(hdc, color)
 
-    # 绘制文本
     gdi32.TextOutA(hdc, x, y, text.encode("utf-8"), len(text))
 
-    # 恢复之前的设置
     gdi32.SetTextColor(hdc, old_color)
     SelectObject(hdc, old_font)
     gdi32.DeleteObject(hfont)

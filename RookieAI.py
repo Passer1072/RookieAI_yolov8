@@ -27,7 +27,6 @@ import Module.control as control
 import Module.keyboard as keyboard
 import Utils.revision as revision
 
-
 def communication_Process(pipe, videoSignal_queue, videoSignal_stop_queue, floating_information_signal_queue,
                           information_output_queue):
     """
@@ -243,7 +242,7 @@ def _extracted_from_open_screen_video_11(videoSignal_stop_queue, sct, shared_fra
     # 初始化 'frame' 以避免引用前未赋值
     frame = np.zeros((capture_height, capture_width, 3), dtype=np.uint8)
 
-    frame_interval = 1.0 / 100
+    frame_interval = 0.05
 
     while True:
         frame_start_time = time.time()  # 记录帧开始时间
@@ -544,7 +543,8 @@ def YOLO_process_frame(model, frame, yolo_confidence=0.1, target_class="ALL",
         for box in boxes:
             x1, y1, x2, y2 = box.cpu().numpy()  # 获取每个 Box 的坐标
             box_center = ((x1 + x2) / 2, (y1 + y2) / 2)  # 计算每个 Box 的中心点
-            distance = sqrt((box_center[0] - frame_center[0]) ** 2 + (box_center[1] - frame_center[1]) ** 2)  # 计算距离
+            distance = sqrt((box_center[0] - frame_center[0]) **
+                            2 + (box_center[1] - frame_center[1]) ** 2)  # 计算距离
             distances.append(distance)  # 将距离加入到 distances 列表中
 
         # 找到距离最近的 Box
@@ -560,7 +560,9 @@ def YOLO_process_frame(model, frame, yolo_confidence=0.1, target_class="ALL",
         if box_shm_name and box_data_event and box_lock:
             # 连接到共享内存
             box_shm = shared_memory.SharedMemory(name=box_shm_name)
-            box_array = np.ndarray((1, 6), dtype=np.float32, buffer=box_shm.buf)  # 修改共享内存结构，加入unique_id
+            # 修改共享内存结构，加入unique_id
+            box_array = np.ndarray(
+                (1, 6), dtype=np.float32, buffer=box_shm.buf)
 
             with box_lock:
                 box_array.fill(0)  # 清空之前的数据
@@ -577,7 +579,8 @@ def YOLO_process_frame(model, frame, yolo_confidence=0.1, target_class="ALL",
 
         # 绘制一个淡蓝色的细圆（瞄准范围）
         circle_color = (173, 216, 230)  # 淡蓝色
-        cv2.circle(frame, (int(frame_center[0]), int(frame_center[1])), aim_range, circle_color, 1)
+        cv2.circle(frame, (int(frame_center[0]), int(
+            frame_center[1])), aim_range, circle_color, 1)
 
         # 绘制所有 Box
         for i, box in enumerate(boxes):
@@ -589,14 +592,17 @@ def YOLO_process_frame(model, frame, yolo_confidence=0.1, target_class="ALL",
             line_color = (255, 255, 0)  # 黄色连接线
 
             # 绘制矩形框
-            cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), box_color, 2)
+            cv2.rectangle(frame, (int(x1), int(y1)),
+                          (int(x2), int(y2)), box_color, 2)
             # 绘制中心点
             cv2.circle(frame, box_center, 5, (0, 0, 255), -1)
             # 绘制连接线条
-            cv2.line(frame, box_center, (int(frame_center[0]), int(frame_center[1])), line_color, 2)
+            cv2.line(frame, box_center, (int(frame_center[0]), int(
+                frame_center[1])), line_color, 2)
 
             # 计算距离
-            distance = sqrt((box_center[0] - frame_center[0]) ** 2 + (box_center[1] - frame_center[1]) ** 2)
+            distance = sqrt(
+                (box_center[0] - frame_center[0]) ** 2 + (box_center[1] - frame_center[1]) ** 2)
             # 绘制距离文本
             distance_text = f"{distance:.1f}px"
             cv2.putText(frame, distance_text, (int(x1), int(y1) - 10),
@@ -611,11 +617,13 @@ def YOLO_process_frame(model, frame, yolo_confidence=0.1, target_class="ALL",
             # 只有当距离小于 aim_range 时，才绘制绿色框和红色连接线
             if closest_distance < aim_range:
                 # 绘制最近的框的绿色边框
-                cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 3)
+                cv2.rectangle(frame, (int(x1), int(y1)),
+                              (int(x2), int(y2)), (0, 255, 0), 3)
                 # 绘制中心点
                 cv2.circle(frame, box_center, 5, (0, 255, 0), -1)
                 # 绘制红色连接线
-                cv2.line(frame, box_center, (int(frame_center[0]), int(frame_center[1])), (255, 0, 0), 3)
+                cv2.line(frame, box_center, (int(frame_center[0]), int(
+                    frame_center[1])), (255, 0, 0), 3)
 
         # 返回带有检测结果的图像
         return frame  # 返回绘制后的图像是 BGR 格式
@@ -654,7 +662,8 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
     connectKmBox = False
 
     print("测试KmBoxNet连通性...")
-    response = subprocess.run(["ping", IP], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    response = subprocess.run(
+        ["ping", IP], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output = response.stdout.decode('gbk', errors='ignore')
     print(output)
 
@@ -780,7 +789,8 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
                     # print(f"移动距离处理前: {offset_target_x}, {offset_target_y}")
 
                     # 计算偏移后的距离
-                    offset_distance = math.sqrt(offset_target_x ** 2 + offset_target_y ** 2)
+                    offset_distance = math.sqrt(
+                        offset_target_x ** 2 + offset_target_y ** 2)
                     # print(f"Offset Distance: {offset_distance}")
                     # print(f"Distance: {distance}")
 
@@ -796,11 +806,11 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
                     if offset_distance < slow_zone_radius:
                         # 偏移距离越小，aim_speed 越接近 base_aim_speed
                         last_aim_speed = base_aim_speed + (max_aim_speed - base_aim_speed) * (
-                                offset_distance / slow_zone_radius)
+                            offset_distance / slow_zone_radius)
                     elif offset_distance < aim_range:
                         # 使用偏移后的距离动态调整 aim_speed
                         last_aim_speed = base_aim_speed + (max_aim_speed - base_aim_speed) * (
-                                1 - offset_distance / aim_range)
+                            1 - offset_distance / aim_range)
                     else:
                         # 超过瞄准范围时，保持基础 aim_speed
                         last_aim_speed = base_aim_speed
@@ -829,18 +839,21 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
 
                     # 检查锁定键、鼠标侧键和 Shift 键是否按下
                     lockKey_pressed = win32api.GetKeyState(lockKey) & 0x8000
-                    xbutton2_pressed = win32api.GetKeyState(0x05) & 0x8000  # 鼠标侧键
-                    shift_pressed = win32api.GetKeyState(win32con.VK_SHIFT) & 0x8000  # Shift 键
+                    xbutton2_pressed = win32api.GetKeyState(
+                        0x05) & 0x8000  # 鼠标侧键
+                    shift_pressed = win32api.GetKeyState(
+                        win32con.VK_SHIFT) & 0x8000  # Shift 键
 
                     if trigger_mode == 'press':
                         # 按下模式：只需检测按键是否被按下
                         should_move = aimbot_switch and target_is_within_range and (
-                                lockKey_pressed or (mouse_Side_Button_Witch and xbutton2_pressed)
+                            lockKey_pressed or (
+                                mouse_Side_Button_Witch and xbutton2_pressed)
                         )
                     elif trigger_mode == 'shift+press':
                         # Shift + 按下模式：需要同时按下 Shift 和锁定键
                         should_move = aimbot_switch and target_is_within_range and (
-                                shift_pressed and lockKey_pressed
+                            shift_pressed and lockKey_pressed
                         )
 
                     elif trigger_mode == 'toggle':
@@ -939,13 +952,16 @@ class RookieAiAPP:  # 主进程 (UI进程)
             self.on_sideButtonCheckBox_state_changed)
 
         # 连接 mobileModeQComboBox 的信号槽函数(鼠标移动模式)
-        self.window.mobileModeQComboBox.currentIndexChanged.connect(self.on_mobileMode_changed)
+        self.window.mobileModeQComboBox.currentIndexChanged.connect(
+            self.on_mobileMode_changed)
 
         # 连接 触发方式选择 conboBox
-        self.window.triggerMethodComboBox.currentTextChanged.connect(self.on_trigger_method_changed)
+        self.window.triggerMethodComboBox.currentTextChanged.connect(
+            self.on_trigger_method_changed)
 
         # 连接 热键选择 HotkeyPushButton
-        self.window.HotkeyPushButton.clicked.connect(lambda: self.on_trigger_hotkey_changed(self.window.HotkeyPushButton.text()))
+        self.window.HotkeyPushButton.clicked.connect(
+            lambda: self.on_trigger_hotkey_changed(self.window.HotkeyPushButton.text()))
 
         self.window.announcement.setReadOnly(True)
         # 设置公告内容
@@ -1195,7 +1211,8 @@ class RookieAiAPP:  # 主进程 (UI进程)
         print(f"选择的鼠标移动方式: {selected_mode_name}")
 
         # 发送鼠标移动方式切换的信号
-        self.mouseMoveProssesSignal_queue.put(("mouseMoveMode", selected_mode_name))
+        self.mouseMoveProssesSignal_queue.put(
+            ("mouseMoveMode", selected_mode_name))
 
     def on_trigger_method_changed(self, selected_method):
         """
