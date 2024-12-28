@@ -1,5 +1,6 @@
 # Changelog
 ## [2024-12-28] - New Updates
+- [`4d40080`](4d40080b40a8023c8775f6f9515f932c2612d51b) Merge branch 'dev' of https://github.com/Passer1072/RookieAI_yolov8 into dev
 - [`41cc748`](41cc748173a4ccd004ed71c96d4f59c52d9dc62b) Update CHANGELOG.md
 - [`bdd7131`](bdd7131586fc68e8e873b3ea39f630e8a7f0611c) 功能更新: 可分别调整X轴Y轴移动速度
 - [`c662aeb`](c662aebbd64723823bab8afd82bc093a27d3d1b2) refactor(RookieAI): 调整渲染超时时间，优化代码格式和结构
