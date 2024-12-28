@@ -1,6 +1,6 @@
 # Changelog
 ## [2024-12-28] - New Updates
-- [`bdd7131`](bdd7131586fc68e8e873b3ea39f630e8a7f0611c) 功能更新
+- [`bdd7131`](bdd7131586fc68e8e873b3ea39f630e8a7f0611c) 功能更新: 可分别调整X轴Y轴移动速度
 - [`c662aeb`](c662aebbd64723823bab8afd82bc093a27d3d1b2) refactor(RookieAI): 调整渲染超时时间，优化代码格式和结构
 
 ## [2024-12-27] - New Updates
