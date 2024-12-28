@@ -634,7 +634,7 @@ def YOLO_process_frame(model, frame, yolo_confidence=0.1, target_class="ALL",
 
 
 def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
-                       aim_speed=0.2, aim_range=100, offset_centerx=0, offset_centery=0.3,
+                       aim_speed_x=0.2, aim_speed_y=0.0, aim_range=100, offset_centerx=0, offset_centery=0.3,
                        lockKey=0x02, aimbot_switch=True, mouse_Side_Button_Witch=True,
                        screen_pixels_for_360_degrees=1800,
                        screen_height_pixels=900, near_speed_multiplier=2, slow_zone_radius=10, mouseMoveMode='win32'):
@@ -644,7 +644,8 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
     参数:
     - box_shm_name: Box 坐标共享内存的名称
     - box_lock: 用于同步访问共享内存的 Lock
-    - aim_speed: 基础瞄准速度
+    - aim_speed_x: X轴基础瞄准速度
+    - aim_speed_y: Y轴基础瞄准速度
     - aim_range: 瞄准范围
     - threshold: 距离阈值
     - fast_decay_rate: 当 distance < threshold 时的衰减率
@@ -700,9 +701,12 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
                     if cmd == "aimbot_switch_change":
                         aimbot_switch = cmd_01
                         print(f"自瞄状态更改: {aimbot_switch}")
-                    elif cmd == "aim_speed_change":
-                        aim_speed = cmd_01
-                        print(f"瞄准速度更改: {aim_speed}")
+                    elif cmd == "aim_speed_x_change":
+                        aim_speed_x = cmd_01
+                        print(f"X轴瞄准速度更改: {aim_speed_x}")
+                    elif cmd == "aim_speed_y_change":
+                        aim_speed_y = cmd_01
+                        print(f"Y轴瞄准速度更改: {aim_speed_y}")
                     elif cmd == "aim_range_change":
                         aim_range = cmd_01
                         print(f"瞄准范围更改: {aim_range}")
@@ -791,45 +795,41 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
                     # 计算偏移后的距离
                     offset_distance = math.sqrt(
                         offset_target_x ** 2 + offset_target_y ** 2)
-                    # print(f"Offset Distance: {offset_distance}")
-                    # print(f"Distance: {distance}")
 
                     # 将像素偏移转换为角度偏移
                     angle_offset_x = offset_target_x / pixels_per_degree_x  # 度
                     angle_offset_y = offset_target_y / pixels_per_degree_y  # 度
-                    # print(f"角度偏移: {angle_offset_x}, {angle_offset_y}")
 
                     # 基础 aim_speed 和最大 aim_speed
-                    base_aim_speed = aim_speed  # 记录当前 aim_speed 的值
-                    max_aim_speed = near_speed_multiplier * base_aim_speed  # 最大 aim_speed
+                    base_aim_speed_x = aim_speed_x  # x轴的基础速度
+                    base_aim_speed_y = aim_speed_y  # y轴的基础速度
+                    max_aim_speed_x = near_speed_multiplier * base_aim_speed_x  # 最大X速度
+                    max_aim_speed_y = near_speed_multiplier * base_aim_speed_y  # 最大Y速度
+
                     # 动态调整 aim_speed
                     if offset_distance < slow_zone_radius:
                         # 偏移距离越小，aim_speed 越接近 base_aim_speed
-                        last_aim_speed = base_aim_speed + (max_aim_speed - base_aim_speed) * (
-                            offset_distance / slow_zone_radius)
+                        last_aim_speed_x = base_aim_speed_x + (max_aim_speed_x - base_aim_speed_x) * (
+                                    offset_distance / slow_zone_radius)
+                        last_aim_speed_y = base_aim_speed_y + (max_aim_speed_y - base_aim_speed_y) * (
+                                    offset_distance / slow_zone_radius)
                     elif offset_distance < aim_range:
                         # 使用偏移后的距离动态调整 aim_speed
-                        last_aim_speed = base_aim_speed + (max_aim_speed - base_aim_speed) * (
-                            1 - offset_distance / aim_range)
+                        last_aim_speed_x = base_aim_speed_x + (max_aim_speed_x - base_aim_speed_x) * (
+                                    1 - offset_distance / aim_range)
+                        last_aim_speed_y = base_aim_speed_y + (max_aim_speed_y - base_aim_speed_y) * (
+                                    1 - offset_distance / aim_range)
                     else:
                         # 超过瞄准范围时，保持基础 aim_speed
-                        last_aim_speed = base_aim_speed
+                        last_aim_speed_x = base_aim_speed_x
+                        last_aim_speed_y = base_aim_speed_y
 
                     # 保留小数点后两位
-                    last_aim_speed = round(last_aim_speed, 2)
+                    last_aim_speed_x = round(last_aim_speed_x, 2)
+                    last_aim_speed_y = round(last_aim_speed_y, 2)
 
-                    # 调试输出
-                    # print(
-                    #     f"Offset Distance: {offset_distance}, Base Aim Speed: {base_aim_speed}, Max Aim Speed: {max_aim_speed}, Last Aim Speed: {last_aim_speed}")
-
-                    # 保留小数点后两位
-                    last_aim_speed = round(last_aim_speed, 2)
-                    # print(f"Distance: {distance}, Aim Speed: {last_aim_speed}")
-
-                    move_x = angle_offset_x * last_aim_speed * 2
-                    move_y = angle_offset_y * last_aim_speed * 2
-                    # print(f"最终aim_speed: {last_aim_speed}")
-                    # print(f"单次鼠标移动距离: {move_x}, {move_y}")
+                    move_x = angle_offset_x * last_aim_speed_x * 2
+                    move_y = angle_offset_y * last_aim_speed_y * 2
 
                     # 判断目标是否在瞄准范围内
                     target_is_within_range = distance < aim_range
@@ -839,10 +839,8 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
 
                     # 检查锁定键、鼠标侧键和 Shift 键是否按下
                     lockKey_pressed = win32api.GetKeyState(lockKey) & 0x8000
-                    xbutton2_pressed = win32api.GetKeyState(
-                        0x05) & 0x8000  # 鼠标侧键
-                    shift_pressed = win32api.GetKeyState(
-                        win32con.VK_SHIFT) & 0x8000  # Shift 键
+                    xbutton2_pressed = win32api.GetKeyState(0x05) & 0x8000  # 鼠标侧键
+                    shift_pressed = win32api.GetKeyState(win32con.VK_SHIFT) & 0x8000  # Shift 键
 
                     if trigger_mode == 'press':
                         # 按下模式：只需检测按键是否被按下
@@ -1049,28 +1047,51 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 初始化滑动条状态变量
         self.is_slider_pressed = False
 
-        # 设置 瞄准速度 滑动条
-        self.window.lockSpeedHorizontalSlider.setMaximum(100)
-        self.window.lockSpeedHorizontalSlider.setMinimum(0)
+        # 设置 lockspeedX 滑动条
+        self.window.lockSpeedXHorizontalSlider.setMaximum(100)
+        self.window.lockSpeedXHorizontalSlider.setMinimum(0)
 
-        # 连接滑动条信号(lockspeed)
-        self.window.lockSpeedHorizontalSlider.sliderPressed.connect(
-            self.on_lockSpeed_slider_pressed)
-        self.window.lockSpeedHorizontalSlider.sliderMoved.connect(
-            self.on_lockSpeed_slider_moved)
-        self.window.lockSpeedHorizontalSlider.sliderReleased.connect(
-            self.on_lockSpeed_slider_released)
-        self.window.lockSpeedHorizontalSlider.valueChanged.connect(
-            self.on_lockSpeed_slider_value_changed)
+        # 连接滑动条信号(lockspeedX)
+        self.window.lockSpeedXHorizontalSlider.sliderPressed.connect(
+            self.on_lockSpeedX_slider_pressed)
+        self.window.lockSpeedXHorizontalSlider.sliderMoved.connect(
+            self.on_lockSpeedX_slider_moved)
+        self.window.lockSpeedXHorizontalSlider.sliderReleased.connect(
+            self.on_lockSpeedX_slider_released)
+        self.window.lockSpeedXHorizontalSlider.valueChanged.connect(
+            self.on_lockSpeedX_slider_value_changed)
 
-        # 初始化滑动条发送定时器(lockspeed)
-        self.slider_update_timer_lockSpeed = QTimer()
-        self.slider_update_timer_lockSpeed.setInterval(200)  # 设置200ms的间隔
-        self.slider_update_timer_lockSpeed.timeout.connect(
-            self.send_lockSpeed_update)
+        # 初始化滑动条发送定时器(lockspeedX)
+        self.slider_update_timer_lockSpeedX = QTimer()
+        self.slider_update_timer_lockSpeedX.setInterval(200)  # 设置200ms的间隔
+        self.slider_update_timer_lockSpeedX.timeout.connect(
+            self.send_lockSpeedX_update)
 
-        # 初始化滑动条状态变量(lockspeed)
-        self.is_slider_pressed_lockSpeed = False
+        # 初始化滑动条状态变量(lockspeedX)
+        self.is_slider_pressed_lockSpeedX = False
+
+        # 设置 lockspeedY 滑动条
+        self.window.lockSpeedYHorizontalSlider.setMaximum(100)
+        self.window.lockSpeedYHorizontalSlider.setMinimum(0)
+
+        # 连接滑动条信号(lockspeedY)
+        self.window.lockSpeedYHorizontalSlider.sliderPressed.connect(
+            self.on_lockSpeedY_slider_pressed)
+        self.window.lockSpeedYHorizontalSlider.sliderMoved.connect(
+            self.on_lockSpeedY_slider_moved)
+        self.window.lockSpeedYHorizontalSlider.sliderReleased.connect(
+            self.on_lockSpeedY_slider_released)
+        self.window.lockSpeedYHorizontalSlider.valueChanged.connect(
+            self.on_lockSpeedY_slider_value_changed)
+
+        # 初始化滑动条发送定时器(lockspeedY)
+        self.slider_update_timer_lockSpeedY = QTimer()
+        self.slider_update_timer_lockSpeedY.setInterval(200)  # 设置200ms的间隔
+        self.slider_update_timer_lockSpeedY.timeout.connect(
+            self.send_lockSpeedY_update)
+
+        # 初始化滑动条状态变量(lockspeedY)
+        self.is_slider_pressed_lockSpeedY = False
 
         # 初始化 aimRange 滑动条(aim_range)
         self.window.aimRangeHorizontalSlider.setMinimum(0)  # 滑块的实际范围是 0 到 280
@@ -1397,44 +1418,83 @@ class RookieAiAPP:  # 主进程 (UI进程)
             # 用户已停止拖动滑动条，停止定时器
             self.aimRange_slider_update_timer.stop()
 
-    '''lockSpeed 滑动条'''
+    '''lockSpeed_x 滑动条'''
 
-    def on_lockSpeed_slider_value_changed(self, value):
-        """当 lockSpeed 滑动条的值改变时调用"""
+    def on_lockSpeedX_slider_value_changed(self, value):
+        """当 lockSpeed_x 滑动条的值改变时调用"""
         value = value / 10  # 将值缩放到 [0, 10] 范围
-        self.window.lockSpeedLcdNumber.display(
+        self.window.lockSpeedXLcdNumber.display(
             f"{value:.1f}")  # 在 LCD 上显示一位小数的值
-        self.lock_speed = value  # 更新锁定速度
+        self.lock_speed_x = value  # 更新锁定速度
         # 如果定时器未启动，启动定时器
-        if not self.slider_update_timer_lockSpeed.isActive():
-            self.slider_update_timer_lockSpeed.start()
+        if not self.slider_update_timer_lockSpeedX.isActive():
+            self.slider_update_timer_lockSpeedX.start()
 
-    def on_lockSpeed_slider_pressed(self):
-        """当用户开始拖动 lockSpeed 滑动条时调用"""
-        self.is_slider_pressed_lockSpeed = True
-        self.slider_update_timer_lockSpeed.start()  # 开始定时器
+    def on_lockSpeedX_slider_pressed(self):
+        """当用户开始拖动 lockSpeed_x 滑动条时调用"""
+        self.is_slider_pressed_lockSpeedX = True
+        self.slider_update_timer_lockSpeedX.start()  # 开始定时器
 
-    def on_lockSpeed_slider_moved(self, value):
+    def on_lockSpeedX_slider_moved(self, value):
         """当 lockSpeed 滑动条被拖动时调用"""
         value = value / 10  # 将值缩放到 [0, 10] 范围
-        self.window.lockSpeedLcdNumber.display(
+        self.window.lockSpeedXLcdNumber.display(
             f"滑动条的值: {value:.1f}")  # 在 LCD 上显示实时的值
-        self.lock_speed = value  # 更新锁定速度
+        self.lock_speed_x = value  # 更新锁定速度
 
-    def on_lockSpeed_slider_released(self):
+    def on_lockSpeedX_slider_released(self):
         """当用户释放 lockSpeed 滑动条时调用"""
-        self.is_slider_pressed_lockSpeed = False
+        self.is_slider_pressed_lockSpeedX = False
         # 定时器将在发送最后一次值后停止
-        self.send_lockSpeed_update()
+        self.send_lockSpeedX_update()
 
-    def send_lockSpeed_update(self):
+    def send_lockSpeedX_update(self):
         """每200ms发送一次最新的 lockSpeed 值"""
         self.mouseMoveProssesSignal_queue.put(
-            ("aim_speed_change", self.lock_speed))  # 发送锁定速度到队列
-        print(f"定时发送锁定速度更新信号: {self.lock_speed}")
-        if not self.is_slider_pressed_lockSpeed:
+            ("aim_speed_x_change", self.lock_speed_x))  # 发送锁定速度到队列
+        print(f"定时发送锁定速度更新信号: {self.lock_speed_x}")
+        if not self.is_slider_pressed_lockSpeedX:
             # 用户已停止拖动滑动条，停止定时器
-            self.slider_update_timer_lockSpeed.stop()
+            self.slider_update_timer_lockSpeedX.stop()
+
+    '''lockSpeed_y 滑动条'''
+
+    def on_lockSpeedY_slider_value_changed(self, value):
+        """当 lockSpeed_y 滑动条的值改变时调用"""
+        value = value / 10  # 将值缩放到 [0, 10] 范围
+        self.window.lockSpeedYLcdNumber.display(
+            f"{value:.1f}")  # 在 LCD 上显示一位小数的值
+        self.lock_speed_y = value  # 更新锁定速度
+        # 如果定时器未启动，启动定时器
+        if not self.slider_update_timer_lockSpeedY.isActive():
+            self.slider_update_timer_lockSpeedY.start()
+
+    def on_lockSpeedY_slider_pressed(self):
+        """当用户开始拖动 lockSpeed_y 滑动条时调用"""
+        self.is_slider_pressed_lockSpeedY = True
+        self.slider_update_timer_lockSpeedY.start()  # 开始定时器
+
+    def on_lockSpeedY_slider_moved(self, value):
+        """当 lockSpeed 滑动条被拖动时调用"""
+        value = value / 10  # 将值缩放到 [0, 10] 范围
+        self.window.lockSpeedYLcdNumber.display(
+            f"滑动条的值: {value:.1f}")  # 在 LCD 上显示实时的值
+        self.lock_speed_y = value  # 更新锁定速度
+
+    def on_lockSpeedY_slider_released(self):
+        """当用户释放 lockSpeed 滑动条时调用"""
+        self.is_slider_pressed_lockSpeedY = False
+        # 定时器将在发送最后一次值后停止
+        self.send_lockSpeedY_update()
+
+    def send_lockSpeedY_update(self):
+        """每200ms发送一次最新的 lockSpeed 值"""
+        self.mouseMoveProssesSignal_queue.put(
+            ("aim_speed_y_change", self.lock_speed_y))  # 发送锁定速度到队列
+        print(f"定时发送锁定速度更新信号: {self.lock_speed_y}")
+        if not self.is_slider_pressed_lockSpeedY:
+            # 用户已停止拖动滑动条，停止定时器
+            self.slider_update_timer_lockSpeedY.stop()
 
     '''置信度滑动条'''
 
@@ -1557,18 +1617,23 @@ class RookieAiAPP:  # 主进程 (UI进程)
         self.window.confSlider.setValue(
             int(yolo_confidence * 100))  # 将置信度转换为滑动条值
         print(f"读取保存的YOLO置信度: {yolo_confidence}")
-        # 获取 瞄准速度
-        aim_speed = self.settings.get('lockSpeed', 5)
-        self.aim_speed = aim_speed
-        self.window.lockSpeedHorizontalSlider.setValue(int(aim_speed * 10))
-        print(f"读取保存的瞄准速度: {aim_speed}")
+        # 获取 瞄准速度x
+        aim_speed_x = self.settings.get('aim_speed_x', 0.5)
+        self.aim_speed_x = aim_speed_x
+        self.window.lockSpeedXHorizontalSlider.setValue(int(aim_speed_x * 10))
+        print(f"读取保存的瞄准速度X: {aim_speed_x}")
+        # 获取 瞄准速度y
+        aim_speed_y = self.settings.get('aim_speed_y', 0.5)
+        self.aim_speed_y = aim_speed_y
+        self.window.lockSpeedYHorizontalSlider.setValue(int(aim_speed_y * 10))
+        print(f"读取保存的瞄准速度Y: {aim_speed_y}")
         # 获取 瞄准范围
         aim_range = self.settings.get('aim_range', 100)
         self.aim_range = aim_range
         self.window.aimRangeHorizontalSlider.setValue(int(aim_range))
         print(f"读取保存的瞄准范围: {aim_range}")
         # 获取 Aimbot 开启状态
-        aimbot_switch = self.settings.get("aimbot", False)
+        aimbot_switch = self.settings.get("aimBot", False)
         self.window.aimBotCheckBox.setChecked(aimbot_switch)
         self.mouseMoveProssesSignal_queue.put(
             ("aimbot_switch_change", aimbot_switch))
@@ -1663,8 +1728,10 @@ class RookieAiAPP:  # 主进程 (UI进程)
         self.settings['model_file'] = self.model_file
         # 置信度
         self.settings['confidence'] = self.yolo_confidence
-        # 锁定速度
-        self.settings['lockSpeed'] = self.lock_speed
+        # 锁定速度x
+        self.settings['aim_speed_x'] = self.lock_speed_x
+        # 锁定速度y
+        self.settings['aim_speed_y'] = self.lock_speed_y
         # 瞄准范围
         self.settings['aim_range'] = self.aim_range
         # 目标代码
