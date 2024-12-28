@@ -1,5 +1,6 @@
 # Changelog
 ## [2024-12-28] - New Updates
+- [`a31c545`](a31c545c3b9108494f34a30eed1d7877faa47c5d) 配置文件标准参考文件
 - [`0776305`](0776305169159ca1498c622c4fd13111d56750fd) Update Announcement.md
 - [`a337e47`](a337e47eaeb2878535e96ceb5d23d36646a44eba) Update CHANGELOG.md
 - [`bdd7131`](bdd7131586fc68e8e873b3ea39f630e8a7f0611c) 功能更新: 可分别调整X轴Y轴移动速度
