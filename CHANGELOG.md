@@ -1,5 +1,6 @@
 # Changelog
 ## [2024-12-29] - New Updates
+- [`dee40b7`](dee40b7a6dddcea832147f83a6ff67ba40f86e39) 上传适配3.0.0.12的UI界面
 - [`0b8bf63`](0b8bf6330e023807539ef0f9f8dc2682e8ca1645) 设置action为正确的时区
 
 ## [2024-12-28] - New Updates
