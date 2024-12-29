@@ -1,4 +1,7 @@
 # Changelog
+## [2024-12-29] - New Updates
+- [`0b8bf63`](0b8bf6330e023807539ef0f9f8dc2682e8ca1645) 设置action为正确的时区
+
 ## [2024-12-28] - New Updates
 - [`a31c545`](a31c545c3b9108494f34a30eed1d7877faa47c5d) 配置文件标准参考文件
 - [`0776305`](0776305169159ca1498c622c4fd13111d56750fd) Update Announcement.md
