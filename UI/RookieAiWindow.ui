@@ -1045,6 +1045,9 @@ background-color: rgba(0, 0, 0, 0);
     </property>
    </widget>
    <widget class="QFrame" name="frame_3">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>910</x>
@@ -1208,7 +1211,7 @@ background-color: rgba(0, 0, 0, 0);
     <widget class="QFrame" name="advancedSettingsFrame">
      <property name="geometry">
       <rect>
-       <x>0</x>
+       <x>450</x>
        <y>0</y>
        <width>371</width>
        <height>461</height>
@@ -1863,7 +1866,7 @@ border-color: rgba(0, 0, 0, 0);</string>
     <widget class="QFrame" name="basicSettingsFrame">
      <property name="geometry">
       <rect>
-       <x>450</x>
+       <x>0</x>
        <y>0</y>
        <width>371</width>
        <height>461</height>
@@ -2020,7 +2023,7 @@ border-color: rgba(0, 0, 0, 0);</string>
      <widget class="QPushButton" name="HotkeyPushButton">
       <property name="geometry">
        <rect>
-        <x>160</x>
+        <x>100</x>
         <y>90</y>
         <width>111</width>
         <height>31</height>
@@ -2142,12 +2145,12 @@ border-color: rgba(0, 0, 0, 0);</string>
        <string>自动扳机</string>
       </property>
      </widget>
-     <widget class="QLabel" name="lockSpeedLabel">
+     <widget class="QLabel" name="lockSpeedXLabel">
       <property name="geometry">
        <rect>
         <x>15</x>
-        <y>255</y>
-        <width>71</width>
+        <y>245</y>
+        <width>81</width>
         <height>31</height>
        </rect>
       </property>
@@ -2161,7 +2164,7 @@ border-color: rgba(0, 0, 0, 0);</string>
        <string notr="true">background-color: rgba(0, 0, 0, 0);</string>
       </property>
       <property name="text">
-       <string>瞄准速度:</string>
+       <string>瞄准速度X:</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -2171,7 +2174,7 @@ border-color: rgba(0, 0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>15</x>
-        <y>295</y>
+        <y>305</y>
         <width>71</width>
         <height>31</height>
        </rect>
@@ -2192,11 +2195,11 @@ border-color: rgba(0, 0, 0, 0);</string>
        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
       </property>
      </widget>
-     <widget class="QSlider" name="lockSpeedHorizontalSlider">
+     <widget class="QSlider" name="lockSpeedXHorizontalSlider">
       <property name="geometry">
        <rect>
         <x>95</x>
-        <y>262</y>
+        <y>252</y>
         <width>191</width>
         <height>18</height>
        </rect>
@@ -2209,7 +2212,7 @@ border-color: rgba(0, 0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>95</x>
-        <y>302</y>
+        <y>312</y>
         <width>191</width>
         <height>18</height>
        </rect>
@@ -2218,11 +2221,11 @@ border-color: rgba(0, 0, 0, 0);</string>
        <enum>Qt::Orientation::Horizontal</enum>
       </property>
      </widget>
-     <widget class="QLCDNumber" name="lockSpeedLcdNumber">
+     <widget class="QLCDNumber" name="lockSpeedXLcdNumber">
       <property name="geometry">
        <rect>
         <x>290</x>
-        <y>260</y>
+        <y>250</y>
         <width>64</width>
         <height>23</height>
        </rect>
@@ -2241,7 +2244,7 @@ border-color: rgba(0, 0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>290</x>
-        <y>300</y>
+        <y>310</y>
         <width>64</width>
         <height>23</height>
        </rect>
@@ -2256,29 +2259,54 @@ border-color: rgba(0, 0, 0, 0);</string>
        <enum>QLCDNumber::SegmentStyle::Flat</enum>
       </property>
      </widget>
-     <widget class="QToolButton" name="auxiliaryPressureGunToolButton_2">
+     <widget class="QSlider" name="aimRangeHorizontalSlider_2">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="geometry">
        <rect>
-        <x>175</x>
-        <y>340</y>
-        <width>21</width>
-        <height>21</height>
+        <x>95</x>
+        <y>342</y>
+        <width>191</width>
+        <height>18</height>
        </rect>
       </property>
-      <property name="text">
-       <string>...</string>
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
      </widget>
-     <widget class="QCheckBox" name="auxiliaryPressureGunCheckBox_2">
+     <widget class="QLCDNumber" name="aimRangeLcdNumber_2">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>340</y>
+        <width>64</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Shape::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Plain</enum>
+      </property>
+      <property name="segmentStyle">
+       <enum>QLCDNumber::SegmentStyle::Flat</enum>
+      </property>
+     </widget>
+     <widget class="QLabel" name="aimingRangeLabel_2">
       <property name="enabled">
        <bool>false</bool>
       </property>
       <property name="geometry">
        <rect>
         <x>15</x>
-        <y>340</y>
-        <width>151</width>
-        <height>20</height>
+        <y>335</y>
+        <width>71</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="font">
@@ -2287,8 +2315,137 @@ border-color: rgba(0, 0, 0, 0);</string>
         <pointsize>12</pointsize>
        </font>
       </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgba(0, 0, 0, 0);</string>
+      </property>
       <property name="text">
-       <string>瞄准速度衰减速率</string>
+       <string>移速补偿:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QLCDNumber" name="aimRangeLcdNumber_3">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>370</y>
+        <width>64</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Shape::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Plain</enum>
+      </property>
+      <property name="segmentStyle">
+       <enum>QLCDNumber::SegmentStyle::Flat</enum>
+      </property>
+     </widget>
+     <widget class="QSlider" name="aimRangeHorizontalSlider_3">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>95</x>
+        <y>372</y>
+        <width>191</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QLabel" name="aimingRangeLabel_5">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>15</x>
+        <y>365</y>
+        <width>71</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Microsoft YaHei</family>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgba(0, 0, 0, 0);</string>
+      </property>
+      <property name="text">
+       <string>减速区域:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QSlider" name="lockSpeedYHorizontalSlider">
+      <property name="geometry">
+       <rect>
+        <x>95</x>
+        <y>280</y>
+        <width>191</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QLCDNumber" name="lockSpeedYLcdNumber">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>280</y>
+        <width>64</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Shape::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Plain</enum>
+      </property>
+      <property name="segmentStyle">
+       <enum>QLCDNumber::SegmentStyle::Flat</enum>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lockSpeedYLabel">
+      <property name="geometry">
+       <rect>
+        <x>15</x>
+        <y>275</y>
+        <width>81</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Microsoft YaHei</family>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgba(0, 0, 0, 0);</string>
+      </property>
+      <property name="text">
+       <string>瞄准速度Y:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
       </property>
      </widget>
     </widget>
