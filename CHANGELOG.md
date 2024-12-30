@@ -1,5 +1,6 @@
 # Changelog
 ## [2024-12-30] - New Updates
+- [`927fe3a`](927fe3a5288f421227b5770e2f89aecf541072ae) Merge branch 'dev' of https://github.com/Passer1072/RookieAI_yolov8 into dev
 - [`0271cbd`](0271cbd68d1342a7310b95fa53bd4f24a6ba5b48) Update README.md
 
 ## [2024-12-29] - New Updates
