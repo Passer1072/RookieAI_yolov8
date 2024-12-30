@@ -1,4 +1,4 @@
-# RookieAI_yolov8
+# RookieAI_yolov8_V3
 
 ## 版本要求
 
@@ -72,12 +72,6 @@ python RookieAI_YOLOv8.py
 [Bilibili](https://search.bilibili.com/all?keyword=%E5%A6%82%E4%BD%95%E8%AE%AD%E7%BB%83%E6%A8%A1%E5%9E%8B&from_source=webtop_search&spm_id_from=333.1007&search_source=5)
 
 [YouTube](https://www.youtube.com/results?search_query=how+to+train+yolov8+model)
-
-❗在软件中选择完模型文件后需保存重启后才会生效，因为需要重新加载模型。
-
-🎉全新V2.0版本，全新布局，更好优化，更多设置
-
-![V2.4.3](images/V2.4.3.png)
 
 V3.0预告
 
