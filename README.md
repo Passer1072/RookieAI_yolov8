@@ -1,5 +1,11 @@
 # RookieAI_yolov8_V3
 
+加入Discord获取最新消息！
+
+<div>
+  <a href="https://discord.gg/vtgbfy2afb"><img alt="Discord" src="https://img.shields.io/discord/1256285394539118634?logo=discord&logoColor=white&label=Discord&color=blue"></a>
+<div>
+  
 ## 版本要求
 
 | Version | Python |
@@ -9,7 +15,9 @@
 
 ## 使用方法：
 
-前言：为维护环境不提供直接打包成型的软件，开源代码鼓励自学。
+前言：为什么不提供直接打包成型的软件？
+
+每个程序都有独立的特征码，如果大家都使用同一个程序，一旦其中一个人被BAN其他人会被联BAN。所以鼓励大家自行修改部分代码并自行打包即可避免此类情况发生。
 
 使用前务必查看[参数说明文档](Parameter_explanation.md)
 
