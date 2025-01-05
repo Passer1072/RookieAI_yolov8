@@ -25,7 +25,7 @@ from Module.config import Config, Root
 from Module.control import kmNet
 import Module.control as control
 import Module.keyboard as keyboard
-import Utils.revision as revision
+import Module.announcement
 
 def communication_Process(pipe, videoSignal_queue, videoSignal_stop_queue, floating_information_signal_queue,
                           information_output_queue):
@@ -963,27 +963,8 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
         self.window.announcement.setReadOnly(True)
         # 设置公告内容
-        if Config["allow_network"] is True:
-            self.window.announcement.setMarkdown(
-                revision.get_online_announcement())
-
-            # 设置渠道类型
-            self.window.channelLabel.setText(revision.get_channel())
-
-            # 设置当前版本号
-            self.window.versionLabel.setText(revision.get_local_version())
-
-            # 设置当前版本日期
-            self.window.versionDateLabel.setText(
-                revision.get_local_version_with_date())
-
-            # 设置最新版版本号
-            if revision.is_official_version():
-                _version = revision.get_release_version_with_date()
-            else:
-                _version = revision.get_dev_version_with_date()
-            _version = f"{_version[0]}({_version[1]})"
-            self.window.latestVersionLabel.setText(_version)
+        print("正在获取公告信息...")
+        Module.announcement.get_announcement(self)
 
         '''参数框架切换 代码'''
         # 初始化动画列表和当前框架索引

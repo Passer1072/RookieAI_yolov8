@@ -16,7 +16,10 @@ def get_release_version_with_date() -> tuple[str, str]:
         tuple: 包含版本号（tag_name）和发布日期（published_at）的元组
     """
     url = "https://api.github.com/repos/Passer1072/RookieAI_yolov8/releases/latest"
-    data = session.get(url).json()
+    try:
+        data = session.get(url).json()
+    except requests.exceptions.RequestException:
+        return "N/A", "N/A"
     return data["tag_name"], data["published_at"]
 
 
@@ -34,7 +37,10 @@ def get_dev_version_with_date() -> tuple[str, str | None]:
     _version = "v0.0.0"
     _date = "1970-01-01 00:00:00"
     contents_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={branch}"
-    data = session.get(contents_url).json()
+    try:
+        data = session.get(contents_url).json()
+    except requests.exceptions.RequestException:
+        return "N/A", "N/A"
     content = base64.b64decode(
         data.get("content", b"")).decode("utf-8").split("\n")
     Line1 = content[0].strip() if len(content) > 0 else ""
@@ -67,7 +73,10 @@ def get_online_announcement(
     file_path = "Announcement.md"
 
     contents_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={branch}"
-    data = session.get(contents_url).json()
+    try:
+        data = session.get(contents_url).json()
+    except requests.exceptions.RequestException:
+        return "无法连接GitHub服务器，请检查网络连接。"
     announcement = base64.b64decode(
         data.get("content", b"")).decode("utf-8")
     if parse_announcement2json:

@@ -127,4 +127,4 @@ class _Logger:
                 yield ""
 
 
-Logger = _Logger()
+logger = _Logger()
