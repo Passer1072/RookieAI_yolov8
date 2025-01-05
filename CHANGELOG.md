@@ -1,4 +1,7 @@
 # Changelog
+## [2025-01-05] - New Updates
+- [`e98652a`](e98652a7e2c5ba2fb1a8e26838b01f631f31cf4a) 公告使用多线程获取
+
 ## [2024-12-30] - New Updates
 - [`6a04f62`](6a04f62c4525cd7327632afeed2f562b93bc1d76) Update README.md
 - [`6249d78`](6249d78671391b0dcda882939d73a95ff18fdacf) Update README.md
