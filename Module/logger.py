@@ -2,14 +2,21 @@ import os
 import logging
 import threading
 import datetime
-import sys
-from pathlib import Path
 from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL  # noqa: F401
 from io import StringIO
 from colorama import init, Fore, Style
+from Module.config import Root, Config
 
-Root = Path(os.path.realpath(sys.argv[0])).parent
-
+def get_log_level() -> int:
+    """根据日志名称获取日志级别"""
+    maps = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "CRITICAL": logging.CRITICAL,
+    }
+    return maps.get(Config.get("log_level", "INFO"), logging.INFO)
 
 class CustomFormatter(logging.Formatter):
     def format(self, record):
@@ -20,6 +27,7 @@ class CustomFormatter(logging.Formatter):
     def _get_color(self, level_name):
         """根据日志级别返回相应的颜色"""
         colors = {
+            "TRACE": Fore.MAGENTA,  # 假设 TRACE 级别的颜色为洋红色
             "DEBUG": Fore.CYAN,
             "INFO": Fore.BLUE,
             "WARNING": Fore.YELLOW,
@@ -27,7 +35,6 @@ class CustomFormatter(logging.Formatter):
             "CRITICAL": Fore.RED + Style.BRIGHT,
         }
         return colors.get(level_name, Fore.WHITE)
-
 
 class _Logger:
     def __init__(
@@ -41,7 +48,7 @@ class _Logger:
         os.makedirs(log_file_prefix, exist_ok=True)
         self.log_file_prefix = log_file_prefix
         self.logger = logging.getLogger("Custom Logger")
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(get_log_level())
 
         console_handler = logging.StreamHandler()
         console_handler.setLevel(console_log_level_int)

@@ -8,6 +8,7 @@ import win32api
 import win32con
 import platform
 from Module.config import Root
+from Module.logger import logger
 
 #############################################################
 # Pyd files list in                                               #
@@ -19,7 +20,7 @@ def path_import(module_name):
     :param file:
     :return:
     """
-    print("\n******************* 开始动态加载模块 *************************")
+    logger.debug("\n******************* 开始动态加载模块 *************************")
     
     # 获取当前Python版本和平台
     py_version = f"cp{sys.version_info.major}{sys.version_info.minor}"
@@ -33,20 +34,20 @@ def path_import(module_name):
     )
     tools_finder = importlib.machinery.FileFinder(
         os.path.dirname(file_path), loader_details)
-    print("FileFinder: ", tools_finder)
+    logger.debug("FileFinder: ", tools_finder)
     
     toolbox_specs = tools_finder.find_spec(module_name)
-    print("find_spec: ", toolbox_specs)
+    logger.debug("find_spec: ", toolbox_specs)
 
     if toolbox_specs is None or toolbox_specs.loader is None:
         raise ImportError(f"无法找到或加载模块: {module_name} ({file_name})")
 
     toolbox = importlib.util.module_from_spec(toolbox_specs)
-    print("module: ", toolbox)
+    logger.debug("module: ", toolbox)
     toolbox_specs.loader.exec_module(toolbox)
-    print("导入成功 path_import(): ", toolbox)
-    print("检查sys中是否包含了此模块: ", toolbox in sys.modules)
-    print("******************* 动态加载模块完成 *************************\n")
+    logger.info("导入成功 path_import(): ", toolbox)
+    logger.debug("检查sys中是否包含了此模块: ", toolbox in sys.modules)
+    logger.debug("******************* 动态加载模块完成 *************************\n")
     return toolbox
 
 msdk_dll = ctypes.windll.LoadLibrary(f"{Root}/DLLs/x64_msdk.dll")

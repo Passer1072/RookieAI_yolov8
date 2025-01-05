@@ -23,6 +23,7 @@ from customLib.animated_status import AnimatedStatus  # 导入 带动画的状�
 from Module.const import method_mode
 from Module.config import Config, Root
 from Module.control import kmNet
+from Module.logger import logger
 import Module.control as control
 import Module.keyboard as keyboard
 import Module.announcement
@@ -35,54 +36,55 @@ def communication_Process(pipe, videoSignal_queue, videoSignal_stop_queue, float
     """
     global video_running
 
-    print("启动 communication_Process 监听信号...")
+    logger.debug("启动 communication_Process 监听信号...")
     while True:
         if pipe.poll():
             try:
                 message = pipe.recv()
                 if isinstance(message, tuple):  # 处理消息类型
                     cmd, cmd_01 = message
-                    print(f"收到信号: {cmd}")
-                    print(f"信号内容: {cmd_01}")
+                    logger.debug(f"收到信号: {cmd}")
+                    logger.debug(f"信号内容: {cmd_01}")
 
                     information_output_queue.put(
                         ("log_output_main", message))  # 显示调试信息
 
                     # 手动触发异常测试
                     if cmd == "trigger_error":
+                        logger.info("手动触发异常测试")
                         raise ValueError("[INFO]手动触发的错误")
 
                     if cmd == "start_video":
-                        print("[INFO]启动视频命令")
+                        logger.info("启动视频命令")
                         video_running = True
                         videoSignal_queue.put(("start_video", cmd_01))
 
                     elif cmd == "stop_video":
-                        print("[INFO]停止视频命令")
+                        logger.info("停止视频命令")
                         video_running = False
                         videoSignal_stop_queue.put(("stop_video", cmd_01))
 
                     elif cmd == "loading_complete":
-                        print("[INFO]软件初始化完毕")
+                        logger.info("软件初始化完毕")
                         floating_information_signal_queue.put(
                             ("loading_complete", cmd_01))
 
                     elif cmd == "loading_error":
-                        print("[ERROR]，一般错误，软件初始化失败")
+                        logger.error("一般错误，软件初始化失败")
                         floating_information_signal_queue.put(
                             ("error_log", cmd_01))
 
                     elif cmd == "red_error":
-                        print("[ERROR]致命错误，无法加载模型")
+                        logger.fatal("致命错误，无法加载模型")
                         floating_information_signal_queue.put(
                             ("red_error_log", cmd_01))
 
             except (BrokenPipeError, EOFError) as e:
-                print(f"管道通信错误: {e}")
+                logger.error(f"管道通信错误: {e}")
                 information_output_queue.put(
                     ("error_log", f"管道通信错误: {e}"))  # 捕获并记录错误信息
             except Exception as e:
-                print(f"发生错误: {e}")
+                logger.error(f"发生错误: {e}")
                 information_output_queue.put(("error_log", f"未知错误: {e}"))
 
 
@@ -102,29 +104,29 @@ def start_capture_process_multie(shm_name, frame_shape, frame_dtype, frame_avail
     shared_frame = np.ndarray(
         frame_shape, dtype=frame_dtype, buffer=existing_shm.buf)
 
-    print("视频信号获取进程已启动。")
+    logger.debug("视频信号获取进程已启动。")
     while True:
         try:
             message = videoSignal_queue.get(timeout=1)
             command, information = message
-            print(f"接收到命令: {command}, 内容: {information}")
+            logger.debug(f"接收到命令: {command}, 内容: {information}")
             information_output_queue.put(
                 ("video_signal_acquisition_log", message))  # 调试信息输出
 
             if command == "start_video":
-                print("进程模式选择")
-                print("进程模式：", ProcessMode)
+                logger.debug("进程模式选择")
+                logger.info("进程模式：", ProcessMode)
                 open_screen_video(
                     shared_frame, frame_available_event, videoSignal_stop_queue)
             if command == "change_model":
-                print("正在重新加载模型")
+                logger.info("正在重新加载模型")
                 model_file = information
                 model = YOLO(model_file)
-                print(f"模型 {model_file} 加载完毕")
+                logger.info(f"模型 {model_file} 加载完毕")
         except queue.Empty:
             pass
         except Exception as e:
-            print(f"获取视频信号时发生错误: {e}")
+            logger.error(f"获取视频信号时发生错误: {e}")
             information_output_queue.put(("error_log", f"获取视频信号时发生错误: {e}"))
 
 
@@ -137,14 +139,14 @@ def start_capture_process_single(videoSignal_queue, videoSignal_stop_queue, info
     1.start_video
     2.stop_video
     """
-    print("视频信号获取进程已启动。")
+    logger.debug("视频信号获取进程已启动。")
 
     def initialization_Yolo(model_file, information_output_queue):
         """初始化 YOLO 并进行一次模拟推理"""
         try:
             # 检查模型文件是否存在
             if not os.path.exists(model_file):
-                print(f"模型文件 '{model_file}' 未找到，尝试使用默认模型 'yolov8n.pt'。")
+                logger.warn(f"模型文件 '{model_file}' 未找到，尝试使用默认模型 'yolov8n.pt'。")
                 information_output_queue.put(
                     ("log_output_main", f"模型文件 '{model_file}' 未找到，使用默认模型 yolov8n.pt'。"))
                 model_file = "yolov8n.pt"
@@ -152,6 +154,7 @@ def start_capture_process_single(videoSignal_queue, videoSignal_stop_queue, info
                 # 选定文件未能找到，黄色报错
                 pipe_parent.send(("loading_error", log_message))
                 if not os.path.exists(model_file):
+                    logger.fatal(f"致命错误，默认模型文件 '{model_file}' 也未找到。请确保模型文件存在。")
                     log_message = f"[ERROR]致命错误，默认模型文件 '{model_file}' 也未找到。请确保模型文件存在。"
                     # 默认文件也未找到，红色报错
                     pipe_parent.send(("red_error", log_message))
@@ -159,18 +162,18 @@ def start_capture_process_single(videoSignal_queue, videoSignal_stop_queue, info
                         f"默认模型文件 '{model_file}' 也未找到。请确保模型文件存在。")
 
             model = YOLO(model_file)  # 加载 YOLO 模型
-            print(f"YOLO 模型 '{model_file}' 已加载。")
+            logger.info(f"YOLO 模型 '{model_file}' 已加载。")
             # 创建一张临时图像（纯色或随机噪声）用于预热
             temp_img = np.zeros((320, 320, 3), dtype=np.uint8)  # 修改为640x640
             temp_img_path = "temp_init_image.jpg"
             cv2.imwrite(temp_img_path, temp_img)
             # 执行一次模拟推理
             model.predict(temp_img_path, conf=0.5)
-            print("YOLO 模型已预热完成。")
+            logger.debug("YOLO 模型已预热完成。")
             os.remove(temp_img_path)  # 删除临时图像
             return model
         except Exception as e:
-            print(f"YOLO 初始化失败: {e}")
+            logger.error(f"YOLO 初始化失败: {e}")
             information_output_queue.put(("error_log", f"YOLO 初始化失败: {e}"))
             return None
 
@@ -184,11 +187,11 @@ def start_capture_process_single(videoSignal_queue, videoSignal_stop_queue, info
             try:
                 message = videoSignal_queue.get(timeout=1)
                 command, information = message
-                print(f"接收到命令: {command}, 内容: {information}")
+                logger.debug(f"接收到命令: {command}, 内容: {information}")
                 information_output_queue.put(
                     ("video_signal_acquisition_log", message))  # 调试信息输出
                 if command == 'start_video':
-                    print("启动视频捕获和YOLO处理")
+                    logger.debug("启动视频捕获和YOLO处理")
                     # 调用集成了共享内存写入的屏幕捕获和YOLO处理函数
                     screen_capture_and_yolo_processing(
                         processedVideo_queue, videoSignal_stop_queue, YoloSignal_queue,
@@ -196,14 +199,14 @@ def start_capture_process_single(videoSignal_queue, videoSignal_stop_queue, info
                         box_shm_name, box_data_event, box_lock
                     )
                 if command == 'change_model':  # 重新加载模型
-                    print("正在重新加载模型")
+                    logger.info("正在重新加载模型")
                     model_file = information
                     model = YOLO(model_file)
-                    print(f"模型 {model_file} 加载完毕")
+                    logger.info(f"模型 {model_file} 加载完毕")
             except queue.Empty:
                 pass
             except Exception as e:
-                print(f"获取视频信号时发生错误: {e}")
+                logger.error(f"获取视频信号时发生错误: {e}")
                 information_output_queue.put(
                     ("error_log", f"获取视频信号时发生错误: {e}"))
 
@@ -226,7 +229,7 @@ def open_screen_video(shared_frame, frame_available_event, videoSignal_stop_queu
 def _extracted_from_open_screen_video_11(videoSignal_stop_queue, sct, shared_frame, frame_available_event):
     # 获取屏幕分辨率
     screen_width, screen_height = pyautogui.size()
-    print("屏幕分辨率:", screen_width, screen_height)
+    logger.info("屏幕分辨率:", screen_width, screen_height)
 
     # 计算中心区域 320x320 的截取范围
     capture_width, capture_height = 320, 320
@@ -250,9 +253,9 @@ def _extracted_from_open_screen_video_11(videoSignal_stop_queue, sct, shared_fra
         # 检查是否收到停止信号
         if not videoSignal_stop_queue.empty():
             command, _ = videoSignal_stop_queue.get()
-            print(f"videoSignal_stop_queue（多进程） 队列接收信息 {command}")
+            logger.debug(f"videoSignal_stop_queue（多进程） 队列接收信息 {command}")
             if command == 'stop_video':
-                print("停止屏幕捕获")
+                logger.debug("停止屏幕捕获")
                 break  # 退出循环
 
         # 获取指定区域的截图
@@ -279,8 +282,8 @@ def _extracted_from_open_screen_video_11(videoSignal_stop_queue, sct, shared_fra
             time.sleep(remaining_time)
         else:
             # 如果处理时间超过了帧间隔，可能需要记录或优化
-            print(
-                f"警告: 帧处理时间 {elapsed_time:.4f} 秒超过目标间隔 {frame_interval:.4f} 秒")
+            logger.warn(
+                f"视频帧处理时间 {elapsed_time:.4f} 秒超过目标间隔 {frame_interval:.4f} 秒")
 
 
 def screen_capture_and_yolo_processing(processedVideo_queue, videoSignal_stop_queue, YoloSignal_queue, pipe_parent,
@@ -316,7 +319,7 @@ def screen_capture_and_yolo_processing(processedVideo_queue, videoSignal_stop_qu
     with mss.mss(backend='directx') as sct:
         # 获取屏幕分辨率
         screen_width, screen_height = pyautogui.size()
-        print("屏幕分辨率:", screen_width, screen_height)
+        logger.info("屏幕分辨率:", screen_width, screen_height)
         # 计算中心区域 320x320 的截取范围
         capture_width, capture_height = 320, 320
         left = (screen_width - capture_width) // 2
@@ -332,12 +335,12 @@ def screen_capture_and_yolo_processing(processedVideo_queue, videoSignal_stop_qu
                 # 检查是否收到停止信号
                 if not videoSignal_stop_queue.empty():
                     command, _ = videoSignal_stop_queue.get()
-                    print(f"videoSignal_stop_queue（单进程） 队列接收信息 {command}")
+                    logger.debug(f"videoSignal_stop_queue（单进程） 队列接收信息 {command}")
                     if command == 'stop_video':
-                        print("停止屏幕捕获")
+                        logger.debug("停止屏幕捕获")
                         break
                     if command == 'change_model':
-                        print("重新加载模型")
+                        logger.debug("重新加载模型")
                         break
                 # 检查 YOLO 的开启或停止信号
                 if not YoloSignal_queue.empty():
@@ -351,14 +354,14 @@ def screen_capture_and_yolo_processing(processedVideo_queue, videoSignal_stop_qu
                         elif cmd == 'YOLO_stop':
                             yolo_enabled = False
                         elif cmd == "change_conf":  # 更改置信度
-                            print("更改置信度")
+                            logger.debug("更改置信度")
                             yolo_confidence = cmd_01
                         elif cmd == "change_class":
-                            print(f"更改检测类别为: {cmd_01}")
+                            logger.debug(f"更改检测类别为: {cmd_01}")
                             target_class = cmd_01  # 更新目标类别
                         elif cmd == "aim_range_change":
                             aim_range = cmd_01
-                            print(f"瞄准范围更改_02: {aim_range}")
+                            logger.debug(f"瞄准范围更改_02: {aim_range}")
                 # 获取屏幕帧
                 img = sct.grab(capture_area)
                 # 转换为 numpy 数组
@@ -381,7 +384,7 @@ def screen_capture_and_yolo_processing(processedVideo_queue, videoSignal_stop_qu
                 # 将处理后的帧放入队列中
                 processedVideo_queue.put(processed_frame)
             except Exception as e:
-                print(f"捕获或处理时出错: {e}")
+                logger.warn(f"捕获或处理时出错: {e}")
                 information_output_queue.put(("error_log", f"捕获或处理时出错: {e}"))
                 break
 
@@ -425,24 +428,25 @@ def video_processing(shm_name, frame_shape, frame_dtype, frame_available_event,
         # 初始化 YOLO
         # 检查模型文件是否存在，如果不存在则使用默认模型
         if not os.path.exists(model_file):
-            print(f"模型文件 '{model_file}' 未找到，尝试使用默认模型 'yolov8n.pt'")
+            logger.warn(f"模型文件 '{model_file}' 未找到，尝试使用默认模型 'yolov8n.pt'")
             information_output_queue.put(
                 ("log_output_main", f"模型文件 '{model_file}' 未找到，使用默认模型 'yolov8n.pt'。"))
             log_message = f"[ERROR]一般错误，模型文件 '{model_file}' 未找到，使用默认模型 'yolov8n.pt'。"
             pipe_parent.send(("loading_error", log_message))  # 选定文件未能找到，黄色报错
             model_file = "yolov8n.pt"
             if not os.path.exists(model_file):
+                logger.fatal(f"致命错误，默认模型文件 '{model_file}' 也未找到。请确保模型文件存在。")
                 log_message = f"[ERROR]致命错误，默认模型文件 '{model_file}' 也未找到。请确保模型文件存在。"
                 pipe_parent.send(("red_error", log_message))  # 默认文件也未找到，红色报错
                 raise FileNotFoundError(
                     f"默认模型文件 '{model_file}' 也未找到。请确保模型文件存在。")
         model = YOLO(model_file)
-        print("YOLO 模型已加载。")
+        logger.debug("YOLO 模型已加载。")
 
         # 进行一次模拟推理以预热模型
         temp_img = np.zeros((320, 320, 3), dtype=np.uint8)
         model.predict(temp_img, conf=0.5)
-        print("YOLO 模型已预热完成。")
+        logger.debug("YOLO 模型已预热完成。")
 
         pipe_parent.send(("loading_complete", True))  # 软件初始化加载完毕标志
 
@@ -452,7 +456,7 @@ def video_processing(shm_name, frame_shape, frame_dtype, frame_available_event,
                 command_data = YoloSignal_queue.get()
                 if isinstance(command_data, tuple):
                     cmd, cmd_01 = command_data
-                    print(
+                    logger.debug(
                         f"video_processing(YoloSignal_queue) 收到命令: {cmd}, 信息: {cmd_01}")
                     information_output_queue.put(
                         ("video_processing_log", command_data))  # 显示调试信息
@@ -461,17 +465,17 @@ def video_processing(shm_name, frame_shape, frame_dtype, frame_available_event,
                     elif cmd == 'YOLO_stop':
                         yolo_enabled = False
                     elif cmd == 'change_model':
-                        print("video_processing进程 模型已重新加载")
+                        logger.debug("video_processing进程 模型已重新加载")
                         model = YOLO(cmd_01)
                     elif cmd == "change_conf":
-                        print("更改置信度")
+                        logger.debug("更改置信度")
                         yolo_confidence = cmd_01
                     elif cmd == "change_class":
-                        print(f"更改检测类别为: {cmd_01}")
+                        logger.debug(f"更改检测类别为: {cmd_01}")
                         target_class = cmd_01  # 更新目标类别
                     elif cmd == "aim_range_change":
                         aim_range = cmd_01
-                        print(f"瞄准范围更改_01: {aim_range}")
+                        logger.debug(f"瞄准范围更改_01: {aim_range}")
 
             # 等待新帧
             frame_available_event.wait()
@@ -494,7 +498,7 @@ def video_processing(shm_name, frame_shape, frame_dtype, frame_available_event,
             # 将处理后的帧放入队列
             processedVideo_queue.put(processed_frame)
     except Exception as e:
-        print(f"视频处理发生错误: {e}")
+        logger.error(f"视频处理发生错误: {e}")
         information_output_queue.put(("error_log", f"视频处理发生错误: {e}"))
     finally:
         existing_shm.close()
@@ -506,7 +510,7 @@ def YOLO_process_frame(model, frame, yolo_confidence=0.1, target_class="ALL",
     global unique_id_counter  # 声明使用全局变量
 
     try:
-        # print("收到的检测类别", target_class)
+        # logger.debug("收到的检测类别", target_class)
         # 确定 YOLO 推理中要使用的类别
         if target_class == "ALL":
             classes = None  # 允许检测所有类别
@@ -516,7 +520,7 @@ def YOLO_process_frame(model, frame, yolo_confidence=0.1, target_class="ALL",
             except ValueError:
                 classes = None  # 如果转换失败，则检测所有类别
 
-        # print("实际检测类别：", classes)
+        # logger.debug("实际检测类别：", classes)
 
         # 执行 YOLO 推理
         results = model.predict(
@@ -629,7 +633,7 @@ def YOLO_process_frame(model, frame, yolo_confidence=0.1, target_class="ALL",
         return frame  # 返回绘制后的图像是 BGR 格式
 
     except Exception as e:
-        print(f"YOLO 推理失败: {e}")
+        logger.error(f"YOLO 推理失败: {e}")
         return frame  # 如果 YOLO 推理失败，返回原始帧
 
 
@@ -662,17 +666,17 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
     MAC = "84FF7019"
     connectKmBox = False
 
-    print("测试KmBoxNet连通性...")
+    logger.debug("测试KmBoxNet连通性...")
     response = subprocess.run(
         ["ping", IP], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output = response.stdout.decode('gbk', errors='ignore')
-    print(output)
+    logger.debug(output)
 
     # 根据 returncode 判断是否连通
     if response.returncode == 0:
-        print("KmBoxNet IP连通成功")
+        logger.info("KmBoxNet IP连通成功")
     else:
-        print("KmBoxNet IP连通测试失败")
+        logger.error("KmBoxNet IP连通测试失败")
 
     # 连接到 Box 共享内存
     box_shm = shared_memory.SharedMemory(name=box_shm_name)
@@ -695,62 +699,62 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
             '''信号检查部分'''
             if not mouseMoveProssesSignal_queue.empty():
                 command_data = mouseMoveProssesSignal_queue.get()
-                print(f"mouseMoveProssesSignal_queue 队列收到信号: {command_data}")
+                logger.debug(f"mouseMoveProssesSignal_queue 队列收到信号: {command_data}")
                 if isinstance(command_data, tuple):
                     cmd, cmd_01 = command_data
                     if cmd == "aimbot_switch_change":
                         aimbot_switch = cmd_01
-                        print(f"自瞄状态更改: {aimbot_switch}")
+                        logger.debug(f"自瞄状态更改: {aimbot_switch}")
                     elif cmd == "aim_speed_x_change":
                         aim_speed_x = cmd_01
-                        print(f"X轴瞄准速度更改: {aim_speed_x}")
+                        logger.debug(f"X轴瞄准速度更改: {aim_speed_x}")
                     elif cmd == "aim_speed_y_change":
                         aim_speed_y = cmd_01
-                        print(f"Y轴瞄准速度更改: {aim_speed_y}")
+                        logger.debug(f"Y轴瞄准速度更改: {aim_speed_y}")
                     elif cmd == "aim_range_change":
                         aim_range = cmd_01
-                        print(f"瞄准范围更改: {aim_range}")
+                        logger.debug(f"瞄准范围更改: {aim_range}")
                     elif cmd == "offset_centerx_change":
                         offset_centerx = cmd_01
-                        print(f"瞄准偏移X更改: {offset_centerx}")
+                        logger.debug(f"瞄准偏移X更改: {offset_centerx}")
                     elif cmd == "offset_centery_change":
                         offset_centery = cmd_01
-                        print(f"瞄准偏移Y更改: {offset_centery}")
+                        logger.debug(f"瞄准偏移Y更改: {offset_centery}")
                     elif cmd == "triggerMethod_change":
                         triggerMethod = cmd_01
-                        print(f"瞄准热键触发方式更改: {triggerMethod}")
+                        logger.debug(f"瞄准热键触发方式更改: {triggerMethod}")
                     elif cmd == "lock_key_change":
                         lockKey = cmd_01
-                        print(f"瞄准热键更改: {lockKey}")
+                        logger.debug(f"瞄准热键更改: {lockKey}")
                     elif cmd == "mouse_Side_Button_Witch_change":
                         mouse_Side_Button_Witch = cmd_01
-                        print(f"侧键瞄准开关更改: {mouse_Side_Button_Witch}")
+                        logger.debug(f"侧键瞄准开关更改: {mouse_Side_Button_Witch}")
                     elif cmd == "trigger_mode_change":
                         trigger_mode = cmd_01  # 'press' 或 'toggle'
-                        print(f"触发模式已更改为: {trigger_mode}")
+                        logger.debug(f"触发模式已更改为: {trigger_mode}")
                     elif cmd == "screen_pixels_for_360_degrees":
                         screen_pixels_for_360_degrees = cmd_01
-                        print(f"游戏内X像素设置为: {screen_pixels_for_360_degrees}")
+                        logger.debug(f"游戏内X像素设置为: {screen_pixels_for_360_degrees}")
                     elif cmd == "screen_height_pixels":
                         screen_height_pixels = cmd_01
-                        print(f"游戏内Y像素设置为: {screen_height_pixels}")
+                        logger.debug(f"游戏内Y像素设置为: {screen_height_pixels}")
                     elif cmd == "near_speed_multiplier":
                         near_speed_multiplier = cmd_01
-                        print(f"近点瞄准速度倍率设置为: {near_speed_multiplier}")
+                        logger.debug(f"近点瞄准速度倍率设置为: {near_speed_multiplier}")
                     elif cmd == "slow_zone_radius":
                         slow_zone_radius = cmd_01
-                        print(f"减速区域设置为: {slow_zone_radius}")
+                        logger.debug(f"减速区域设置为: {slow_zone_radius}")
                     elif cmd == "mouseMoveMode":
                         mouseMoveMode = cmd_01
-                        print(f"设置鼠标移动模式为: {mouseMoveMode}")
+                        logger.debug(f"设置鼠标移动模式为: {mouseMoveMode}")
 
             if mouseMoveMode == "KmBoxNet" and not connectKmBox:
                 '''连接KmBox'''
-                print("尝试连接KmBox")
+                logger.info("尝试连接KmBox")
                 kmNet.init(IP, PORT, MAC)  # 连接盒子
                 kmNet.enc_move(100, 100)  # 测试移动
                 connectKmBox = True
-                print("KmBox连接成功")
+                logger.info("KmBox连接成功")
 
             pixels_per_degree_x = screen_pixels_for_360_degrees / 360  # 每度需要的像素数度
             pixels_per_degree_y = screen_height_pixels / 180  # 每度像素数
@@ -779,18 +783,18 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
 
                     # 计算中心点到上边框的垂直距离
                     vertical_distance = center_y - y1
-                    # print(f"中心点到上边框的垂直距离: {vertical_distance}")
+                    # logger.debug(f"中心点到上边框的垂直距离: {vertical_distance}")
 
                     # 计算左边框到右边框的距离
                     horizontal_distance = x2 - x1
-                    # print(f"左边框到右边框的水平距离: {horizontal_distance}")
+                    # logger.debug(f"左边框到右边框的水平距离: {horizontal_distance}")
 
                     # 计算目标相对于截图中心的偏移
                     delta_x = horizontal_distance * offset_centerx
                     delta_y = -vertical_distance * offset_centery
                     offset_target_x = center_x_relative_to_center + delta_x
                     offset_target_y = center_y_relative_to_center + delta_y
-                    # print(f"移动距离处理前: {offset_target_x}, {offset_target_y}")
+                    # logger.debug(f"移动距离处理前: {offset_target_x}, {offset_target_y}")
 
                     # 计算偏移后的距离
                     offset_distance = math.sqrt(
@@ -858,7 +862,7 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
                         # 检测按键从未按下变为按下的瞬间
                         if lockKey_pressed and not prev_lockKey_pressed:
                             trigger_toggle_state = not trigger_toggle_state  # 切换运行状态
-                            # print(f"切换触发状态已更改为: {trigger_toggle_state}")
+                            # logger.debug(f"切换触发状态已更改为: {trigger_toggle_state}")
                         # 更新上一次的按键状态
                         prev_lockKey_pressed = lockKey_pressed
                         # 切换模式：运行状态由 `trigger_toggle_state` 控制
@@ -963,7 +967,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
         self.window.announcement.setReadOnly(True)
         # 设置公告内容
-        print("正在获取公告信息...")
+        logger.debug("正在获取公告信息...")
         Module.announcement.get_announcement(self)
 
         '''参数框架切换 代码'''
@@ -1210,7 +1214,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
         # 根据 selected_mobileMode 获取对应的鼠标移动方式
         selected_mode_name = mobile_mode_dict.get(selected_mobileMode, "未知模式")
-        print(f"选择的鼠标移动方式: {selected_mode_name}")
+        logger.debug(f"选择的鼠标移动方式: {selected_mode_name}")
 
         # 发送鼠标移动方式切换的信号
         self.mouseMoveProssesSignal_queue.put(
@@ -1230,21 +1234,21 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 向队列发送触发模式更新信号
         self.mouseMoveProssesSignal_queue.put(
             ("trigger_mode_change", trigger_mode))
-        print(f"触发模式切换为: {trigger_mode}")
+        logger.debug(f"触发模式切换为: {trigger_mode}")
 
     def on_trigger_hotkey_changed(self, text):
         """当 LableButton 被点击时调用"""
 
         # 获取键代码
         lockKey = keyboard.get_keyboard_event(text)
-        lockKey_name = keyboard.get_key_name(lockKey)
+        lockKey_name = keyboard.get_key_name_vk(lockKey)
         if lockKey != "UNKNOWN":
             # 更新鼠标相关的按键
             self.lockKey = lockKey
             self.window.HotkeyPushButton.setText(lockKey_name)
             # 发送信息到 mouseMoveProssesSignal_queue
             self.mouseMoveProssesSignal_queue.put(("lock_key_change", lockKey))
-            print(f"触发按键已更改为: {lockKey_name} (代码: {lockKey})")
+            logger.debug(f"触发按键已更改为: {lockKey_name} (代码: {lockKey})")
 
     def on_sideButtonCheckBox_state_changed(self, state):
         # 判断复选框是否被选中
@@ -1257,7 +1261,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 发送信号到 mouseMoveProssesSignal_queue
         self.mouseMoveProssesSignal_queue.put(
             ("mouse_Side_Button_Witch_change", is_checked))
-        print(f"sideButtonCheckBox 状态变化: {is_checked}")
+        logger.debug(f"sideButtonCheckBox 状态变化: {is_checked}")
 
     def on_aimBotCheckBox_state_changed(self, state):
         """处理 aimBotCheckBox 状态变化的槽函数。"""
@@ -1271,7 +1275,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 发送信号到 mouseMoveProssesSignal_queue
         self.mouseMoveProssesSignal_queue.put(
             ("aimbot_switch_change", is_checked))
-        print(f"aimBotCheckBox 状态变化: {is_checked}")
+        logger.debug(f"aimBotCheckBox 状态变化: {is_checked}")
 
     def on_detection_target_changed(self, selected_class):
         """
@@ -1280,7 +1284,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         参数:
         - selected_class: 选中的类别 (0, 1, 2, 或 "ALL")
         """
-        print(f"选择的检测类别: {selected_class}")
+        logger.debug(f"选择的检测类别: {selected_class}")
         self.information_output_queue.put(
             ("UI_process_log", f"选择的检测类别: {selected_class}"))
 
@@ -1318,7 +1322,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         """每200ms发送一次最新的 offset_centerx 值"""
         self.mouseMoveProssesSignal_queue.put(
             ("offset_centerx_change", self.offset_centerx))
-        print(f"定时发送 offset_centerx 更新信号: {self.offset_centerx}")
+        logger.debug(f"定时发送 offset_centerx 更新信号: {self.offset_centerx}")
         if not self.is_offset_centerx_slider_pressed:
             # 用户已停止拖动滑动条，停止定时器
             self.offset_centerx_slider_update_timer.stop()
@@ -1355,7 +1359,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         """每200ms发送一次最新的 offset_centery 值"""
         self.mouseMoveProssesSignal_queue.put(
             ("offset_centery_change", self.offset_centery))
-        print(f"定时发送 offset_centery 更新信号: {self.offset_centery}")
+        logger.debug(f"定时发送 offset_centery 更新信号: {self.offset_centery}")
         if not self.is_offset_centery_slider_pressed:
             # 用户已停止拖动滑动条，停止定时器
             self.offset_centery_slider_update_timer.stop()
@@ -1394,7 +1398,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         self.mouseMoveProssesSignal_queue.put(
             ("aim_range_change", self.aim_range))
         self.YoloSignal_queue.put(("aim_range_change", self.aim_range))
-        print(f"定时发送 aimRange 更新信号: {self.aim_range}")
+        logger.debug(f"定时发送 aimRange 更新信号: {self.aim_range}")
         if not self.is_aimRange_slider_pressed:
             # 用户已停止拖动滑动条，停止定时器
             self.aimRange_slider_update_timer.stop()
@@ -1433,7 +1437,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         """每200ms发送一次最新的 lockSpeed 值"""
         self.mouseMoveProssesSignal_queue.put(
             ("aim_speed_x_change", self.lock_speed_x))  # 发送锁定速度到队列
-        print(f"定时发送锁定速度更新信号: {self.lock_speed_x}")
+        logger.debug(f"定时发送锁定速度更新信号: {self.lock_speed_x}")
         if not self.is_slider_pressed_lockSpeedX:
             # 用户已停止拖动滑动条，停止定时器
             self.slider_update_timer_lockSpeedX.stop()
@@ -1472,7 +1476,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         """每200ms发送一次最新的 lockSpeed 值"""
         self.mouseMoveProssesSignal_queue.put(
             ("aim_speed_y_change", self.lock_speed_y))  # 发送锁定速度到队列
-        print(f"定时发送锁定速度更新信号: {self.lock_speed_y}")
+        logger.debug(f"定时发送锁定速度更新信号: {self.lock_speed_y}")
         if not self.is_slider_pressed_lockSpeedY:
             # 用户已停止拖动滑动条，停止定时器
             self.slider_update_timer_lockSpeedY.stop()
@@ -1508,7 +1512,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
     def send_update(self):
         """每200ms发送一次最新的置信度值"""
         self.YoloSignal_queue.put(("change_conf", self.yolo_confidence))
-        print(f"定时发送 YOLO 置信度更新信号: {self.yolo_confidence}")
+        logger.debug(f"定时发送 YOLO 置信度更新信号: {self.yolo_confidence}")
 
         if not self.is_slider_pressed:
             # 用户已停止拖动滑动条，停止定时器
@@ -1565,7 +1569,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         try:
             self._extracted_from_load_settings_4()
         except Exception as e:
-            print("配置文件读取失败:", e)
+            logger.warn("配置文件读取失败:", e)
             self.information_output_queue.put(
                 ("UI_process_log", f"配置文件读取失败: {e}"))
             self.settings = Config
@@ -1574,106 +1578,106 @@ class RookieAiAPP:  # 主进程 (UI进程)
     # TODO Rename this here and in `load_settings`
     def _extracted_from_load_settings_4(self):
         self.settings = Config
-        print("配置文件读取成功")
+        logger.info("配置文件读取成功")
         self.information_output_queue.put(("UI_process_log", "配置文件读取成功"))
 
         '''读取参数'''
         # 获取 "ProcessMode" 的状态
         self.ProcessMode = self.settings.get("ProcessMode", "single_process")
-        print("ProcessMode状态:", self.ProcessMode)
+        logger.debug("ProcessMode状态:", self.ProcessMode)
         self.allow_network = self.settings.get("allow_network", False)
-        print("是否允许联网:", self.allow_network)
+        logger.debug("是否允许联网:", self.allow_network)
         self.information_output_queue.put(
             ("UI_process_log", f"ProcessMode状态: {self.ProcessMode}"))
         # 获取 "window_always_on_top" 的状态
         self.window_always_on_top = self.settings.get(
             "window_always_on_top", False)
-        print("窗口置顶状态:", self.window_always_on_top)
+        logger.debug("窗口置顶状态:", self.window_always_on_top)
         # 获取 "model_file" 模型文件的路径
         self.model_file = self.settings.get("model_file", "yolov8n.pt")
-        print(f"读取模型文件路径: {self.model_file}")
+        logger.debug(f"读取模型文件路径: {self.model_file}")
         # 获取 YOLO 置信度设置
         yolo_confidence = self.settings.get('confidence', 0.5)  # 默认值为0.5
         self.yolo_confidence = yolo_confidence
         self.window.confSlider.setValue(
             int(yolo_confidence * 100))  # 将置信度转换为滑动条值
-        print(f"读取保存的YOLO置信度: {yolo_confidence}")
+        logger.debug(f"读取保存的YOLO置信度: {yolo_confidence}")
         # 获取 瞄准速度x
         aim_speed_x = self.settings.get('aim_speed_x', 0.5)
         self.aim_speed_x = aim_speed_x
         self.window.lockSpeedXHorizontalSlider.setValue(int(aim_speed_x * 10))
-        print(f"读取保存的瞄准速度X: {aim_speed_x}")
+        logger.debug(f"读取保存的瞄准速度X: {aim_speed_x}")
         # 获取 瞄准速度y
         aim_speed_y = self.settings.get('aim_speed_y', 0.5)
         self.aim_speed_y = aim_speed_y
         self.window.lockSpeedYHorizontalSlider.setValue(int(aim_speed_y * 10))
-        print(f"读取保存的瞄准速度Y: {aim_speed_y}")
+        logger.debug(f"读取保存的瞄准速度Y: {aim_speed_y}")
         # 获取 瞄准范围
         aim_range = self.settings.get('aim_range', 100)
         self.aim_range = aim_range
         self.window.aimRangeHorizontalSlider.setValue(int(aim_range))
-        print(f"读取保存的瞄准范围: {aim_range}")
+        logger.debug(f"读取保存的瞄准范围: {aim_range}")
         # 获取 Aimbot 开启状态
         aimbot_switch = self.settings.get("aimBot", False)
         self.window.aimBotCheckBox.setChecked(aimbot_switch)
         self.mouseMoveProssesSignal_queue.put(
             ("aimbot_switch_change", aimbot_switch))
-        print(f"读取自瞄状态: {aimbot_switch}")
+        logger.debug(f"读取自瞄状态: {aimbot_switch}")
         # 获取 侧键瞄准 开启状态
         mouse_Side_Button_Witch = self.settings.get(
             "mouse_Side_Button_Witch", False)
         self.window.sideButtonCheckBox.setChecked(mouse_Side_Button_Witch)
         self.mouseMoveProssesSignal_queue.put(
             ("mouse_Side_Button_Witch_change", mouse_Side_Button_Witch))
-        print(f"读取侧键瞄准开启状态: {mouse_Side_Button_Witch}")
+        logger.debug(f"读取侧键瞄准开启状态: {mouse_Side_Button_Witch}")
         # 获取 detectionTargetComboBox 的值
         target_class = self.settings.get('target_class', "ALL")
-        print(f"读取保存的检测类别: {target_class}")
+        logger.debug(f"读取保存的检测类别: {target_class}")
         self.window.detectionTargetComboBox.setCurrentText(target_class)
         self.YoloSignal_queue.put(("change_class", target_class))
         # 获取 Y轴偏移 值
         offset_centery = self.settings.get('offset_centery', 0.3)
-        print(f"读取保存的Y轴偏移: {offset_centery}")
+        logger.debug(f"读取保存的Y轴偏移: {offset_centery}")
         self.offset_centery = offset_centery
         self.window.offset_centeryVerticalSlider.setValue(
             int(offset_centery * 100))
         # 获取 Y轴偏移 值
         offset_centerx = self.settings.get('offset_centerx', 0)
-        print(f"读取保存的X轴偏移: {offset_centerx}")
+        logger.debug(f"读取保存的X轴偏移: {offset_centerx}")
         self.offset_centerx = offset_centerx
         # 映射公式：slider_value = (1 - offset_centerx) * 50
         slider_value = int((1 - offset_centerx) * 50)
         self.window.offset_centerxVerticalSlider.setValue(slider_value)
         # 获取 触发热键代码 值
         lockKey = self.settings.get('lockKey', "VK_LBUTTON")
-        print(f"读取保存的触发热键: {lockKey}")
+        logger.debug(f"读取保存的触发热键: {lockKey}")
         self.window.HotkeyPushButton.setText(lockKey)
-        key_code = keyboard.get_key_code(lockKey)
-        print(f"加载触发热键代码: {key_code}")
+        key_code = keyboard.get_key_code_vk(lockKey)
+        logger.debug(f"加载触发热键代码: {key_code}")
         self.mouseMoveProssesSignal_queue.put(("lock_key_change", key_code))
         # 获取 触发方式
         triggerType = (self.settings.get('triggerType', "press"))
-        print(f"读取保存的触发方式: {triggerType}")
+        logger.debug(f"读取保存的触发方式: {triggerType}")
         self.window.triggerMethodComboBox.setCurrentText(triggerType)
         # 获取 游戏内X轴360度视角像素
         screen_pixels_for_360_degrees = self.settings.get(
             'screen_pixels_for_360_degrees', 1800)
-        print(f"读取游戏内一周像素: {screen_pixels_for_360_degrees}")
+        logger.debug(f"读取游戏内一周像素: {screen_pixels_for_360_degrees}")
         self.mouseMoveProssesSignal_queue.put(
             ("screen_pixels_for_360_degrees", screen_pixels_for_360_degrees))
         # 获取 游戏内Y轴180度视角像素
         screen_height_pixels = self.settings.get('screen_height_pixels', 900)
-        print(f"读取游戏内一周像素: {screen_height_pixels}")
+        logger.debug(f"读取游戏内一周像素: {screen_height_pixels}")
         self.mouseMoveProssesSignal_queue.put(
             ("screen_height_pixels", screen_height_pixels))
         # 获取 近点瞄准速率倍率
         near_speed_multiplier = self.settings.get('near_speed_multiplier', 2)
-        print(f"读取近点瞄准速率倍率: {near_speed_multiplier}")
+        logger.debug(f"读取近点瞄准速率倍率: {near_speed_multiplier}")
         self.mouseMoveProssesSignal_queue.put(
             ("near_speed_multiplier", near_speed_multiplier))
         # 获取 瞄准减速区域
         slow_zone_radius = self.settings.get("slow_zone_radius", 10)
-        print(f"读取瞄准减速区域: {slow_zone_radius}")
+        logger.debug(f"读取瞄准减速区域: {slow_zone_radius}")
         self.mouseMoveProssesSignal_queue.put(
             ("slow_zone_radius", slow_zone_radius))
 
@@ -1729,12 +1733,12 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 将 settings 保存到文件
         try:
             Config.save()
-            print("配置文件保存成功")
+            logger.info("配置文件保存成功")
             self.information_output_queue.put(("UI_process_log", "配置文件保存成功"))
             self.window.status_widget.display_message("配置已保存", bg_color="#55ff00", text_color="black",
                                                       auto_hide=3000)
         except Exception as e:
-            print("配置文件保存失败:", e)
+            logger.error("配置文件保存失败:", e)
             self.information_output_queue.put(
                 ("UI_process_log", f"配置文件保存失败: {e}"))
             self.window.status_widget.display_message("配置保存失败", bg_color="Red", text_color="white",
@@ -1839,7 +1843,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
         # 如果 frame 为空，直接返回以跳过更新
         if frame is None:
-            # print("未接收到视频帧，跳过更新")
+            # logger.debug("未接收到视频帧，跳过更新")
             return
 
         # 更新 FPS 计数
@@ -1888,7 +1892,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         self.YoloSignal_queue.put((arg0, None))
         self.window.OpYoloButton.setText(arg1)
         self.is_yolo_running = arg2
-        print(arg3)
+        logger.debug(arg3)
 
     def toggle_video_button(self):
         """切换视频状态并更新按钮文本"""
@@ -1896,7 +1900,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         video_source = "screen"  # 视频源
 
         if self.is_video_running:
-            print("关闭视频源:", video_source)
+            logger.debug("关闭视频源:", video_source)
             self.window.OpVideoButton.setText("关闭视频显示中...")  # 更新按钮文本
             self.pipe_parent.send(('stop_video', video_source))  # 发送停止视频信号
             self.window.status_widget.display_message("预览已关闭", bg_color="Yellow", text_color="black",
@@ -1908,7 +1912,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
             self.clear_timer.start(100)  # 每100毫秒清理一次
             self.is_video_running = False  # 更新状态
         else:
-            print("启动视频源:", video_source)
+            logger.debug("启动视频源:", video_source)
             self.window.OpVideoButton.setText("打开视频显示中...")  # 更新按钮文本
             self.pipe_parent.send(("start_video", video_source))  # 发送启动视频信号
             self.window.status_widget.display_message("预览已开启", bg_color="#55ff00", text_color="black",
@@ -2142,7 +2146,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
     def change_yolo_model(self):
         """重新加载模型"""
-        print("重新加载模型")
+        logger.debug("重新加载模型")
         # 检查模型文件路径是否为空
         if not getattr(self, 'model_file', None):  # 如果 model_file 属性不存在或为空
             log_msg = "未选择模型文件，无法重新加载模型。"
@@ -2184,7 +2188,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
             self.file_name = os.path.basename(model_file)  # 只提取文件名和后缀
             self.window.modelFileLabel.setText(self.file_name)  # 更新UI中的标签文本
             self.model_file = model_file  # 保存模型文件路径到类属性
-            print(f"选择的模型文件: {self.file_name}")
+            logger.debug(f"选择的模型文件: {self.file_name}")
 
     def show(self):
         """显示窗口"""
@@ -2222,7 +2226,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         if not self.floating_information_signal_queue.empty():
             message = self.floating_information_signal_queue.get_nowait()  # 非阻塞地获取消息
             if message[0] == "loading_complete" and message[1] is True:
-                print("软件初始化完毕，停止检查队列")
+                logger.info("软件初始化完毕，停止检查队列")
                 # 停止定时器检查队列
                 # self.timer_check_queue.stop()
                 # 更新UI或执行其他操作
@@ -2237,7 +2241,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
     def show_log_output(self):
         """调试信息输出 计时循环"""
-        print("调试信息输出 监听信号...")
+        logger.debug("调试信息输出 监听信号...")
         self.timer_check_information_output_queue = QTimer(self.window)
         self.timer_check_information_output_queue.timeout.connect(
             self.log_output)
@@ -2248,7 +2252,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         if self.information_output_queue.empty():
             return
         message = self.information_output_queue.get_nowait()
-        print("information_output_queue 队列接收信息:", message)
+        logger.debug("information_output_queue 队列接收信息:", message)
 
         if message[0] == "UI_process_log":  # UI主进程 调试信息输出
             log_msg = message[1]
