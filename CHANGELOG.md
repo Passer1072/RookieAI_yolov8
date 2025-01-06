@@ -1,4 +1,7 @@
 # Changelog
+## [2025-01-07] - New Updates
+- [`d5308bb`](d5308bb03879f3bb71a1174008233761bc3f269e) 格式化文档
+
 ## [2025-01-06] - New Updates
 - [`2dc4edb`](2dc4edbf0f951bb474281c0b49494791ac8c41a3) 更新 README.md
 - [`06f7c78`](06f7c788b12ae9a546f0b64ee4f6cc09fc9592d4) 修复公告获取&删除无用文件
