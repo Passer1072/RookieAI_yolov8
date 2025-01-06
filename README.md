@@ -1,11 +1,21 @@
 # RookieAI_yolov8_V3
 
-加入Discord获取最新消息！
+> [!IMPORTANT]
+> 使用前请先阅读[参数解释文档](Parameter_explanation.md)
+>
+> 如果你只是本地运行该项目，请**不要使用**pyinstaller打包 
+> 
+> 打包方法尚未完善，遇到问题也**不要提交**Issues，请自行解决
 
-<div>
-  <a href="https://discord.gg/vtgbfy2afb"><img alt="Discord" src="https://img.shields.io/discord/1256285394539118634?logo=discord&logoColor=white&label=Discord&color=blue"></a>
-<div>
-  
+加入**Discord**获取最新消息！
+[![Static Badge](https://img.shields.io/badge/Discord-Join_Discord-36C9BB?logo=discord&logoSize=auto&label=%20)
+](https://discord.gg/vtgbfy2afb)m
+
+> [!NOTE]
+> 前言：为什么不提供直接打包成型的软件？
+>
+> 每个程序都有独立的特征码，如果大家都使用同一个程序，一旦其中一个人被BAN其他人会被联BAN。所以鼓励大家自行修改部分代码并自行打包即可避免此类情况发生。
+
 ## 版本要求
 
 | Version | Python |
@@ -14,22 +24,6 @@
 | `2.4.4.2+`   | 3.10+   |
 
 ## 使用方法：
-
-前言：为什么不提供直接打包成型的软件？
-
-每个程序都有独立的特征码，如果大家都使用同一个程序，一旦其中一个人被BAN其他人会被联BAN。所以鼓励大家自行修改部分代码并自行打包即可避免此类情况发生。
-
-使用前务必查看[参数说明文档](Parameter_explanation.md)
-
-> [!Warning]
->
-> 使用前请先阅读[参数解释文档](Parameter_explanation.md)
->
-> 目前正在编写适用于新手的一键式启动器
->
-> 如果你只是本地运行该项目，请**不要使用**pyinstaller打包 
-> 
-> 打包方法尚未完善，遇到问题也**不要提交**Issues，请自行解决
 
 ### 针对开发者：
 
@@ -63,7 +57,7 @@
 
 在脚本所在目录打开终端，键入以下内容并回车
 ```shell
-python RookieAI_YOLOv8.py
+python RookieAI.py
 ```
 
 
