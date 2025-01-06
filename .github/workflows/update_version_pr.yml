@@ -5,6 +5,9 @@ on:
     branches:
       - dev
 
+env:
+  TZ: Asia/Shanghai
+
 permissions:
   contents: write
   pull-requests: write
