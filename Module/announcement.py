@@ -14,7 +14,7 @@ def get_and_set(ui):
 
     # 设置当前版本日期
     ui.window.versionDateLabel.setText(
-        revision.get_local_version_with_date())
+        revision.get_local_date())
 
     # 设置最新版版本号
     if revision.is_official_version():
@@ -23,7 +23,6 @@ def get_and_set(ui):
         _version = revision.get_dev_version_with_date()
     _version = f"{_version[0]}({_version[1]})"
     ui.window.latestVersionLabel.setText(_version)
-    # 获取最新公告
 
 
 def get_announcement(ui):

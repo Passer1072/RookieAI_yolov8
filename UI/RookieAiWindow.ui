@@ -1798,7 +1798,7 @@ border-color: rgba(0, 0, 0, 0);</string>
        </font>
       </property>
       <property name="text">
-       <string>更新时间：</string>
+       <string>构建时间：</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_16">

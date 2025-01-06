@@ -8,7 +8,7 @@ session = requests.Session()
 
 def get_release_version_with_date() -> tuple[str, str]:
     """
-    异步获取最新的发布版本及其发布日期
+    获取最新的发布版本及其发布日期
 
     该函数通过GitHub API获取指定仓库的最新发布信息，并返回版本号和发布日期
 
@@ -18,6 +18,7 @@ def get_release_version_with_date() -> tuple[str, str]:
     url = "https://api.github.com/repos/Passer1072/RookieAI_yolov8/releases/latest"
     try:
         data = session.get(url).json()
+        response.raise_for_status()
     except requests.exceptions.RequestException:
         return "N/A", "N/A"
     return data["tag_name"], data["published_at"]
@@ -25,7 +26,7 @@ def get_release_version_with_date() -> tuple[str, str]:
 
 def get_dev_version_with_date() -> tuple[str, str | None]:
     """
-    异步获取指定GitHub仓库中dev分支的版本号和最近修改日期。
+    获取指定GitHub仓库中dev分支的版本号和最近修改日期。
 
     Returns:
         tuple: 包含版本号和发布日期（如果可用）的元组
@@ -39,6 +40,7 @@ def get_dev_version_with_date() -> tuple[str, str | None]:
     contents_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={branch}"
     try:
         data = session.get(contents_url).json()
+        response.raise_for_status()
     except requests.exceptions.RequestException:
         return "N/A", "N/A"
     content = base64.b64decode(
@@ -57,7 +59,7 @@ def get_online_announcement(
     parse_announcement2json: bool = False,
 ) -> dict[str, str] | str:
     """
-    异步获取在线公告。
+    获取在线公告。
 
     通过GitHub API获取指定仓库中的公告文件内容。
     公告文件是Markdown格式，需要使用base64解码后转换为字符串。
@@ -75,6 +77,7 @@ def get_online_announcement(
     contents_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={branch}"
     try:
         data = session.get(contents_url).json()
+        response.raise_for_status()
     except requests.exceptions.RequestException:
         return "无法连接GitHub服务器，请检查网络连接。"
     announcement = base64.b64decode(
@@ -113,7 +116,7 @@ def get_local_version() -> str:
     return _version
 
 
-def get_local_version_with_date() -> str:
+def get_local_date() -> str:
     """获取当前版本日期
 
     返回:

@@ -16,7 +16,7 @@ def get_log_level() -> int:
         "ERROR": logging.ERROR,
         "CRITICAL": logging.CRITICAL,
     }
-    return maps.get(Config.get("log_level", "INFO"), logging.INFO)
+    return maps.get(Config.get("log_level", "INFO").upper(), logging.INFO)
 
 class CustomFormatter(logging.Formatter):
     def format(self, record):
@@ -27,7 +27,6 @@ class CustomFormatter(logging.Formatter):
     def _get_color(self, level_name):
         """根据日志级别返回相应的颜色"""
         colors = {
-            "TRACE": Fore.MAGENTA,  # 假设 TRACE 级别的颜色为洋红色
             "DEBUG": Fore.CYAN,
             "INFO": Fore.BLUE,
             "WARNING": Fore.YELLOW,
