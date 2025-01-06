@@ -9,7 +9,7 @@
 
 加入**Discord**获取最新消息！
 [![Static Badge](https://img.shields.io/badge/Discord-Join_Discord-36C9BB?logo=discord&logoSize=auto&label=%20)
-](https://discord.gg/vtgbfy2afb)m
+](https://discord.gg/vtgbfy2afb)
 
 > [!NOTE]
 > 前言：为什么不提供直接打包成型的软件？
