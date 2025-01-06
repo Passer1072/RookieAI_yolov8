@@ -17,8 +17,9 @@ def get_release_version_with_date() -> tuple[str, str]:
     """
     url = "https://api.github.com/repos/Passer1072/RookieAI_yolov8/releases/latest"
     try:
-        data = session.get(url).json()
+        response = session.get(url)
         response.raise_for_status()
+        data = response.json()
     except requests.exceptions.RequestException:
         return "N/A", "N/A"
     return data["tag_name"], data["published_at"]
@@ -39,8 +40,9 @@ def get_dev_version_with_date() -> tuple[str, str | None]:
     _date = "1970-01-01 00:00:00"
     contents_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={branch}"
     try:
-        data = session.get(contents_url).json()
+        response = session.get(contents_url)
         response.raise_for_status()
+        data = response.json()
     except requests.exceptions.RequestException:
         return "N/A", "N/A"
     content = base64.b64decode(
@@ -76,8 +78,9 @@ def get_online_announcement(
 
     contents_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={branch}"
     try:
-        data = session.get(contents_url).json()
+        response = session.get(contents_url).json()
         response.raise_for_status()
+        data = response.json()
     except requests.exceptions.RequestException:
         return "无法连接GitHub服务器，请检查网络连接。"
     announcement = base64.b64decode(
