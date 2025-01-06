@@ -1,4 +1,7 @@
 # Changelog
+## [2025-01-06] - New Updates
+- [`c4ce1af`](c4ce1af6b6a43da915c6cece13fe628a1c1183b7) 添加功能：跳变抑制
+
 ## [2025-01-05] - New Updates
 - [`06f0f2f`](06f0f2fec9fb039a0b30caad705dbe1906d47b6c) feat(config): 添加默认配置并调整日志级别&&删除冗余代码
 - [`e98652a`](e98652a7e2c5ba2fb1a8e26838b01f631f31cf4a) 公告使用多线程获取
