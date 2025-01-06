@@ -1,5 +1,6 @@
 # Changelog
 ## [2025-01-06] - New Updates
+- [`4b25c48`](4b25c48e2a60e4a99e4457a7f0ad1056218201d5) 优化错误捕捉，重命名部分函数
 - [`81e1fdc`](81e1fdc4dc0573524eaa0db3ca7acc49561b805c) Merge pull request #82 from Passer1072/create-pr/update_version
 - [`c4ce1af`](c4ce1af6b6a43da915c6cece13fe628a1c1183b7) 添加功能：跳变抑制
 
