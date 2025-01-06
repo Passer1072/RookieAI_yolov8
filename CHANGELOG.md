@@ -1,5 +1,6 @@
 # Changelog
 ## [2025-01-06] - New Updates
+- [`2dc4edb`](2dc4edbf0f951bb474281c0b49494791ac8c41a3) 更新 README.md
 - [`06f7c78`](06f7c788b12ae9a546f0b64ee4f6cc09fc9592d4) 修复公告获取&删除无用文件
 - [`2390042`](239004288097d253b9417b9e7c7cd350207fc1b7) Merge pull request #83 from Passer1072/create-pr/update_version
 - [`27506ce`](27506ce95d7eec744f67aa7cbaa1c4e596ca1fae) 修复action ci时区
