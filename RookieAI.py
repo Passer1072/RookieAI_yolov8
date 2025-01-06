@@ -26,6 +26,7 @@ from Module.control import kmNet
 from Module.logger import logger
 import Module.control as control
 import Module.keyboard as keyboard
+import Module.jump_detection as jump_detection
 import Module.announcement
 
 def communication_Process(pipe, videoSignal_queue, videoSignal_stop_queue, floating_information_signal_queue,
@@ -694,6 +695,12 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
     trigger_toggle_state = False  # 切换触发模式下的运行状态
     prev_lockKey_pressed = False  # 上一次循环时触发键的状态
 
+    # 初始化目标切换状态
+    target_switching = False
+    last_offset_distance = None  # 上次的偏移后目标距离
+    fluctuation_range = 10  # 波动范围，单位：像素
+    jump_detection_switch = True  # 跳变检测开关
+
     try:
         while True:
             '''信号检查部分'''
@@ -842,9 +849,9 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
                         lockKey = int(lockKey, 16)  # 转换为十六进制整数
 
                     # 检查锁定键、鼠标侧键和 Shift 键是否按下
-                    lockKey_pressed = win32api.GetKeyState(lockKey) & 0x8000
-                    xbutton2_pressed = win32api.GetKeyState(0x05) & 0x8000  # 鼠标侧键
-                    shift_pressed = win32api.GetKeyState(win32con.VK_SHIFT) & 0x8000  # Shift 键
+                    lockKey_pressed = bool(win32api.GetKeyState(lockKey) & 0x8000)
+                    xbutton2_pressed = bool(win32api.GetKeyState(0x05) & 0x8000)  # 鼠标侧键
+                    shift_pressed = bool(win32api.GetKeyState(win32con.VK_SHIFT) & 0x8000)  # Shift 键
 
                     if trigger_mode == 'press':
                         # 按下模式：只需检测按键是否被按下
@@ -867,15 +874,34 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
                         prev_lockKey_pressed = lockKey_pressed
                         # 切换模式：运行状态由 `trigger_toggle_state` 控制
                         should_move = aimbot_switch and target_is_within_range and trigger_toggle_state
+
                     # 独立的触发逻辑：当仅按下 xbutton2_pressed，mouse_Side_Button_Witch 为 True，同时目标在瞄准范围内
                     if mouse_Side_Button_Witch and xbutton2_pressed and target_is_within_range:
                         should_move = True
 
+                    # 判断是否发生目标切换：通过move_x_int和move_y_int的数值变化规律
                     if should_move:
                         move_x_int = round(move_x / 2)
                         move_y_int = round(move_y / 2)
-                        if move_x_int != 0 or move_y_int != 0:
-                            control.move(mouseMoveMode, move_x_int, move_y_int)
+
+                        if last_offset_distance is not None:
+                            # 调用跳变检测函数
+                            target_switching = jump_detection.check_target_switching(offset_distance, last_offset_distance,
+                                                                                     jump_detection_switch, fluctuation_range, target_switching)
+
+                        # 保存当前的 offset_distance 用于下一次比较
+                        last_offset_distance = int(offset_distance)
+
+                        # 目标切换时，拒绝执行移动
+                        if not target_switching:
+                            # print("执行移动")
+                            if move_x_int != 0 or move_y_int != 0:
+                                control.move(mouseMoveMode, move_x_int, move_y_int)
+                    else:
+                        # 当 should_move 为 False 时，重置last_offset_distance为 None,重置规律移动状态
+                        # print("重置规律移动状态")
+                        last_offset_distance = None
+                        target_switching = False
     except KeyboardInterrupt:
         pass
     finally:
@@ -928,6 +954,10 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 连接 解锁窗口大小 复选框状态改变信号
         self.window.unlockWindowSizeCheckBox.stateChanged.connect(
             self.update_unlock_window_size)
+
+        # 连接 跳变抑制 复选框改变信号
+        self.window.jumpSuppressionCheckBox.stateChanged.connect(
+            self.update_jum_suppression_state)
 
         # 连接 resetSizeButton 的点击信号到槽函数
         self.window.resetSizeButton.clicked.connect(self.reset_window_size)
@@ -1077,6 +1107,29 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
         # 初始化滑动条状态变量(lockspeedY)
         self.is_slider_pressed_lockSpeedY = False
+
+        # 设置 jumpSuppression 滑动条
+        self.window.jumpSuppressionVerticalSlider.setMaximum(50)
+        self.window.jumpSuppressionVerticalSlider.setMinimum(0)
+
+        # 连接滑动条信号(jumpSuppression)
+        self.window.jumpSuppressionVerticalSlider.sliderPressed.connect(
+            self.on_jumpSuppression_slider_pressed)
+        self.window.jumpSuppressionVerticalSlider.sliderMoved.connect(
+            self.on_jumpSuppression_slider_moved)
+        self.window.jumpSuppressionVerticalSlider.sliderReleased.connect(
+            self.on_jumpSuppression_slider_released)
+        self.window.jumpSuppressionVerticalSlider.valueChanged.connect(
+            self.on_jumpSuppression_slider_value_changed)
+
+        # 初始化滑动条发送定时器(jumpSuppression)
+        self.slider_update_timer_jumpSuppression = QTimer()
+        self.slider_update_timer_jumpSuppression.setInterval(200)  # 设置200ms的间隔
+        self.slider_update_timer_jumpSuppression.timeout.connect(
+            self.send_jumpSuppression_update)
+
+        # 初始化滑动条状态变量(jumpSuppression)
+        self.is_slider_pressed_jumpSuppression = False
 
         # 初始化 aimRange 滑动条(aim_range)
         self.window.aimRangeHorizontalSlider.setMinimum(0)  # 滑块的实际范围是 0 到 280
@@ -1481,6 +1534,43 @@ class RookieAiAPP:  # 主进程 (UI进程)
             # 用户已停止拖动滑动条，停止定时器
             self.slider_update_timer_lockSpeedY.stop()
 
+    '''jumpSuppression 滑动条'''
+
+    def on_jumpSuppression_slider_value_changed(self, value):
+        """当 jumpSuppression 滑动条的值改变时调用"""
+        self.window.jumpSuppressionNumber.display(
+            f"{value}")  # 在 LCD 上显示一位小数的值
+        self.jump_suppression_fluctuation_range = value  # 更新锁定速度
+        # 如果定时器未启动，启动定时器
+        if not self.slider_update_timer_jumpSuppression.isActive():
+            self.slider_update_timer_jumpSuppression.start()
+
+    def on_jumpSuppression_slider_pressed(self):
+        """当用户开始拖动 jumpSuppression 滑动条时调用"""
+        self.is_slider_pressed_jumpSuppression = True
+        self.slider_update_timer_jumpSuppression.start()  # 开始定时器
+
+    def on_jumpSuppression_slider_moved(self, value):
+        """当 jumpSuppression 滑动条被拖动时调用"""
+        self.window.jumpSuppressionNumber.display(
+            f"滑动条的值: {value}")  # 在 LCD 上显示实时的值
+        self.jump_suppression_fluctuation_range = value  # 更新锁定速度
+
+    def on_jumpSuppression_slider_released(self):
+        """当用户释放 jumpSuppression 滑动条时调用"""
+        self.is_slider_pressed_jumpSuppression = False
+        # 定时器将在发送最后一次值后停止
+        self.send_jumpSuppression_update()
+
+    def send_jumpSuppression_update(self):
+        """每200ms发送一次最新的 jumpSuppression 值"""
+        self.mouseMoveProssesSignal_queue.put(
+            ("jump_suppression_fluctuation_range", self.jump_suppression_fluctuation_range))  # 发送锁定速度到队列
+        print(f"定时发送跳变误差更新信号: {self.jump_suppression_fluctuation_range}")
+        if not self.is_slider_pressed_jumpSuppression:
+            # 用户已停止拖动滑动条，停止定时器
+            self.slider_update_timer_jumpSuppression.stop()
+
     '''置信度滑动条'''
 
     def on_slider_value_changed(self, value):
@@ -1680,6 +1770,16 @@ class RookieAiAPP:  # 主进程 (UI进程)
         logger.debug(f"读取瞄准减速区域: {slow_zone_radius}")
         self.mouseMoveProssesSignal_queue.put(
             ("slow_zone_radius", slow_zone_radius))
+        # 获取 跳变抑制开关
+        jump_suppression_switch = self.settings.get("jump_suppression_switch", False)
+        print(f"跳变抑制开关: {jump_suppression_switch}")
+        self.window.jumpSuppressionCheckBox.setChecked(jump_suppression_switch)
+        self.mouseMoveProssesSignal_queue.put(("jump_detection_switch", jump_suppression_switch))
+        # 获取 跳变抑制误差
+        jump_suppression_fluctuation_range = self.settings.get("jump_suppression_fluctuation_range", 10)
+        print(f"跳变抑制误差: {jump_suppression_fluctuation_range}")
+        self.window.jumpSuppressionVerticalSlider.setValue(jump_suppression_fluctuation_range)
+        self.mouseMoveProssesSignal_queue.put(("jump_suppression_fluctuation_range", jump_suppression_fluctuation_range))
 
     def save_settings(self):
         """保存当前设置到 settings.json 文件"""
@@ -1688,6 +1788,8 @@ class RookieAiAPP:  # 主进程 (UI进程)
         current_process_mode = self.choose_process_model_comboBox()
         # 获取当前 topWindowCheckBox 的状态
         current_window_on_top = self.window.topWindowCheckBox.isChecked()
+        # 获取当前 jumpSuppressionCheckBox 的状态
+        jump_suppression_switch = self.window.jumpSuppressionCheckBox.isChecked()
         # 获取当前 detectionTargetComboBox 的选项
         current_target_class = self.window.detectionTargetComboBox.currentText()
         # 获取当前 aimBotCheckBox 的选项
@@ -1729,6 +1831,10 @@ class RookieAiAPP:  # 主进程 (UI进程)
         self.settings['lockKey'] = lockKey
         # 触发方式
         self.settings['triggerType'] = triggerType
+        # 跳变抑制开关
+        self.settings['jump_suppression_switch'] = jump_suppression_switch
+        # 跳变抑制误差
+        self.settings['jump_suppression_fluctuation_range'] = self.jump_suppression_fluctuation_range
 
         # 将 settings 保存到文件
         try:
@@ -1782,6 +1888,13 @@ class RookieAiAPP:  # 主进程 (UI进程)
             self.window.setFixedSize(self.window.size())
             self.window.setSizePolicy(
                 QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
+    def update_jum_suppression_state(self):
+        """跳变抑制开关"""
+        if self.window.jumpSuppressionCheckBox.isChecked():
+            self.mouseMoveProssesSignal_queue.put(("jump_detection_switch", True))
+        else:
+            self.mouseMoveProssesSignal_queue.put(("jump_detection_switch", False))
 
     def reset_window_size(self):
         """重置窗口大小为 (1290, 585)"""

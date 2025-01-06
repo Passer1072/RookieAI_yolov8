@@ -1211,7 +1211,7 @@ background-color: rgba(0, 0, 0, 0);
     <widget class="QFrame" name="advancedSettingsFrame">
      <property name="geometry">
       <rect>
-       <x>450</x>
+       <x>0</x>
        <y>0</y>
        <width>371</width>
        <height>461</height>
@@ -1296,6 +1296,9 @@ border-color: rgba(0, 0, 0, 0);</string>
       </property>
      </widget>
      <widget class="QCheckBox" name="auxiliaryPressureGunCheckBox_4">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="geometry">
        <rect>
         <x>20</x>
@@ -1315,10 +1318,13 @@ border-color: rgba(0, 0, 0, 0);</string>
       </property>
      </widget>
      <widget class="QCheckBox" name="smoothAimingCheckBox_4">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>350</y>
+        <y>340</y>
         <width>91</width>
         <height>20</height>
        </rect>
@@ -1334,6 +1340,9 @@ border-color: rgba(0, 0, 0, 0);</string>
       </property>
      </widget>
      <widget class="QToolButton" name="auxiliaryPressureGunToolButton_4">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="geometry">
        <rect>
         <x>150</x>
@@ -1347,48 +1356,19 @@ border-color: rgba(0, 0, 0, 0);</string>
       </property>
      </widget>
      <widget class="QToolButton" name="smoothAimingToolButton_4">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="geometry">
        <rect>
         <x>120</x>
-        <y>350</y>
+        <y>340</y>
         <width>21</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
        <string>...</string>
-      </property>
-     </widget>
-     <widget class="QToolButton" name="automaticTriggerToolButton_4">
-      <property name="geometry">
-       <rect>
-        <x>120</x>
-        <y>390</y>
-        <width>21</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>...</string>
-      </property>
-     </widget>
-     <widget class="QCheckBox" name="automaticTriggerCheckBox_4">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>390</y>
-        <width>91</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <family>Microsoft YaHei</family>
-        <pointsize>11</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>颜色忽略</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_26">
@@ -1611,6 +1591,98 @@ border-color: rgba(0, 0, 0, 0);</string>
         <string>KmBoxNet</string>
        </property>
       </item>
+     </widget>
+     <widget class="QCheckBox" name="jumpSuppressionCheckBox">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>370</y>
+        <width>91</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Microsoft YaHei</family>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string>演戏，目标死亡后防止瞄准转移</string>
+      </property>
+      <property name="text">
+       <string>跳变抑制</string>
+      </property>
+     </widget>
+     <widget class="QLCDNumber" name="jumpSuppressionNumber">
+      <property name="geometry">
+       <rect>
+        <x>295</x>
+        <y>370</y>
+        <width>64</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Shape::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Plain</enum>
+      </property>
+      <property name="segmentStyle">
+       <enum>QLCDNumber::SegmentStyle::Flat</enum>
+      </property>
+     </widget>
+     <widget class="QSlider" name="jumpSuppressionVerticalSlider">
+      <property name="geometry">
+       <rect>
+        <x>110</x>
+        <y>370</y>
+        <width>181</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="smoothAimingCheckBox_5">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>400</y>
+        <width>91</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Microsoft YaHei</family>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>鼠标连点</string>
+      </property>
+     </widget>
+     <widget class="QToolButton" name="smoothAimingToolButton_5">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>400</y>
+        <width>21</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>...</string>
+      </property>
      </widget>
     </widget>
     <widget class="QFrame" name="softwareInformationFrame">
@@ -1866,7 +1938,7 @@ border-color: rgba(0, 0, 0, 0);</string>
     <widget class="QFrame" name="basicSettingsFrame">
      <property name="geometry">
       <rect>
-       <x>0</x>
+       <x>450</x>
        <y>0</y>
        <width>371</width>
        <height>461</height>
