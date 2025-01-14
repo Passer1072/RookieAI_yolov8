@@ -1,5 +1,6 @@
 # Changelog
 ## [2025-01-15] - New Updates
+- [`9f16aaf`](9f16aaf0765a033de70937500635fa819d47bd41) 更新参数解释文档，移除未使用的配置
 - [`a7f3ed6`](a7f3ed61b42135116a820ad423c1e9a389294be3) 鼠标移动方式支持选择`Logitech`和`mouse`
 
 ## [2025-01-07] - New Updates
