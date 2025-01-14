@@ -13,17 +13,16 @@ class _Config:
             "log_level": "info",
             "aim_range": 150,
             "aimBot": True,
-            "closest_mouse_dist": 160.8,
             "confidence": 0.3,
             "aim_speed_x": 6.7,
             "aim_speed_y": 8.3,
             "model_file": "yolov8n.pt",
             "mouse_Side_Button_Witch": True,
-            "ProcessMode": "single_process",
+            "ProcessMode": "multi_process",
             "window_always_on_top": False,
             "target_class": "0",
             "lockKey": "VK_RBUTTON",
-            "triggerType": "shift+按下",
+            "triggerType": "按下",
             "offset_centery": 0.75,
             "offset_centerx": 0.0,
             "screen_pixels_for_360_degrees": 6550,
@@ -32,7 +31,7 @@ class _Config:
             "slow_zone_radius": 0,
             "mouseMoveMode": "win32",
             "lockSpeed": 5.5,
-            "allow_network": True
+            "jump_suppression_switch": Flase
         }
         self.content = self.read()
 

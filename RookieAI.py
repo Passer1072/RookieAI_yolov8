@@ -741,7 +741,7 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue,
                         logger.debug(f"触发模式已更改为: {trigger_mode}")
                     elif cmd == "screen_pixels_for_360_degrees":
                         screen_pixels_for_360_degrees = cmd_01
-                        logger.debug(f"游戏内X像素设置为: {screen_pixels_for_360_degrees}")
+                        logger.debug(f"游戏内X轴360度视角像素为: {screen_pixels_for_360_degrees}")
                     elif cmd == "screen_height_pixels":
                         screen_height_pixels = cmd_01
                         logger.debug(f"游戏内Y像素设置为: {screen_height_pixels}")
@@ -1568,7 +1568,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         """每200ms发送一次最新的 jumpSuppression 值"""
         self.mouseMoveProssesSignal_queue.put(
             ("jump_suppression_fluctuation_range", self.jump_suppression_fluctuation_range))  # 发送锁定速度到队列
-        print(f"定时发送跳变误差更新信号: {self.jump_suppression_fluctuation_range}")
+        logger.debug(f"定时发送跳变误差更新信号: {self.jump_suppression_fluctuation_range}")
         if not self.is_slider_pressed_jumpSuppression:
             # 用户已停止拖动滑动条，停止定时器
             self.slider_update_timer_jumpSuppression.stop()
@@ -1677,8 +1677,6 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 获取 "ProcessMode" 的状态
         self.ProcessMode = self.settings.get("ProcessMode", "single_process")
         logger.debug("ProcessMode状态:", self.ProcessMode)
-        self.allow_network = self.settings.get("allow_network", False)
-        logger.debug("是否允许联网:", self.allow_network)
         self.information_output_queue.put(
             ("UI_process_log", f"ProcessMode状态: {self.ProcessMode}"))
         # 获取 "window_always_on_top" 的状态
@@ -1754,12 +1752,12 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 获取 游戏内X轴360度视角像素
         screen_pixels_for_360_degrees = self.settings.get(
             'screen_pixels_for_360_degrees', 1800)
-        logger.debug(f"读取游戏内一周像素: {screen_pixels_for_360_degrees}")
+        logger.debug(f"读取游戏内X轴360度视角像素: {screen_pixels_for_360_degrees}")
         self.mouseMoveProssesSignal_queue.put(
             ("screen_pixels_for_360_degrees", screen_pixels_for_360_degrees))
         # 获取 游戏内Y轴180度视角像素
         screen_height_pixels = self.settings.get('screen_height_pixels', 900)
-        logger.debug(f"读取游戏内一周像素: {screen_height_pixels}")
+        logger.debug(f"读取游戏内Y轴180度视角像素: {screen_height_pixels}")
         self.mouseMoveProssesSignal_queue.put(
             ("screen_height_pixels", screen_height_pixels))
         # 获取 近点瞄准速率倍率
@@ -1774,12 +1772,12 @@ class RookieAiAPP:  # 主进程 (UI进程)
             ("slow_zone_radius", slow_zone_radius))
         # 获取 跳变抑制开关
         jump_suppression_switch = self.settings.get("jump_suppression_switch", False)
-        print(f"跳变抑制开关: {jump_suppression_switch}")
+        logger.debug(f"跳变抑制开关: {jump_suppression_switch}")
         self.window.jumpSuppressionCheckBox.setChecked(jump_suppression_switch)
         self.mouseMoveProssesSignal_queue.put(("jump_detection_switch", jump_suppression_switch))
         # 获取 跳变抑制误差
         jump_suppression_fluctuation_range = self.settings.get("jump_suppression_fluctuation_range", 10)
-        print(f"跳变抑制误差: {jump_suppression_fluctuation_range}")
+        logger.debug(f"跳变抑制误差: {jump_suppression_fluctuation_range}")
         self.window.jumpSuppressionVerticalSlider.setValue(jump_suppression_fluctuation_range)
         self.mouseMoveProssesSignal_queue.put(("jump_suppression_fluctuation_range", jump_suppression_fluctuation_range))
 
