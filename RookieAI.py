@@ -1256,13 +1256,15 @@ class RookieAiAPP:  # 主进程 (UI进程)
         """
         鼠标移动方式库选择
         当 mobileModeQComboBox 改变时调用。
-        :param selected_mobileMode: 鼠标移动模式(0 = win32, 1 = 飞易来, 2 = KmBoxNet)
+        :param selected_mobileMode: 鼠标移动模式(0 = win32, 1 = 飞易来, 2 = KmBoxNet, 3 = Logitech, 4 = mouse)
         """
         # 对照字典
         mobile_mode_dict = {
             0: "win32",
             1: "飞易来",
-            2: "KmBoxNet"
+            2: "KmBoxNet",
+            3: "Logitech",
+            4: "mouse"
         }
 
         # 根据 selected_mobileMode 获取对应的鼠标移动方式
