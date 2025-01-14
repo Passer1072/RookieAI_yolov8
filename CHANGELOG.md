@@ -1,4 +1,7 @@
 # Changelog
+## [2025-01-15] - New Updates
+- [`a7f3ed6`](a7f3ed61b42135116a820ad423c1e9a389294be3) 鼠标移动方式支持选择`Logitech`和`mouse`
+
 ## [2025-01-07] - New Updates
 - [`d5308bb`](d5308bb03879f3bb71a1174008233761bc3f269e) 格式化文档
 
