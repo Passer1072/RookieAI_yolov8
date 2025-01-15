@@ -4,22 +4,29 @@ on:
   push:
     branches:
       - dev
-
 permissions:
+
   contents: write
   
 env:
   TZ: Asia/Shanghai
   
+
+
+
+
 jobs:
   generate-changelog:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Show the timezone
         run: |
           echo "The timezone is $TZ"
           date
+
+
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -32,6 +39,7 @@ jobs:
       - name: Append to CHANGELOG.md
         run: |
           CURRENT_DATE=$(date +%Y-%m-%d)
+
           NEW_ENTRIES="- $(git log -1 --pretty=format:'[`%h`](%H) %s')"
 
           # Check if the current date already exists in CHANGELOG.md
@@ -51,6 +59,22 @@ jobs:
             echo "Created a new date entry and added commit info"
           fi
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          
+
       - name: Display CHANGELOG.md
         run: |
           cat CHANGELOG.md
@@ -59,7 +83,13 @@ jobs:
         run: |
           git add CHANGELOG.md
           git commit -m "Update CHANGELOG.md with new entries" || echo "No changes to commit"
+
           git pull --allow-unrelated-histories
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+
+
+

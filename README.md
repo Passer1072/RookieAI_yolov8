@@ -12,6 +12,10 @@
 >
 > 每个程序都有独立的特征码，如果大家都使用同一个程序，一旦其中一个人被BAN其他人会被联BAN。所以鼓励大家自行修改部分代码并自行打包即可避免此类情况发生。
 
+<div>
+  <a href="https://discord.gg/vtgbfy2afb"><img alt="Discord" src="https://img.shields.io/discord/1256285394539118634?logo=discord&logoColor=white&label=Discord&color=blue"></a>
+<div>
+
 ## 版本要求
 
 | Version | Python |
@@ -25,11 +29,14 @@
 
 **✨ 超高速无痛下载 ✨**
    
+
 ```shell
 pip install -r requirements.txt -i https://pypi.doubanio.com/simple/
 pip uninstall torch torchvision torchaudio
 pip install torch torchvision torchaudio -f https://mirror.sjtu.edu.cn/pytorch-wheels/torch_stable.html --no-index
 ```
+
+
 
 **海外用户请使用以下命令**
 
@@ -38,6 +45,7 @@ pip install -r requirements.txt
 pip uninstall torch torchvision torchaudio
 pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html --no-index
 ```
+
 
 2. 你还需要一个自己的模型（目前支持.pt/.engine/.onnx模型），如果没有可暂时使用ultralytics官方模型
 
@@ -70,6 +78,7 @@ V3.0预告
 
 该版本从底层代码到UI界面进行了完全重构，多线程也可以带来更多使用上的优化，例如可随意调整鼠标移动的频率，不再受到推理帧数的限制等。目前测试主系统空载YOLO使用YOLO11n模型推理的帧数从55提升到了80，有明显提升。配合独立的鼠标移动进程，理论上可以带来不错的使用体验。
 
+
 对电脑配置的要求也会有一定程度的降低。代码目前处于早期开发阶段，未集成Aimbot等基础功能，开发进度与源代码请稍后关注对应文档。
 
 ### 推荐使用Atlas游戏系统配合boosterX性能优化软件获得更好体验
@@ -85,15 +94,23 @@ V3.0预告
 
 ### ✅✅✅注意✅✅✅
 
+
 此项目最初目的为Apex的Aimbot，未考虑其他游戏，可能会出现因反作弊禁止WIN32移动方式而无法使用的情况！
 
 已知游戏：**VALORANT**
 
 面对日益增多的配置文件参数，我新建了参数解释文档，里面介绍了配置文件内所有参数的信息，前往[参数解释文档](Parameter_explanation.md)查看。
 
+
+❗V3支持KmBoxNet，VALORANT确认可用
+
+ 
 **🎉🎉🎉非常感谢由RicardoJoaquim提供的英文特别版本🎉🎉🎉**
 
+
+
 ## Star History
+
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Passer1072/RookieAI_yolov8)](https://star-history.com/#Passer1072/RookieAI_yolov8)
 
@@ -102,5 +119,9 @@ V3.0预告
 [已迁移](CHANGELOG.md)
 
 ___
+<div align="center">
+  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
+  <a href="https://discord.gg/pGM882sr"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-discord.png" width="3%" alt="Ultralytics Discord"></a>
+</div>
 
 Current latest version: ###
