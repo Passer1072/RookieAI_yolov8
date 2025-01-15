@@ -12,10 +12,6 @@
 >
 > 每个程序都有独立的特征码，如果大家都使用同一个程序，一旦其中一个人被BAN其他人会被联BAN。所以鼓励大家自行修改部分代码并自行打包即可避免此类情况发生。
 
-<div>
-  <a href="https://discord.gg/vtgbfy2afb"><img alt="Discord" src="https://img.shields.io/discord/1256285394539118634?logo=discord&logoColor=white&label=Discord&color=blue"></a>
-<div>
-
 ## 版本要求
 
 | Version | Python |
@@ -36,8 +32,6 @@ pip uninstall torch torchvision torchaudio
 pip install torch torchvision torchaudio -f https://mirror.sjtu.edu.cn/pytorch-wheels/torch_stable.html --no-index
 ```
 
-
-
 **海外用户请使用以下命令**
 
 ```shell
@@ -45,7 +39,6 @@ pip install -r requirements.txt
 pip uninstall torch torchvision torchaudio
 pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html --no-index
 ```
-
 
 2. 你还需要一个自己的模型（目前支持.pt/.engine/.onnx模型），如果没有可暂时使用ultralytics官方模型
 
@@ -69,7 +62,6 @@ python RookieAI.py
 学习资料：
 [Bilibili](https://search.bilibili.com/all?keyword=%E5%A6%82%E4%BD%95%E8%AE%AD%E7%BB%83%E6%A8%A1%E5%9E%8B&from_source=webtop_search&spm_id_from=333.1007&search_source=5) or [YouTube](https://www.youtube.com/results?search_query=how+to+train+yolov8+model)
 
-
 V3.0预告
 
 ![V3.0](images/V3.png)
@@ -81,7 +73,7 @@ V3.0预告
 
 对电脑配置的要求也会有一定程度的降低。代码目前处于早期开发阶段，未集成Aimbot等基础功能，开发进度与源代码请稍后关注对应文档。
 
-### 推荐使用Atlas游戏系统配合boosterX性能优化软件获得更好体验
+**推荐使用Atlas游戏系统配合boosterX性能优化软件获得更好体验**
 
 [AtlasOS](https://atlasos.net/)对 Windows 进行修改，专为游戏玩家设计。具有更高的游戏帧率和更低的延迟。同时在此系统上使用RookieAI可更高效的利用GPU资源得到更高的推理帧率。
 
@@ -94,23 +86,17 @@ V3.0预告
 
 ### ✅✅✅注意✅✅✅
 
-
 此项目最初目的为Apex的Aimbot，未考虑其他游戏，可能会出现因反作弊禁止WIN32移动方式而无法使用的情况！
 
 已知游戏：**VALORANT**
 
 面对日益增多的配置文件参数，我新建了参数解释文档，里面介绍了配置文件内所有参数的信息，前往[参数解释文档](Parameter_explanation.md)查看。
 
-
 ❗V3支持KmBoxNet，VALORANT确认可用
-
  
 **🎉🎉🎉非常感谢由RicardoJoaquim提供的英文特别版本🎉🎉🎉**
 
-
-
 ## Star History
-
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Passer1072/RookieAI_yolov8)](https://star-history.com/#Passer1072/RookieAI_yolov8)
 
@@ -119,9 +105,4 @@ V3.0预告
 [已迁移](CHANGELOG.md)
 
 ___
-<div align="center">
-  <img src="https://github.com/ultralytics/assets/raw/main/social/logo-transparent.png" width="3%" alt="space">
-  <a href="https://discord.gg/pGM882sr"><img src="https://github.com/ultralytics/assets/raw/main/social/logo-social-discord.png" width="3%" alt="Ultralytics Discord"></a>
-</div>
-
 Current latest version: ###
