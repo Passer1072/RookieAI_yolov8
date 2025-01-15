@@ -1,5 +1,6 @@
 # Changelog
 ## [2025-01-15] - New Updates
+- [`e36427f`](e36427f1a8b5a266619a6de94873324037d71a93) strip and sync
 - [`b156662`](b156662696960ec7f748d5b83b6ecd1d3f65a384) Merge branch 'main' into dev
 - [`922846a`](922846a493d5067f1551df6481d9e16dbed3f970) Merge pull request #84 from Passer1072/create-pr/update_version
 - [`9f16aaf`](9f16aaf0765a033de70937500635fa819d47bd41) 更新参数解释文档，移除未使用的配置

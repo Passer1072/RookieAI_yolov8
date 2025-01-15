@@ -7,13 +7,9 @@ on:
 permissions:
 
   contents: write
-  
+
 env:
   TZ: Asia/Shanghai
-  
-
-
-
 
 jobs:
   generate-changelog:
@@ -25,8 +21,6 @@ jobs:
         run: |
           echo "The timezone is $TZ"
           date
-
-
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -59,22 +53,6 @@ jobs:
             echo "Created a new date entry and added commit info"
           fi
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-          
-
       - name: Display CHANGELOG.md
         run: |
           cat CHANGELOG.md
@@ -88,8 +66,3 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-
-
-
