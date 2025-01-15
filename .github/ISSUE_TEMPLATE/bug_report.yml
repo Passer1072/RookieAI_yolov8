@@ -1,0 +1,56 @@
+name: Bug反馈
+description: 在这里提交你遇到的任何问题
+title: "[Bug]: "
+labels: ["bug", "triage"]
+projects: ["octo-org/1", "octo-org/44"]
+assignees:
+  - octocat
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请填写以下信息，以便我们能够快速地修复它。
+  - type: input
+    id: describe-the-bug
+    attributes:
+      label: 描述问题
+      required: true
+  - type: input
+    id: steps-to-reproduce
+    attributes:
+      label: 复现步骤
+      required: true
+  - type: input
+    id: expected-behavior
+    attributes:
+      label: 预期行为
+      description: 期望发生的行为的清晰而简明的描述
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 日志
+      description: 请将日志粘贴到此
+  - type: input
+    id: platform
+    attributes:
+      label: 系统架构
+      placeholder: [e.g. Windows 10/11]
+      required: true
+  - type: input
+    id: rookieai-version
+    attributes:
+      label: RookieAI版本
+      placeholder: [e.g. v2.3.2]
+      required: true
+  - type: input
+    id: python-version
+    attributes:
+      label: Python版本
+      placeholder: [e.g. 3.10.1]
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 其他信息
+      description: 在这里添加关于问题的其他相关信息
