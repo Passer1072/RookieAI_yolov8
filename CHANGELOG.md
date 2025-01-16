@@ -1,4 +1,8 @@
 # Changelog
+## [2025-01-16] - New Updates
+- [`9c8af8f`](9c8af8f3f62d3f3eab66b06f5735d8f5ba8e72c7) Merge pull request #86 from Passer1072/create-pr/update_version
+- [`a906b2c`](a906b2c1593704cd13a6f6f75b2d7c0c0b2b3086) resolve #89
+
 ## [2025-01-15] - New Updates
 - [`e36427f`](e36427f1a8b5a266619a6de94873324037d71a93) strip and sync
 - [`b156662`](b156662696960ec7f748d5b83b6ecd1d3f65a384) Merge branch 'main' into dev
