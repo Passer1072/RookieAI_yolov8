@@ -31,7 +31,8 @@ class _Config:
             "slow_zone_radius": 0,
             "mouseMoveMode": "win32",
             "lockSpeed": 5.5,
-            "jump_suppression_switch": False
+            "jump_suppression_switch": False,
+            "jump_suppression_fluctuation_range": 18
         }
         self.content = self.read()
 

@@ -7,6 +7,8 @@ import ctypes
 import win32api
 import win32con
 import platform
+import random
+import time
 from Module.config import Root
 from Module.logger import logger
 
@@ -58,22 +60,89 @@ LG_driver = ctypes.CDLL(f"{Root}/DLLs/LGmouseControl/MouseControl.dll")
 
 kmNet = path_import("kmNet")
 
+def emergencStop_valorant(last_state_w, last_state_a, last_state_s, last_state_d):
+    # 获取当前按键状态
+    state_w = bool(win32api.GetAsyncKeyState(0x57) & 0x8000)  # W键
+    state_a = bool(win32api.GetAsyncKeyState(0x41) & 0x8000)  # A键
+    state_s = bool(win32api.GetAsyncKeyState(0x53) & 0x8000)  # S键
+    state_d = bool(win32api.GetAsyncKeyState(0x44) & 0x8000)  # D键
+
+    stop = False
+
+
+    # 检测按键是否从按下变为松开
+    if not state_w and last_state_w:  # 如果按键W被松开
+        print("W键弹起")
+        kmNet.keydown(22)  #保持键盘s键按下
+        time.sleep(0.03)
+        kmNet.keyup(22)  # 键盘s键松开
+        print("S键点击")
+        stop = True
+    if not state_a and last_state_a:  # 如果按键A被松开
+        print("A键弹起")
+        kmNet.keydown(7)   #保持键盘d键按下
+        time.sleep(0.03)
+        kmNet.keyup(7)   # 键盘d键松开
+        print("D键点击")
+        stop = True
+    if not state_s and last_state_s:  # 如果按键S被松开
+        print("S键弹起")
+        kmNet.keydown(26)  #保持键盘w键按下
+        time.sleep(0.03)
+        kmNet.keyup(26)  # 键盘w键松开
+        print("W键点击")
+        stop = True
+    if not state_d and last_state_d:  # 如果按键D被松开
+        print("D键弹起")
+        kmNet.keydown(4)  #保持键盘a键按下
+        time.sleep(0.03)
+        kmNet.keyup(4)  # 键盘a键松开
+        print("A键点击")
+        stop = True
+
+    if stop:
+        time.sleep(0.003)  # 添加一个小的延时，避免CPU占用过高
+        pass
+
+    # 返回更新后的按键状态
+    return state_w, state_a, state_s, state_d
+
+
+def monitor(mode):
+    state = None
+    match mode:
+        case 'KmBoxNet':
+            state = bool(kmNet.isdown_right())
+        case "win32":
+            state = bool(win32api.GetAsyncKeyState(0x02) & 0x8000)
+    return state
+
+
 def click(mode):
     match mode:
         case "飞易来USB":
             msdk_dll.M_KeyDown2(ctypes.c_uint64(msdk_hdl), 1)
+            time.sleep(random.uniform(0.12, 0.17))
             msdk_dll.M_KeyDown2(ctypes.c_uint64(msdk_hdl), 2)
+            time.sleep(random.uniform(0.12, 0.17))
         case "win32":
             win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+            time.sleep(random.uniform(0.12, 0.17))
             win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+            time.sleep(random.uniform(0.12, 0.17))
         case "mouse":
             mouse.click("left")
+            time.sleep(random.uniform(0.12, 0.17))
         case "Logitech":
             LG_driver.click_Left_down()
+            time.sleep(random.uniform(0.12, 0.17))
             LG_driver.click_Left_up()
+            time.sleep(random.uniform(0.12, 0.17))
         case 'KmBoxNet':
-            kmNet.enc_left(1)
-            kmNet.enc_left(0)
+            kmNet.left(1)
+            time.sleep(random.uniform(0.12, 0.17))
+            kmNet.left(0)
+            time.sleep(random.uniform(0.12, 0.17))
 
 
 def move(mode, centerx, centery):
