@@ -1,4 +1,7 @@
 # Changelog
+## [2025-01-18] - New Updates
+- [`0ff8085`](0ff80855eb12ba3f78641b2d39732533588459cf) 3.0.0.14(Beta) 新增自动扳机 完善跳变抑制
+
 ## [2025-01-16] - New Updates
 - [`9c8af8f`](9c8af8f3f62d3f3eab66b06f5735d8f5ba8e72c7) Merge pull request #86 from Passer1072/create-pr/update_version
 - [`a906b2c`](a906b2c1593704cd13a6f6f75b2d7c0c0b2b3086) resolve #89
