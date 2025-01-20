@@ -78,7 +78,7 @@ def get_online_announcement(
 
     contents_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={branch}"
     try:
-        response = session.get(contents_url).json()
+        response = session.get(contents_url)
         response.raise_for_status()
         data = response.json()
     except requests.exceptions.RequestException:
