@@ -20,8 +20,7 @@ from PyQt6.QtGui import QIcon, QImage, QPixmap, QBitmap, QPainter
 from PyQt6.QtWidgets import QGraphicsOpacityEffect, QFileDialog, QMessageBox, QSizePolicy
 from multiprocessing import Pipe, Process, Queue, shared_memory, Event
 from customLib.animated_status import AnimatedStatus  # 导入 带动画的状态提示浮窗 库
-#from automatic_trigger_set_dialog import AutomaticTriggerSetDialog  # 导入自定义设置窗口类
-# TODO: Line 1050
+from customLib.automatic_trigger_set_dialog import AutomaticTriggerSetDialog  # 导入自定义设置窗口类
 from Module.const import method_mode
 from Module.config import Config, Root
 from Module.control import kmNet
@@ -31,6 +30,8 @@ import Module.keyboard as keyboard
 import Module.jump_detection as jump_detection
 import Module.announcement
 
+# 初始化配置文件
+Config.save()
 
 def communication_Process(pipe, videoSignal_queue, videoSignal_stop_queue, floating_information_signal_queue,
                           information_output_queue):
@@ -1044,9 +1045,8 @@ class RookieAiAPP:  # 主进程 (UI进程)
         self.window.setWindowIcon(QIcon(str(Root / "ico" / "ultralytics-botAvatarSrcUrl-1729379860806.png")))  # 设置窗口图标
         self.window.setFixedSize(1290, 585)  # 固定窗口大小（可选）
 
-        # TODO: 实例化设置窗口
-        #self.automaticTriggerSetDialog = AutomaticTriggerSetDialog(self.window)
-        #self.automaticTriggerSetDialog.setModal(True)  # 设置为模态窗口
+        self.automaticTriggerSetDialog = AutomaticTriggerSetDialog(self.window)
+        self.automaticTriggerSetDialog.setModal(True)  # 设置为模态窗口
 
         # 连接控制组件
         self.window.OpVideoButton.clicked.connect(
@@ -1863,121 +1863,119 @@ class RookieAiAPP:  # 主进程 (UI进程)
             logger.warn("配置文件读取失败:", e)
             self.information_output_queue.put(
                 ("UI_process_log", f"配置文件读取失败: {e}"))
-            self.settings = Config
             self.ProcessMode = "single_process"  # 设置默认值
 
     # TODO Rename this here and in `load_settings`
     def _extracted_from_load_settings_4(self):
-        self.settings = Config
         logger.info("配置文件读取成功")
         self.information_output_queue.put(("UI_process_log", "配置文件读取成功"))
 
         '''读取参数'''
         # 获取 "ProcessMode" 的状态
-        self.ProcessMode = self.settings.get("ProcessMode", "single_process")
+        self.ProcessMode = Config.get("ProcessMode", "single_process")
         logger.debug("ProcessMode状态:", self.ProcessMode)
-        self.allow_network = self.settings.get("allow_network", False)
+        self.allow_network = Config.get("allow_network", False)
         logger.debug("是否允许联网:", self.allow_network)
         self.information_output_queue.put(
             ("UI_process_log", f"ProcessMode状态: {self.ProcessMode}"))
         # 获取 "window_always_on_top" 的状态
-        self.window_always_on_top = self.settings.get(
+        self.window_always_on_top = Config.get(
             "window_always_on_top", False)
         logger.debug("窗口置顶状态:", self.window_always_on_top)
         # 获取 "model_file" 模型文件的路径
-        self.model_file = self.settings.get("model_file", "yolov8n.pt")
+        self.model_file = Config.get("model_file", "yolov8n.pt")
         logger.debug(f"读取模型文件路径: {self.model_file}")
         # 获取 YOLO 置信度设置
-        yolo_confidence = self.settings.get('confidence', 0.5)  # 默认值为0.5
+        yolo_confidence = Config.get('confidence', 0.5)  # 默认值为0.5
         self.yolo_confidence = yolo_confidence
         self.window.confSlider.setValue(
             int(yolo_confidence * 100))  # 将置信度转换为滑动条值
         logger.debug(f"读取保存的YOLO置信度: {yolo_confidence}")
         # 获取 瞄准速度x
-        aim_speed_x = self.settings.get('aim_speed_x', 0.5)
+        aim_speed_x = Config.get('aim_speed_x', 0.5)
         self.aim_speed_x = aim_speed_x
         self.window.lockSpeedXHorizontalSlider.setValue(int(aim_speed_x * 10))
         logger.debug(f"读取保存的瞄准速度X: {aim_speed_x}")
         # 获取 瞄准速度y
-        aim_speed_y = self.settings.get('aim_speed_y', 0.5)
+        aim_speed_y = Config.get('aim_speed_y', 0.5)
         self.aim_speed_y = aim_speed_y
         self.window.lockSpeedYHorizontalSlider.setValue(int(aim_speed_y * 10))
         logger.debug(f"读取保存的瞄准速度Y: {aim_speed_y}")
         # 获取 瞄准范围
-        aim_range = self.settings.get('aim_range', 100)
+        aim_range = Config.get('aim_range', 100)
         self.aim_range = aim_range
         self.window.aimRangeHorizontalSlider.setValue(int(aim_range))
         logger.debug(f"读取保存的瞄准范围: {aim_range}")
         # 获取 Aimbot 开启状态
-        aimbot_switch = self.settings.get("aimBot", False)
+        aimbot_switch = Config.get("aimBot", False)
         self.window.aimBotCheckBox.setChecked(aimbot_switch)
         self.mouseMoveProssesSignal_queue.put(
             ("aimbot_switch_change", aimbot_switch))
         logger.debug(f"读取自瞄状态: {aimbot_switch}")
         # 获取 侧键瞄准 开启状态
-        mouse_Side_Button_Witch = self.settings.get(
+        mouse_Side_Button_Witch = Config.get(
             "mouse_Side_Button_Witch", False)
         self.window.sideButtonCheckBox.setChecked(mouse_Side_Button_Witch)
         self.mouseMoveProssesSignal_queue.put(
             ("mouse_Side_Button_Witch_change", mouse_Side_Button_Witch))
         logger.debug(f"读取侧键瞄准开启状态: {mouse_Side_Button_Witch}")
         # 获取 detectionTargetComboBox 的值
-        target_class = self.settings.get('target_class', "ALL")
+        target_class = Config.get('target_class', "ALL")
         logger.debug(f"读取保存的检测类别: {target_class}")
         self.window.detectionTargetComboBox.setCurrentText(target_class)
         self.YoloSignal_queue.put(("change_class", target_class))
         # 获取 Y轴偏移 值
-        offset_centery = self.settings.get('offset_centery', 0.3)
+        offset_centery = Config.get('offset_centery', 0.3)
         logger.debug(f"读取保存的Y轴偏移: {offset_centery}")
         self.offset_centery = offset_centery
         self.window.offset_centeryVerticalSlider.setValue(
             int(offset_centery * 100))
         # 获取 Y轴偏移 值
-        offset_centerx = self.settings.get('offset_centerx', 0)
+        offset_centerx = Config.get('offset_centerx', 0)
         logger.debug(f"读取保存的X轴偏移: {offset_centerx}")
         self.offset_centerx = offset_centerx
         # 映射公式：slider_value = (1 - offset_centerx) * 50
         slider_value = int((1 - offset_centerx) * 50)
         self.window.offset_centerxVerticalSlider.setValue(slider_value)
         # 获取 触发热键代码 值
-        lockKey = self.settings.get('lockKey', "VK_LBUTTON")
+        lockKey = Config.get('lockKey', "VK_LBUTTON")
         logger.debug(f"读取保存的触发热键: {lockKey}")
         self.window.HotkeyPushButton.setText(lockKey)
         key_code = keyboard.get_key_code_vk(lockKey)
         logger.debug(f"加载触发热键代码: {key_code}")
         self.mouseMoveProssesSignal_queue.put(("lock_key_change", key_code))
         # 获取 触发方式
-        triggerType = (self.settings.get('triggerType', "press"))
+        triggerType = (Config.get('triggerType', "press"))
         logger.debug(f"读取保存的触发方式: {triggerType}")
         self.window.triggerMethodComboBox.setCurrentText(triggerType)
         # 获取 游戏内X轴360度视角像素
-        screen_pixels_for_360_degrees = self.settings.get(
+        screen_pixels_for_360_degrees = Config.get(
             'screen_pixels_for_360_degrees', 1800)
         logger.debug(f"读取游戏内一周像素: {screen_pixels_for_360_degrees}")
         self.mouseMoveProssesSignal_queue.put(
             ("screen_pixels_for_360_degrees", screen_pixels_for_360_degrees))
         # 获取 游戏内Y轴180度视角像素
-        screen_height_pixels = self.settings.get('screen_height_pixels', 900)
+        screen_height_pixels = Config.get('screen_height_pixels', 900)
         logger.debug(f"读取游戏内一周像素: {screen_height_pixels}")
         self.mouseMoveProssesSignal_queue.put(
             ("screen_height_pixels", screen_height_pixels))
         # 获取 近点瞄准速率倍率
-        near_speed_multiplier = self.settings.get('near_speed_multiplier', 2)
+        near_speed_multiplier = Config.get('near_speed_multiplier', 2)
         logger.debug(f"读取近点瞄准速率倍率: {near_speed_multiplier}")
         self.mouseMoveProssesSignal_queue.put(
             ("near_speed_multiplier", near_speed_multiplier))
         # 获取 瞄准减速区域
-        slow_zone_radius = self.settings.get("slow_zone_radius", 10)
+        slow_zone_radius = Config.get("slow_zone_radius", 10)
         logger.debug(f"读取瞄准减速区域: {slow_zone_radius}")
         self.mouseMoveProssesSignal_queue.put(
             ("slow_zone_radius", slow_zone_radius))
         # 获取 跳变抑制开关
-        jump_suppression_switch = self.settings.get("jump_suppression_switch", False)
+        jump_suppression_switch = Config.get("jump_suppression_switch", False)
         logger.debug(f"跳变抑制开关: {jump_suppression_switch}")
         self.window.jumpSuppressionCheckBox.setChecked(jump_suppression_switch)
         self.mouseMoveProssesSignal_queue.put(("jump_detection_switch", jump_suppression_switch))
         # 获取 跳变抑制误差
-        jump_suppression_fluctuation_range = self.settings.get("jump_suppression_fluctuation_range", 10)
+        jump_suppression_fluctuation_range = Config.get("jump_suppression_fluctuation_range", 10)
         logger.debug(f"跳变抑制误差: {jump_suppression_fluctuation_range}")
         self.window.jumpSuppressionVerticalSlider.setValue(jump_suppression_fluctuation_range)
         self.mouseMoveProssesSignal_queue.put(
@@ -2006,37 +2004,37 @@ class RookieAiAPP:  # 主进程 (UI进程)
         '''保存参数'''
         # 更新 settings 字典
         # 推理模式
-        self.settings['ProcessMode'] = current_process_mode
+        Config.update("ProcessMode", current_process_mode)
         # 窗口置顶状态
-        self.settings['window_always_on_top'] = current_window_on_top
+        Config.update("window_always_on_top", current_window_on_top)
         # 自瞄开启状态
-        self.settings['aimBot'] = aimbot_switch
+        Config.update("aimBot", aimbot_switch)
         # 侧键瞄准开启状态
-        self.settings['mouse_Side_Button_Witch'] = mouse_Side_Button_Witch
+        Config.update("mouse_Side_Button_Witch", mouse_Side_Button_Witch)
         # 模型文件路径
-        self.settings['model_file'] = self.model_file
+        Config.update("model_file", self.model_file)
         # 置信度
-        self.settings['confidence'] = self.yolo_confidence
+        Config.update("confidence", self.yolo_confidence)
         # 锁定速度x
-        self.settings['aim_speed_x'] = self.lock_speed_x
+        Config.update("aim_speed_x", self.lock_speed_x)
         # 锁定速度y
-        self.settings['aim_speed_y'] = self.lock_speed_y
+        Config.update("aim_speed_y", self.lock_speed_y)
         # 瞄准范围
-        self.settings['aim_range'] = self.aim_range
+        Config.update("aim_range", self.aim_range)
         # 目标代码
-        self.settings['target_class'] = current_target_class
+        Config.update("target_class", current_target_class)
         # Y轴瞄准偏移
-        self.settings['offset_centery'] = self.offset_centery
+        Config.update("offset_centery", self.offset_centery)
         # X轴瞄准偏移
-        self.settings['offset_centerx'] = self.offset_centerx
+        Config.update("offset_centerx", self.offset_centerx)
         # 触发热键
-        self.settings['lockKey'] = lockKey
+        Config.update("lockKey", lockKey)
         # 触发方式
-        self.settings['triggerType'] = triggerType
+        Config.update("triggerType", triggerType)
         # 跳变抑制开关
-        self.settings['jump_suppression_switch'] = jump_suppression_switch
+        Config.update("jump_suppression_switch", jump_suppression_switch)
         # 跳变抑制误差
-        self.settings['jump_suppression_fluctuation_range'] = self.jump_suppression_fluctuation_range
+        Config.update("jump_suppression_fluctuation_range", self.jump_suppression_fluctuation_range)
 
         # 将 settings 保存到文件
         try:

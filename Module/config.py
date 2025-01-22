@@ -17,7 +17,7 @@ class Config:
         "aim_speed_y": 8.3,
         "model_file": "yolov8n.pt",
         "mouse_Side_Button_Witch": True,
-        "ProcessMode": "multi_process",
+        "ProcessMode": "single_process",
         "window_always_on_top": False,
         "target_class": "0",
         "lockKey": "VK_RBUTTON",
