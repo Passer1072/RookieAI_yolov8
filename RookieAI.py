@@ -14,13 +14,14 @@ import win32api
 import win32con
 from math import sqrt
 from ultralytics import YOLO
-from PyQt6 import QtWidgets, uic, QtCore
+from PyQt6 import QtWidgets, uic
 from PyQt6.QtCore import QTimer, Qt, QPropertyAnimation, QPoint, QEasingCurve, QParallelAnimationGroup, QRect, QSize
 from PyQt6.QtGui import QIcon, QImage, QPixmap, QBitmap, QPainter
 from PyQt6.QtWidgets import QGraphicsOpacityEffect, QFileDialog, QMessageBox, QSizePolicy
 from multiprocessing import Pipe, Process, Queue, shared_memory, Event
 from customLib.animated_status import AnimatedStatus  # 导入 带动画的状态提示浮窗 库
-from automatic_trigger_set_dialog import AutomaticTriggerSetDialog  # 导入自定义设置窗口类
+#from automatic_trigger_set_dialog import AutomaticTriggerSetDialog  # 导入自定义设置窗口类
+# TODO: Line 1050
 from Module.const import method_mode
 from Module.config import Config, Root
 from Module.control import kmNet
@@ -936,10 +937,8 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue, acc
                         last_offset_distance = int(offset_distance)
 
                         # 目标切换时，拒绝执行移动
-                        if not target_switching:
-                            # logger.debug("执行移动")
-                            if move_x_int != 0 or move_y_int != 0:
-                                control.move(mouseMoveMode, move_x_int, move_y_int)
+                        if not target_switching and (move_x_int != 0 or move_y_int != 0):
+                            control.move(mouseMoveMode, move_x_int, move_y_int)
                     else:
                         # 当 should_move 为 False 时，重置last_offset_distance为 None,重置规律移动状态
                         # logger.debug("重置规律移动状态")
@@ -1045,9 +1044,9 @@ class RookieAiAPP:  # 主进程 (UI进程)
         self.window.setWindowIcon(QIcon(str(Root / "ico" / "ultralytics-botAvatarSrcUrl-1729379860806.png")))  # 设置窗口图标
         self.window.setFixedSize(1290, 585)  # 固定窗口大小（可选）
 
-        # 实例化设置窗口
-        self.automaticTriggerSetDialog = AutomaticTriggerSetDialog(self.window)
-        self.automaticTriggerSetDialog.setModal(True)  # 设置为模态窗口
+        # TODO: 实例化设置窗口
+        #self.automaticTriggerSetDialog = AutomaticTriggerSetDialog(self.window)
+        #self.automaticTriggerSetDialog.setModal(True)  # 设置为模态窗口
 
         # 连接控制组件
         self.window.OpVideoButton.clicked.connect(
