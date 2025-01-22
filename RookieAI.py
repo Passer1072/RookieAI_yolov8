@@ -970,19 +970,19 @@ def accessibility_process(accessibilityProcessSignal_queue, mouseMoveMode='win32
                 cmd, cmd_01 = command_data
                 if cmd == "click_mode":  # 点击模式：“连点” “单点” “长按”
                     click_mode = cmd_01
-                    logger.info(f"点击模式切换为: {click_mode}")
+                    logger.debug(f"点击模式切换为: {click_mode}")
                 elif cmd == "automatic_trigger_switch":
                     automatic_trigger_switch = cmd_01
-                    logger.info(f"自动扳机开关切换为: {automatic_trigger_switch}")
+                    logger.debug(f"自动扳机开关切换为: {automatic_trigger_switch}")
                 elif cmd == "Trigger_conditions":
                     Trigger_conditions = cmd_01
-                    logger.info(f"扳机条件是否满足: {Trigger_conditions}")
+                    logger.debug(f"扳机条件是否满足: {Trigger_conditions}")
                 elif cmd == "mouseMoveMode":
                     mouseMoveMode = cmd_01
-                    logger.info(f"鼠标点击模块为: {mouseMoveMode}")
+                    logger.debug(f"鼠标点击模块为: {mouseMoveMode}")
                 elif cmd == "Effective_mode":
                     Effective_mode = cmd_01
-                    logger.info(f"生效模式为: {Effective_mode}")
+                    logger.debug(f"生效模式为: {Effective_mode}")
                 elif cmd == "emergenc_stop_switch":
                     emergenc_stop_switch = cmd_01
 
