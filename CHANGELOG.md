@@ -1,5 +1,6 @@
 # Changelog
 ## [2025-01-22] - New Updates
+- [`7a9d598`](7a9d5986455eb165a7cd5151a67d8bc7135a845d) build(dependencies): 更新项目依赖管理和安装流程
 - [`3e4e9d2`](3e4e9d2d662ac681234d067fe4988f62f66a7f02) 修复公告获取
 
 ## [2025-01-18] - New Updates
