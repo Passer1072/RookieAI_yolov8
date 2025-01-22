@@ -778,7 +778,7 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue, acc
                         logger.debug(f"设置鼠标移动模式为: {mouseMoveMode}")
                     elif cmd == "automatic_trigger_range_switching":
                         automatic_trigger_range_scale_factor = cmd_01
-                        print(f"自动扳机范围比例设置为: {automatic_trigger_range_scale_factor}")
+                        logger.debug(f"自动扳机范围比例设置为: {automatic_trigger_range_scale_factor}")
                     elif cmd == "jump_detection_switch":
                         jump_detection_switch = cmd_01
                         logger.debug(f"跳变检测设置为: {jump_detection_switch}")
@@ -970,19 +970,19 @@ def accessibility_process(accessibilityProcessSignal_queue, mouseMoveMode='win32
                 cmd, cmd_01 = command_data
                 if cmd == "click_mode":  # 点击模式：“连点” “单点” “长按”
                     click_mode = cmd_01
-                    print(f"点击模式切换为: {click_mode}")
+                    logger.info(f"点击模式切换为: {click_mode}")
                 elif cmd == "automatic_trigger_switch":
                     automatic_trigger_switch = cmd_01
-                    print(f"自动扳机开关切换为: {automatic_trigger_switch}")
+                    logger.info(f"自动扳机开关切换为: {automatic_trigger_switch}")
                 elif cmd == "Trigger_conditions":
                     Trigger_conditions = cmd_01
-                    print(f"扳机条件是否满足: {Trigger_conditions}")
+                    logger.info(f"扳机条件是否满足: {Trigger_conditions}")
                 elif cmd == "mouseMoveMode":
                     mouseMoveMode = cmd_01
-                    print(f"鼠标点击模块为: {mouseMoveMode}")
+                    logger.info(f"鼠标点击模块为: {mouseMoveMode}")
                 elif cmd == "Effective_mode":
                     Effective_mode = cmd_01
-                    print(f"生效模式为: {Effective_mode}")
+                    logger.info(f"生效模式为: {Effective_mode}")
                 elif cmd == "emergenc_stop_switch":
                     emergenc_stop_switch = cmd_01
 
@@ -1005,8 +1005,10 @@ def accessibility_process(accessibilityProcessSignal_queue, mouseMoveMode='win32
                 control.click(mouseMoveMode)
                 # print(mouseMoveMode)
             elif click_mode == "单击":
+                # TODO
                 pass
             elif click_mode == "长按":
+                # TODO
                 pass
         else:
             pass
@@ -1427,7 +1429,9 @@ class RookieAiAPP:  # 主进程 (UI进程)
         mobile_mode_dict = {
             0: "win32",
             1: "飞易来",
-            2: "KmBoxNet"
+            2: "KmBoxNet",
+            3: "Logitech",
+            4: "mouse"
         }
 
         # 根据 selected_mobileMode 获取对应的鼠标移动方式

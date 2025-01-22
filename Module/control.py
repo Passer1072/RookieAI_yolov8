@@ -22,7 +22,7 @@ def path_import(module_name):
     :param file:
     :return:
     """
-    logger.debug("\n******************* 开始动态加载模块 *************************")
+    logger.debug("******************* 开始动态加载模块 *************************")
     
     # 获取当前Python版本和平台
     py_version = f"cp{sys.version_info.major}{sys.version_info.minor}"
@@ -102,7 +102,6 @@ def emergencStop_valorant(last_state_w, last_state_a, last_state_s, last_state_d
 
     if stop:
         time.sleep(0.003)  # 添加一个小的延时，避免CPU占用过高
-        pass
 
     # 返回更新后的按键状态
     return state_w, state_a, state_s, state_d

@@ -1606,6 +1606,16 @@ border-color: rgba(0, 0, 0, 0);</string>
         <string>KmBoxNet</string>
        </property>
       </item>
+      <item>
+       <property name="text">
+        <string>Logitech</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>mouse</string>
+       </property>
+      </item>
      </widget>
      <widget class="QCheckBox" name="jumpSuppressionCheckBox">
       <property name="geometry">
