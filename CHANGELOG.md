@@ -1,5 +1,6 @@
 # Changelog
 ## [2025-01-22] - New Updates
+- [`7a183a8`](7a183a893cb08d9057764a297ec986a51ca4fd92) refactor(RookieAI): 将日志级别从 info 改为 debug
 - [`08c5d4c`](08c5d4c2d58fefca105ed35c0ecc7995a8892088) feat(Module): 重构 logger 模块并添加新的移动模式
 - [`2fbfe41`](2fbfe41e107c271f42f074aaa8f5818421a81008) 自动扳机UI配置文件
 - [`7a9d598`](7a9d5986455eb165a7cd5151a67d8bc7135a845d) build(dependencies): 更新项目依赖管理和安装流程
