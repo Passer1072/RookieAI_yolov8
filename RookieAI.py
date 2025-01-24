@@ -359,7 +359,7 @@ def screen_capture_and_yolo_processing(processedVideo_queue, videoSignal_stop_qu
                         elif cmd == 'YOLO_stop':
                             yolo_enabled = False
                         elif cmd == "change_conf":  # 更改置信度
-                            logger.debug("更改置信度")
+                            logger.debug(f"更改置信度: {cmd_01}")
                             yolo_confidence = cmd_01
                         elif cmd == "change_class":
                             logger.debug(f"更改检测类别为: {cmd_01}")
@@ -1003,7 +1003,7 @@ def accessibility_process(accessibilityProcessSignal_queue, mouseMoveMode='win32
         if automatic_trigger_switch and Trigger_conditions and mouse_isdown:  # 自动扳机
             if click_mode == "连点":
                 control.click(mouseMoveMode)
-                # print(mouseMoveMode)
+                # logger.debug(mouseMoveMode)
             elif click_mode == "单击":
                 # TODO
                 pass
@@ -1416,7 +1416,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
     def on_button_clicked(self, button):
         # 获取被点击的按钮文本并打印
         Effective_mode = button.text()
-        print(f"选中的按钮文本是: {Effective_mode}")
+        logger.debug(f"选中的按钮文本是: {Effective_mode}")
         self.accessibilityProcessSignal_queue.put(("Effective_mode", Effective_mode))
 
     def on_mobileMode_changed(self, selected_mobileMode):

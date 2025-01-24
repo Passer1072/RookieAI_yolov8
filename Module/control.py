@@ -72,32 +72,32 @@ def emergencStop_valorant(last_state_w, last_state_a, last_state_s, last_state_d
 
     # 检测按键是否从按下变为松开
     if not state_w and last_state_w:  # 如果按键W被松开
-        print("W键弹起")
+        logger.debug("W键弹起")
         kmNet.keydown(22)  #保持键盘s键按下
         time.sleep(0.03)
         kmNet.keyup(22)  # 键盘s键松开
-        print("S键点击")
+        logger.debug("S键点击")
         stop = True
     if not state_a and last_state_a:  # 如果按键A被松开
-        print("A键弹起")
+        logger.debug("A键弹起")
         kmNet.keydown(7)   #保持键盘d键按下
         time.sleep(0.03)
         kmNet.keyup(7)   # 键盘d键松开
-        print("D键点击")
+        logger.debug("D键点击")
         stop = True
     if not state_s and last_state_s:  # 如果按键S被松开
-        print("S键弹起")
+        logger.debug("S键弹起")
         kmNet.keydown(26)  #保持键盘w键按下
         time.sleep(0.03)
         kmNet.keyup(26)  # 键盘w键松开
-        print("W键点击")
+        logger.debug("W键点击")
         stop = True
     if not state_d and last_state_d:  # 如果按键D被松开
-        print("D键弹起")
+        logger.debug("D键弹起")
         kmNet.keydown(4)  #保持键盘a键按下
         time.sleep(0.03)
         kmNet.keyup(4)  # 键盘a键松开
-        print("A键点击")
+        logger.debug("A键点击")
         stop = True
 
     if stop:
