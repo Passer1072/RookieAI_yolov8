@@ -7,27 +7,49 @@ from io import StringIO
 from colorama import init, Fore, Style
 from Module.config import Root, Config
 
+# 自定义 TRACE 和 SUCCESS 级别的日志
+TRACE_LOG_LEVEL = 5
+SUCCESS_LOG_LEVEL = 25
+logging.addLevelName(TRACE_LOG_LEVEL, "TRACE")
+logging.addLevelName(SUCCESS_LOG_LEVEL, "SUCCESS")
+
+def trace(self, message, *args, **kws):
+    if self.isEnabledFor(TRACE_LOG_LEVEL):
+        self._log(TRACE_LOG_LEVEL, message, args, **kws)
+
+def success(self, message, *args, **kws):
+    if self.isEnabledFor(SUCCESS_LOG_LEVEL):
+        self._log(SUCCESS_LOG_LEVEL, message, args, **kws)
+
+logging.Logger.trace = trace
+logging.Logger.success = success
+
 def get_log_level() -> int:
     """根据日志名称获取日志级别"""
     maps = {
+        "TRACE": TRACE_LOG_LEVEL,
         "DEBUG": logging.DEBUG,
         "INFO": logging.INFO,
+        "SUCCESS": SUCCESS_LOG_LEVEL,
         "WARNING": logging.WARNING,
         "ERROR": logging.ERROR,
         "CRITICAL": logging.CRITICAL,
     }
-    return maps.get(Config.get("log_level", "INFO").upper(), logging.INFO)
+    return maps.get(Config.get("LOG_LEVEL", "INFO").upper(), logging.INFO)
 
 class CustomFormatter(logging.Formatter):
     def format(self, record):
         color = self._get_color(record.levelname)
         record.color = color
         return super().format(record)
+
     def _get_color(self, level_name):
         """根据日志级别返回相应的颜色"""
         colors = {
-            "DEBUG": Fore.CYAN,
-            "INFO": Fore.BLUE,
+            "TRACE": Fore.LIGHTCYAN_EX,
+            "DEBUG": Fore.BLUE,
+            "INFO": Fore.WHITE,
+            "SUCCESS": Fore.GREEN,
             "WARNING": Fore.YELLOW,
             "ERROR": Fore.RED,
             "CRITICAL": Fore.RED + Style.BRIGHT,
@@ -35,14 +57,14 @@ class CustomFormatter(logging.Formatter):
         return colors.get(level_name, Fore.WHITE)
 
 class logger:
-    
+
     init(autoreset=True)
 
-    console_log_level_int = DEBUG
+    console_log_level_int = TRACE_LOG_LEVEL
     file_log_level_int = INFO
     log_file_prefix = Root / "logs"
     os.makedirs(log_file_prefix, exist_ok=True)
-    logger = logging.getLogger("Custom Logger")
+    logger = logging.getLogger("RookieAI")
     logger.setLevel(get_log_level())
 
     console_handler = logging.StreamHandler()
@@ -90,6 +112,12 @@ class logger:
         return " ".join(str(arg) for arg in args)
 
     @classmethod
+    def trace(cls, *args) -> None:
+        cls._ensure_log_file_created()
+        with cls.lock:
+            cls.logger.trace(cls._format_message(*args))
+
+    @classmethod
     def debug(cls, *args) -> None:
         cls._ensure_log_file_created()
         with cls.lock:
@@ -102,11 +130,16 @@ class logger:
             cls.logger.info(cls._format_message(*args))
 
     @classmethod
+    def success(cls, *args) -> None:
+        cls._ensure_log_file_created()
+        with cls.lock:
+            cls.logger.success(cls._format_message(*args))
+
+    @classmethod
     def warning(cls, *args) -> None:
         cls._ensure_log_file_created()
         with cls.lock:
             cls.logger.warning(cls._format_message(*args))
-
 
     @classmethod
     def warn(cls, *args) -> None:
@@ -123,9 +156,11 @@ class logger:
         cls._ensure_log_file_created()
         with cls.lock:
             cls.logger.critical(cls._format_message(*args))
+
     @classmethod
     def fatal(cls, *args) -> None:
         cls.critical(*args)
+
     @classmethod
     def _generate_log_output(cls):
         """生成器函数，用于生成日志输出。"""
