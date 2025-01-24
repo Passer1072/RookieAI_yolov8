@@ -80,15 +80,3 @@ class Config:
             cls.content = cls.read()
         with open(Root / "Data" / "settings.json", "w", encoding="utf8") as f:
             f.write(json.dumps(cls.content, ensure_ascii=False, indent=4))
-
-    @classmethod
-    def __getitem__(cls, key: str) -> Any:
-        return cls.get(key)
-
-    @classmethod
-    def __setitem__(cls, key: str, value: Any) -> None:
-        cls.update(key, value)
-
-    @classmethod
-    def __delitem__(cls, key: str) -> None:
-        cls.delete(key)
