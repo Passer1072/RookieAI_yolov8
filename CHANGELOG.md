@@ -1,4 +1,7 @@
 # Changelog
+## [2025-01-24] - New Updates
+- [`2eb70e8`](2eb70e8b93df007d09b5434ed684be4a18f1969f) 删除无用方法
+
 ## [2025-01-22] - New Updates
 - [`7a183a8`](7a183a893cb08d9057764a297ec986a51ca4fd92) refactor(RookieAI): 将日志级别从 info 改为 debug
 - [`08c5d4c`](08c5d4c2d58fefca105ed35c0ecc7995a8892088) feat(Module): 重构 logger 模块并添加新的移动模式
