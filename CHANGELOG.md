@@ -1,5 +1,6 @@
 # Changelog
 ## [2025-02-21] - New Updates
+- [`4fadb11`](4fadb11eace3fb00b8f991bb3bf2874a042f7b87) Merge branch 'main' into dev
 - [`b9f5629`](b9f5629ba39a38db955c64666fee28a6d3405bc1) 修复资源路径
 
 ## [2025-01-24] - New Updates
