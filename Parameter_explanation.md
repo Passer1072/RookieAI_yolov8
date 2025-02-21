@@ -21,3 +21,5 @@
 | **slow_zone_radius** | `int` | ∞ | 瞄准减速区域 | `0` |
 | **mouseMoveMode** | `str` | - | 鼠标移动方式 | `win32` |
 | **lockSpeed** | `float` | ∞ | 自瞄速度 | `5.5` |
+| **jump_suppression_switch** | `bool` | - | 跳变抑制开关(防止突然切换目标) | `False` |
+| **jump_suppression_fluctuation_range** | `float` | ∞ | 跳变抑制阈值 | `18` |
