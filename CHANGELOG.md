@@ -1,4 +1,7 @@
 # Changelog
+## [2025-03-02] - New Updates
+- [`e6236df`](e6236df8164950d12557424d33acb4eb9ea20e82) 默认关闭跳变抑制 #105
+
 ## [2025-02-21] - New Updates
 - [`4fadb11`](4fadb11eace3fb00b8f991bb3bf2874a042f7b87) Merge branch 'main' into dev
 - [`b9f5629`](b9f5629ba39a38db955c64666fee28a6d3405bc1) 修复资源路径
