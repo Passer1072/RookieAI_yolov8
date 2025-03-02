@@ -1,4 +1,28 @@
 # Changelog
+## [2025-03-02] - New Updates
+- [`30658a3`](30658a34e4c1dcda46c061470e229a420ea96d84) 移动公告更新地址
+- [`e6236df`](e6236df8164950d12557424d33acb4eb9ea20e82) 默认关闭跳变抑制 #105
+
+## [2025-02-21] - New Updates
+- [`4fadb11`](4fadb11eace3fb00b8f991bb3bf2874a042f7b87) Merge branch 'main' into dev
+- [`b9f5629`](b9f5629ba39a38db955c64666fee28a6d3405bc1) 修复资源路径
+
+## [2025-01-24] - New Updates
+- [`3e17c5f`](3e17c5fe097406941d27e1b207f754ac7cb9853c) 优化日志记录
+- [`e962099`](e962099d1a1ed42b5a6992d5a0e428c9e9281b51) 优化日志记录器
+- [`2eb70e8`](2eb70e8b93df007d09b5434ed684be4a18f1969f) 删除无用方法
+
+## [2025-01-22] - New Updates
+- [`7a183a8`](7a183a893cb08d9057764a297ec986a51ca4fd92) refactor(RookieAI): 将日志级别从 info 改为 debug
+- [`08c5d4c`](08c5d4c2d58fefca105ed35c0ecc7995a8892088) feat(Module): 重构 logger 模块并添加新的移动模式
+- [`2fbfe41`](2fbfe41e107c271f42f074aaa8f5818421a81008) 自动扳机UI配置文件
+- [`7a9d598`](7a9d5986455eb165a7cd5151a67d8bc7135a845d) build(dependencies): 更新项目依赖管理和安装流程
+- [`3e4e9d2`](3e4e9d2d662ac681234d067fe4988f62f66a7f02) 修复公告获取
+
+## [2025-01-18] - New Updates
+- [`974e145`](974e14584992a1dd320bb2f12c87acfa8c3f07ac) 优化配置读取，避免命名空间污染
+- [`0ff8085`](0ff80855eb12ba3f78641b2d39732533588459cf) 3.0.0.14(Beta) 新增自动扳机 完善跳变抑制
+
 ## [2025-01-16] - New Updates
 - [`9c8af8f`](9c8af8f3f62d3f3eab66b06f5735d8f5ba8e72c7) Merge pull request #86 from Passer1072/create-pr/update_version
 - [`a906b2c`](a906b2c1593704cd13a6f6f75b2d7c0c0b2b3086) resolve #89

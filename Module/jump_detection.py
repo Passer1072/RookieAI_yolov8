@@ -21,13 +21,13 @@ def check_target_switching(offset_distance, last_offset_distance, jump_detection
             # 判断是否有不规律的跳变，判断 offset_distance 是否突然增大
             if offset_distance > last_offset_distance + fluctuation_range:
                 target_switching = True  # 判断为目标切换
-                print("目标切换")
+                logger.debug("目标切换")
             else:
                 target_switching = False  # 认为是正常的规律移动
-                print("正常移动")
+                logger.debug("正常移动")
         else:
             # 如果不启用跳变检测，则认为是正常移动
             target_switching = False
-            print("正常移动")
+            logger.debug("正常移动")
 
     return target_switching

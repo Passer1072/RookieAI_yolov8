@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1991</width>
-    <height>761</height>
+    <width>1693</width>
+    <height>615</height>
    </rect>
   </property>
   <property name="cursor">
@@ -1266,6 +1266,21 @@ border-color: rgba(0, 0, 0, 0);</string>
       </item>
       <item>
        <property name="text">
+        <string>3</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>4</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>5</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
         <string>ALL</string>
        </property>
       </item>
@@ -1297,13 +1312,13 @@ border-color: rgba(0, 0, 0, 0);</string>
      </widget>
      <widget class="QCheckBox" name="auxiliaryPressureGunCheckBox_4">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
         <x>20</x>
         <y>310</y>
-        <width>121</width>
+        <width>91</width>
         <height>20</height>
        </rect>
       </property>
@@ -1314,12 +1329,12 @@ border-color: rgba(0, 0, 0, 0);</string>
        </font>
       </property>
       <property name="text">
-       <string>随机瞄准偏移</string>
+       <string>自动急停</string>
       </property>
      </widget>
-     <widget class="QCheckBox" name="smoothAimingCheckBox_4">
+     <widget class="QCheckBox" name="automatic_trigger_switchCheckBox">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
@@ -1336,16 +1351,16 @@ border-color: rgba(0, 0, 0, 0);</string>
        </font>
       </property>
       <property name="text">
-       <string>分段瞄准</string>
+       <string>自动扳机</string>
       </property>
      </widget>
      <widget class="QToolButton" name="auxiliaryPressureGunToolButton_4">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
-        <x>150</x>
+        <x>120</x>
         <y>310</y>
         <width>21</width>
         <height>21</height>
@@ -1355,9 +1370,9 @@ border-color: rgba(0, 0, 0, 0);</string>
        <string>...</string>
       </property>
      </widget>
-     <widget class="QToolButton" name="smoothAimingToolButton_4">
+     <widget class="QToolButton" name="automatic_trigger_switchToolButton">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>

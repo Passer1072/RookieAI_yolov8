@@ -27,17 +27,15 @@
    
 
 ```shell
-pip install -r requirements.txt -i https://pypi.doubanio.com/simple/
-pip uninstall torch torchvision torchaudio
-pip install torch torchvision torchaudio -f https://mirror.sjtu.edu.cn/pytorch-wheels/torch_stable.html --no-index
+poetry install
+poetry run pip install torch torchvision torchaudio -f https://mirror.sjtu.edu.cn/pytorch-wheels/torch_stable.html --no-index
 ```
 
 **海外用户请使用以下命令**
 
 ```shell
-pip install -r requirements.txt
-pip uninstall torch torchvision torchaudio
-pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html --no-index
+poetry install
+poetry run pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html --no-index
 ```
 
 2. 你还需要一个自己的模型（目前支持.pt/.engine/.onnx模型），如果没有可暂时使用ultralytics官方模型
@@ -52,7 +50,7 @@ pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/tor
 
 在脚本所在目录打开终端，键入以下内容并回车
 ```shell
-python RookieAI.py
+poetry run python RookieAI.py
 ```
 
 ## 关于模型文件
