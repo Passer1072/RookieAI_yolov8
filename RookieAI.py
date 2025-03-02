@@ -715,7 +715,7 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue, acc
     target_switching = False
     last_offset_distance = None  # 上次的偏移后目标距离
     fluctuation_range = 10  # 波动范围，单位：像素
-    jump_detection_switch = True  # 跳变检测开关
+    jump_detection_switch = False  # 跳变检测开关
 
     # 初始化自动扳机
     automatic_trigger_range_scale_factor = 0.1
