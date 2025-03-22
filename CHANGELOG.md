@@ -1,4 +1,7 @@
 # Changelog
+## [2025-03-22] - New Updates
+- [`cd0d454`](cd0d454b93b5bcf52fd4e9172c3460419233c1d4) Merge branch 'dev' of github.com:Passer1072/RookieAI_yolov8 into dev
+
 ## [2025-03-02] - New Updates
 - [`30658a3`](30658a34e4c1dcda46c061470e229a420ea96d84) 移动公告更新地址
 - [`e6236df`](e6236df8164950d12557424d33acb4eb9ea20e82) 默认关闭跳变抑制 #105
