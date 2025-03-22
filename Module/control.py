@@ -47,7 +47,7 @@ def path_import(module_name):
     toolbox = importlib.util.module_from_spec(toolbox_specs)
     logger.debug("module: ", toolbox)
     toolbox_specs.loader.exec_module(toolbox)
-    logger.info("导入成功 path_import(): ", toolbox)
+    logger.success("导入成功 path_import(): ", toolbox)
     logger.debug("检查sys中是否包含了此模块: ", toolbox in sys.modules)
     logger.debug("******************* 动态加载模块完成 *************************\n")
     return toolbox

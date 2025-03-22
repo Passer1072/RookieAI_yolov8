@@ -70,7 +70,7 @@ def communication_Process(pipe, videoSignal_queue, videoSignal_stop_queue, float
                         videoSignal_stop_queue.put(("stop_video", cmd_01))
 
                     elif cmd == "loading_complete":
-                        logger.info("软件初始化完毕")
+                        logger.success("软件初始化完毕")
                         floating_information_signal_queue.put(
                             ("loading_complete", cmd_01))
 
@@ -207,7 +207,7 @@ def start_capture_process_single(videoSignal_queue, videoSignal_stop_queue, info
                     logger.info("正在重新加载模型")
                     model_file = information
                     model = YOLO(model_file)
-                    logger.info(f"模型 {model_file} 加载完毕")
+                    logger.success(f"模型 {model_file} 加载完毕")
             except queue.Empty:
                 pass
             except Exception as e:
@@ -792,7 +792,7 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue, acc
                 kmNet.init(IP, PORT, MAC)  # 连接盒子
                 kmNet.enc_move(100, 100)  # 测试移动
                 connectKmBox = True
-                logger.info("KmBox连接成功")
+                logger.success("KmBox连接成功")
 
             pixels_per_degree_x = screen_pixels_for_360_degrees / 360  # 每度需要的像素数度
             pixels_per_degree_y = screen_height_pixels / 180  # 每度像素数
@@ -1871,7 +1871,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
 
     # TODO Rename this here and in `load_settings`
     def _extracted_from_load_settings_4(self):
-        logger.info("配置文件读取成功")
+        logger.success("配置文件读取成功")
         self.information_output_queue.put(("UI_process_log", "配置文件读取成功"))
 
         '''读取参数'''
@@ -2043,7 +2043,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         # 将 settings 保存到文件
         try:
             Config.save()
-            logger.info("配置文件保存成功")
+            logger.success("配置文件保存成功")
             self.information_output_queue.put(("UI_process_log", "配置文件保存成功"))
             self.window.status_widget.display_message("配置已保存", bg_color="#55ff00", text_color="black",
                                                       auto_hide=3000)
@@ -2550,7 +2550,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         if not self.floating_information_signal_queue.empty():
             message = self.floating_information_signal_queue.get_nowait()  # 非阻塞地获取消息
             if message[0] == "loading_complete" and message[1] is True:
-                logger.info("软件初始化完毕，停止检查队列")
+                logger.success("软件初始化完毕，停止检查队列")
                 # 停止定时器检查队列
                 # self.timer_check_queue.stop()
                 # 更新UI或执行其他操作

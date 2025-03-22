@@ -129,8 +129,9 @@ def get_local_date() -> str:
     version_file_path = Root / "__version__"
     with version_file_path.open(encoding="utf8") as version_file:
         first_line = version_file.readline().strip()
+        second_line = version_file.readline().strip()
         if first_line.startswith("__version_date__:"):
-            _date = first_line.split(":", 1)[1].strip()
+            _date = second_line.split(":", 1)[1].strip()
     return _date
 
 
