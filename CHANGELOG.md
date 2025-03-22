@@ -1,4 +1,12 @@
 # Changelog
+## [2025-03-02] - New Updates
+- [`30658a3`](30658a34e4c1dcda46c061470e229a420ea96d84) 移动公告更新地址
+- [`e6236df`](e6236df8164950d12557424d33acb4eb9ea20e82) 默认关闭跳变抑制 #105
+
+## [2025-02-21] - New Updates
+- [`4fadb11`](4fadb11eace3fb00b8f991bb3bf2874a042f7b87) Merge branch 'main' into dev
+- [`b9f5629`](b9f5629ba39a38db955c64666fee28a6d3405bc1) 修复资源路径
+
 ## [2025-01-24] - New Updates
 - [`3e17c5f`](3e17c5fe097406941d27e1b207f754ac7cb9853c) 优化日志记录
 - [`e962099`](e962099d1a1ed42b5a6992d5a0e428c9e9281b51) 优化日志记录器

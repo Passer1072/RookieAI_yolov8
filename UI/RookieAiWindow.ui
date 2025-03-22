@@ -591,7 +591,7 @@ QFrame {
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap>C:/Users/11630/.designer/backup/ico/warningtriangle_87535-modified.png</pixmap>
+      <pixmap>ico/warningtriangle_87535-modified.png</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
@@ -699,7 +699,7 @@ QFrame {
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap>C:/Users/11630/.designer/backup/ico/warningtriangle_87535-modified.png</pixmap>
+      <pixmap>ico/warningtriangle_87535-modified.png</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
@@ -1408,7 +1408,7 @@ border-color: rgba(0, 0, 0, 0);</string>
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap>C:/Users/11630/.designer/backup/ico/warningtriangle_87535-modified.png</pixmap>
+       <pixmap>ico/warningtriangle_87535-modified.png</pixmap>
       </property>
       <property name="scaledContents">
        <bool>true</bool>

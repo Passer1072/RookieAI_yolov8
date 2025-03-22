@@ -73,8 +73,8 @@ def get_online_announcement(
     """
     owner = "Passer1072"
     repo = "RookieAI_yolov8"
-    branch = "dev"
-    file_path = "Announcement.md"
+    branch = "announcement"
+    file_path = "README.md"
 
     contents_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={branch}"
     try:
