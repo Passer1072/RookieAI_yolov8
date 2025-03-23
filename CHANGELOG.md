@@ -1,4 +1,7 @@
 # Changelog
+## [2025-03-23] - New Updates
+- [`5bd644b`](5bd644bb4bc5d15f86f4ff6409888828d91a8d40) Merge pull request #91 from Passer1072/create-pr/update_version
+
 ## [2025-03-22] - New Updates
 - [`cd0d454`](cd0d454b93b5bcf52fd4e9172c3460419233c1d4) Merge branch 'dev' of github.com:Passer1072/RookieAI_yolov8 into dev
 
