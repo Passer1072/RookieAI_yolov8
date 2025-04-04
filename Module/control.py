@@ -9,7 +9,7 @@ import win32con
 import platform
 import random
 import time
-from configs.path_config import HOME_PATH
+from configs.path_config import DLL_PATH
 from services.log import logger
 
 #############################################################
@@ -28,7 +28,7 @@ def path_import(module_name):
     py_version = f"cp{sys.version_info.major}{sys.version_info.minor}"
     platform_tag = f"{platform.system().lower()}_{platform.architecture()[0]}"
     file_name = f"{module_name}.{py_version}-{platform_tag}.pyd"
-    file_path = HOME_PATH / "DLLs"/ "python_pyd" / file_name
+    file_path = DLL_PATH/ "python_pyd" / file_name
         
     loader_details = (
         importlib.machinery.ExtensionFileLoader,
@@ -52,11 +52,11 @@ def path_import(module_name):
     logger.debug("******************* 动态加载模块完成 *************************\n")
     return toolbox
 
-msdk_dll = ctypes.windll.LoadLibrary(f"{HOME_PATH}/DLLs/x64_msdk.dll")
+msdk_dll = ctypes.windll.LoadLibrary(f"{DLL_PATH}/x64_msdk.dll")
 msdk_dll.M_Open_VidPid.restype = ctypes.c_uint64  # 声明M_Open函数的返回类型为无符号整数
 msdk_hdl = msdk_dll.M_Open_VidPid(0x1532, 0x98)  # 打开端口代码
 
-LG_driver = ctypes.CDLL(f"{HOME_PATH}/DLLs/LGmouseControl/MouseControl.dll")
+LG_driver = ctypes.CDLL(f"{DLL_PATH}/LGmouseControl/MouseControl.dll")
 
 kmNet = path_import("kmNet")
 

@@ -1,10 +1,7 @@
 import os
-from pathlib import Path
-import sys
+from .path_config import DATA_PATH
 from typing import Any
 import json
-
-Root = Path(os.path.realpath(sys.argv[0])).parent
 
 
 class Config:
@@ -38,8 +35,8 @@ class Config:
     @classmethod
     def read(cls) -> dict:
         try:
-            os.makedirs(Root / "data", exist_ok=True)
-            with open(Root / "data" / "settings.json", "r", encoding="utf-8") as f:
+            os.makedirs(DATA_PATH, exist_ok=True)
+            with open(DATA_PATH / "settings.json", "r", encoding="utf-8") as f:
                 return json.load(f)
         except FileNotFoundError:
             return cls.default
@@ -78,5 +75,5 @@ class Config:
     def save(cls) -> None:
         if cls.content is None:
             cls.content = cls.read()
-        with open(Root / "data" / "settings.json", "w", encoding="utf8") as f:
+        with open(DATA_PATH / "settings.json", "w", encoding="utf8") as f:
             f.write(json.dumps(cls.content, ensure_ascii=False, indent=4))
