@@ -38,8 +38,8 @@ class Config:
     @classmethod
     def read(cls) -> dict:
         try:
-            os.makedirs(Root / "Data", exist_ok=True)
-            with open(Root / "Data" / "settings.json", "r", encoding="utf-8") as f:
+            os.makedirs(Root / "data", exist_ok=True)
+            with open(Root / "data" / "settings.json", "r", encoding="utf-8") as f:
                 return json.load(f)
         except FileNotFoundError:
             return cls.default
@@ -78,5 +78,5 @@ class Config:
     def save(cls) -> None:
         if cls.content is None:
             cls.content = cls.read()
-        with open(Root / "Data" / "settings.json", "w", encoding="utf8") as f:
+        with open(Root / "data" / "settings.json", "w", encoding="utf8") as f:
             f.write(json.dumps(cls.content, ensure_ascii=False, indent=4))

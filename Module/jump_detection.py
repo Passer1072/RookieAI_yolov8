@@ -1,4 +1,4 @@
-from Module.logger import logger
+from services.log import logger
 
 def check_target_switching(offset_distance, last_offset_distance, jump_detection_switch, fluctuation_range, target_switching):
     """

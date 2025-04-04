@@ -5,7 +5,8 @@ import datetime
 from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL  # noqa: F401
 from io import StringIO
 from colorama import init, Fore, Style
-from Module.config import Root, Config
+from configs.path_config import HOME_PATH
+from configs.config import Config
 
 # 自定义 TRACE 和 SUCCESS 级别的日志
 TRACE_LOG_LEVEL = 5
@@ -62,7 +63,7 @@ class logger:
 
     console_log_level_int = TRACE_LOG_LEVEL
     file_log_level_int = INFO
-    log_file_prefix = Root / "logs"
+    log_file_prefix = HOME_PATH / "logs"
     os.makedirs(log_file_prefix, exist_ok=True)
     logger = logging.getLogger("RookieAI")
     logger.setLevel(get_log_level())

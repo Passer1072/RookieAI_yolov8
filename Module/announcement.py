@@ -1,5 +1,5 @@
 import threading
-import Utils.revision as revision
+import utils.revision as revision
 
 
 def get_and_set(ui):

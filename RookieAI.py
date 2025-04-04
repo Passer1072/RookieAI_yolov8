@@ -6,11 +6,11 @@ import queue
 import subprocess
 import sys
 import time
-import cv2
+import cv2 # type: ignore
 import mss
 import numpy as np
 import pyautogui
-import win32api
+import win32api # type: ignore
 import win32con
 from math import sqrt
 from ultralytics import YOLO
@@ -21,14 +21,15 @@ from PyQt6.QtWidgets import QGraphicsOpacityEffect, QFileDialog, QMessageBox, QS
 from multiprocessing import Pipe, Process, Queue, shared_memory, Event
 from customLib.animated_status import AnimatedStatus  # 导入 带动画的状态提示浮窗 库
 from customLib.automatic_trigger_set_dialog import AutomaticTriggerSetDialog  # 导入自定义设置窗口类
-from Module.const import method_mode
-from Module.config import Config, Root
-from Module.control import kmNet
-from Module.logger import logger
-import Module.control as control
-import Module.keyboard as keyboard
-import Module.jump_detection as jump_detection
-import Module.announcement
+from module.const import method_mode
+from configs.config import Config
+from configs.path_config import HOME_PATH
+from module.control import kmNet
+from services.log import logger
+import module.control as control
+import module.keyboard as keyboard
+import module.jump_detection as jump_detection
+import module.announcement
 
 # 初始化配置文件
 Config.save()
@@ -103,6 +104,7 @@ def start_capture_process_multie(shm_name, frame_shape, frame_dtype, frame_avail
     1.start_video \n
     2.stop_video
     """
+    global model
 
     # 连接到共享内存
     existing_shm = shared_memory.SharedMemory(name=shm_name)
@@ -148,6 +150,7 @@ def start_capture_process_single(videoSignal_queue, videoSignal_stop_queue, info
 
     def initialization_Yolo(model_file, information_output_queue):
         """初始化 YOLO 并进行一次模拟推理"""
+        global model
         try:
             # 检查模型文件是否存在
             if not os.path.exists(model_file):
@@ -1042,9 +1045,9 @@ class RookieAiAPP:  # 主进程 (UI进程)
         self.app = QtWidgets.QApplication(sys.argv)
 
         # 加载主窗口 UI 文件
-        self.window = uic.loadUi(Root / "UI" / 'RookieAiWindow.ui')  # 请确保 Root 已正确定义
+        self.window = uic.loadUi(HOME_PATH / "UI" / 'RookieAiWindow.ui')  # 请确保 Root 已正确定义
         self.window.setWindowTitle("YOLO识别系统")  # 设置窗口标题
-        self.window.setWindowIcon(QIcon(str(Root / "ico" / "ultralytics-botAvatarSrcUrl-1729379860806.png")))  # 设置窗口图标
+        self.window.setWindowIcon(QIcon(str(HOME_PATH / "ico" / "ultralytics-botAvatarSrcUrl-1729379860806.png")))  # 设置窗口图标
         self.window.setFixedSize(1290, 585)  # 固定窗口大小（可选）
 
         self.automaticTriggerSetDialog = AutomaticTriggerSetDialog(self.window)
@@ -1123,7 +1126,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
         self.window.announcement.setReadOnly(True)
         # 设置公告内容
         logger.debug("正在获取公告信息...")
-        Module.announcement.get_announcement(self)
+        module.announcement.get_announcement(self)
 
         '''参数框架切换 代码'''
         # 初始化动画列表和当前框架索引

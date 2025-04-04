@@ -27,15 +27,15 @@
    
 
 ```shell
-poetry install
 poetry run pip install torch torchvision torchaudio -f https://mirror.sjtu.edu.cn/pytorch-wheels/torch_stable.html --no-index
+poetry install
 ```
 
 **海外用户请使用以下命令**
 
 ```shell
-poetry install
 poetry run pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html --no-index
+poetry install
 ```
 
 2. 你还需要一个自己的模型（目前支持.pt/.engine/.onnx模型），如果没有可暂时使用ultralytics官方模型

@@ -1,7 +1,7 @@
 import base64
 import re
 import requests
-from Module.config import Root
+from configs.path_config import HOME_PATH
 
 session = requests.Session()
 
@@ -111,7 +111,7 @@ def get_local_version() -> str:
         str: 当前版本号
     """
     _version = "v0.0.0"
-    version_file_path = Root / "__version__"
+    version_file_path = HOME_PATH / "__version__"
     with version_file_path.open(encoding="utf8") as version_file:
         first_line = version_file.readline().strip()
         if first_line.startswith("__version__:"):
@@ -126,7 +126,7 @@ def get_local_date() -> str:
         str: 当前版本号日期
     """
     _date = "1970-01-01 00:00:00"
-    version_file_path = Root / "__version__"
+    version_file_path = HOME_PATH / "__version__"
     with version_file_path.open(encoding="utf8") as version_file:
         first_line = version_file.readline().strip()
         second_line = version_file.readline().strip()
