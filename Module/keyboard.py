@@ -33,7 +33,7 @@ class KeyCaptureApp:
             self.event_result = hex(
                 key.vk) if key.vk is not None else 'UNKNOWN'
         else:
-            self.event_result = hex(key.value.vk)
+            self.event_result = hex(key.value.vk) # type: ignore
         self.on_close()
 
     def on_mouse_click(self, x, y, button, pressed):

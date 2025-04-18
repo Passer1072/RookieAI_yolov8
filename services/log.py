@@ -22,8 +22,8 @@ def success(self, message, *args, **kws):
     if self.isEnabledFor(SUCCESS_LOG_LEVEL):
         self._log(SUCCESS_LOG_LEVEL, message, args, **kws)
 
-logging.Logger.trace = trace
-logging.Logger.success = success
+logging.Logger.trace = trace # type: ignore
+logging.Logger.success = success # type: ignore
 
 def get_log_level() -> int:
     """根据日志名称获取日志级别"""
@@ -116,7 +116,7 @@ class logger:
     def trace(cls, *args) -> None:
         cls._ensure_log_file_created()
         with cls.lock:
-            cls.logger.trace(cls._format_message(*args))
+            cls.logger.trace(cls._format_message(*args)) # type: ignore
 
     @classmethod
     def debug(cls, *args) -> None:
@@ -134,7 +134,7 @@ class logger:
     def success(cls, *args) -> None:
         cls._ensure_log_file_created()
         with cls.lock:
-            cls.logger.success(cls._format_message(*args))
+            cls.logger.success(cls._format_message(*args)) # type: ignore
 
     @classmethod
     def warning(cls, *args) -> None:
