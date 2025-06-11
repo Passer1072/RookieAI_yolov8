@@ -1,3 +1,4 @@
+from types import ModuleType
 import mouse
 import os
 import importlib.machinery
@@ -13,14 +14,15 @@ from configs.path_config import DLL_PATH
 from services.log import logger
 
 #############################################################
-# Pyd files list in                                               #
+# Pyd files list in                                         #
 # https://github.com/kvmaibox/kmboxnet/tree/main/python_pyd #
 #############################################################
-def path_import(module_name):
+
+def path_import(module_name) ->  ModuleType:
     """
-        导入模块
-    :param file:
-    :return:
+    导入模块
+    
+    :param module_name: 模块名称
     """
     logger.debug("******************* 开始动态加载模块 *************************")
     
@@ -56,7 +58,6 @@ msdk_dll = ctypes.windll.LoadLibrary(f"{DLL_PATH}/x64_msdk.dll")
 msdk_dll.M_Open_VidPid.restype = ctypes.c_uint64  # 声明M_Open函数的返回类型为无符号整数
 msdk_hdl = msdk_dll.M_Open_VidPid(0x1532, 0x98)  # 打开端口代码
 
-LG_driver = ctypes.CDLL(f"{DLL_PATH}/LGmouseControl/MouseControl.dll")
 
 kmNet = path_import("kmNet")
 
@@ -72,40 +73,27 @@ def emergencStop_valorant(last_state_w, last_state_a, last_state_s, last_state_d
 
     # 检测按键是否从按下变为松开
     if not state_w and last_state_w:  # 如果按键W被松开
-        logger.debug("W键弹起")
-        kmNet.keydown(22)  #保持键盘s键按下
-        time.sleep(0.03)
-        kmNet.keyup(22)  # 键盘s键松开
-        logger.debug("S键点击")
-        stop = True
+        stop = useKmNetWithLog("W键弹起", 22, "S键点击")
     if not state_a and last_state_a:  # 如果按键A被松开
-        logger.debug("A键弹起")
-        kmNet.keydown(7)   #保持键盘d键按下
-        time.sleep(0.03)
-        kmNet.keyup(7)   # 键盘d键松开
-        logger.debug("D键点击")
-        stop = True
+        stop = useKmNetWithLog("A键弹起", 7, "D键点击")
     if not state_s and last_state_s:  # 如果按键S被松开
-        logger.debug("S键弹起")
-        kmNet.keydown(26)  #保持键盘w键按下
-        time.sleep(0.03)
-        kmNet.keyup(26)  # 键盘w键松开
-        logger.debug("W键点击")
-        stop = True
+        stop = useKmNetWithLog("S键弹起", 26, "W键点击")
     if not state_d and last_state_d:  # 如果按键D被松开
-        logger.debug("D键弹起")
-        kmNet.keydown(4)  #保持键盘a键按下
-        time.sleep(0.03)
-        kmNet.keyup(4)  # 键盘a键松开
-        logger.debug("A键点击")
-        stop = True
-
+        stop = useKmNetWithLog("D键弹起", 4, "A键点击")
     if stop:
         time.sleep(0.003)  # 添加一个小的延时，避免CPU占用过高
 
     # 返回更新后的按键状态
     return state_w, state_a, state_s, state_d
 
+
+def useKmNetWithLog(log1: str, key_id: int, log2: str) -> bool:
+    logger.debug(log1)
+    kmNet.keydown(key_id)
+    time.sleep(0.03)
+    kmNet.keyup(key_id)
+    logger.debug(log2)
+    return True
 
 def monitor(mode):
     state = None
@@ -132,11 +120,6 @@ def click(mode):
         case "mouse":
             mouse.click("left")
             time.sleep(random.uniform(0.12, 0.17))
-        case "Logitech":
-            LG_driver.click_Left_down()
-            time.sleep(random.uniform(0.12, 0.17))
-            LG_driver.click_Left_up()
-            time.sleep(random.uniform(0.12, 0.17))
         case 'KmBoxNet':
             kmNet.left(1)
             time.sleep(random.uniform(0.12, 0.17))
@@ -154,8 +137,6 @@ def move(mode, centerx, centery):
             )
         case "mouse":
             mouse.move(int(centerx), int(centery), False)
-        case "Logitech":
-            LG_driver.move_R(int(centerx), int(centery))
         case 'KmBoxNet':
             kmNet.enc_move(int(centerx), int(centery))
 
@@ -175,8 +156,6 @@ def press(mode, key):
             win32api.keybd_event(key, 0, 0, 0)
         case "mouse":
             mouse.press(key)
-        case "Logitech":
-            LG_driver.press_key(key)
 
 
 def release(mode, key):
@@ -187,5 +166,3 @@ def release(mode, key):
             win32api.keybd_event(key, 0, win32con.KEYEVENTF_KEYUP, 0)
         case "mouse":
             mouse.release(key)
-        case "Logitech":
-            LG_driver.release_key(key)

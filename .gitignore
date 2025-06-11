@@ -1,6 +1,5 @@
 logs
 data
 __pycache__
-.vscode
 .idea
 poetry.lock

@@ -1,3 +1,4 @@
+import asyncio
 import contextlib
 import math
 import multiprocessing
@@ -6,11 +7,11 @@ import queue
 import subprocess
 import sys
 import time
-import cv2 # type: ignore
+import cv2
 import mss
 import numpy as np
 import pyautogui
-import win32api # type: ignore
+import win32api
 import win32con
 from math import sqrt
 from ultralytics import YOLO
@@ -641,6 +642,7 @@ def YOLO_process_frame(
             x1, y1, x2, y2 = closest_box
             box_center = (int((x1 + x2) / 2), int((y1 + y2) / 2))
             # 只有当距离小于 aim_range 时，才绘制绿色框和红色连接线
+            assert closest_distance is not None
             if closest_distance < aim_range:
                 # 绘制最近的框的绿色边框
                 cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 3)
@@ -884,6 +886,7 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue, acc
 
                     if isinstance(lockKey, str) and lockKey.startswith("0x"):
                         lockKey = int(lockKey, 16)  # 转换为十六进制整数
+                    assert isinstance(lockKey, int)
 
                     # 检查锁定键、鼠标侧键和 Shift 键是否按下
                     lockKey_pressed = bool(win32api.GetKeyState(lockKey) & 0x8000)
@@ -2631,7 +2634,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
             self.window.status_widget.display_message(
                 log_msg, bg_color="Red", text_color="black", auto_hide=6000)
 
-    def main(self):
+    async def main(self):
         """程序启动初始化"""
         '''创建管道与队列'''
         # 创建总管道，总信号传输，
@@ -2767,4 +2770,4 @@ class RookieAiAPP:  # 主进程 (UI进程)
 if __name__ == '__main__':
     multiprocessing.freeze_support()
     app = RookieAiAPP()
-    app.main()
+    asyncio.run(app.main())
