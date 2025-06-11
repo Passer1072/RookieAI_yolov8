@@ -238,7 +238,7 @@ def open_screen_video(shared_frame, frame_available_event, videoSignal_stop_queu
 def _extracted_from_open_screen_video_11(videoSignal_stop_queue, sct, shared_frame, frame_available_event):
     # 获取屏幕分辨率
     screen_width, screen_height = pyautogui.size()
-    logger.info("屏幕分辨率:", screen_width, screen_height)
+    logger.info(f"屏幕分辨率: {screen_width}x{screen_height}")
 
     # 计算中心区域 320x320 的截取范围
     capture_width, capture_height = 320, 320
@@ -251,10 +251,10 @@ def _extracted_from_open_screen_video_11(videoSignal_stop_queue, sct, shared_fra
         "height": capture_height
     }
 
-    # 初始化 'frame' 以避免引用前未赋值
-    frame = np.zeros((capture_height, capture_width, 3), dtype=np.uint8)
+    # 初始化 GPU Mat
+    gpu_frame = cv2.cuda_GpuMat()
 
-    frame_interval = 0.05
+    frame_interval = 0.05  # 目标帧间隔（秒）
 
     while True:
         frame_start_time = time.time()  # 记录帧开始时间
@@ -267,32 +267,32 @@ def _extracted_from_open_screen_video_11(videoSignal_stop_queue, sct, shared_fra
                 logger.debug("停止屏幕捕获")
                 break  # 退出循环
 
-        # 获取指定区域的截图
+        # 截图指定区域
         img = sct.grab(capture_area)
+        if img is None:
+            continue  # 如果截图失败则跳过这一帧
 
-        # 使用 numpy.frombuffer 直接转换为数组，避免数据拷贝
-        frame = np.frombuffer(img.rgb, dtype=np.uint8)
-        frame = frame.reshape((img.height, img.width, 3))
+        # 将图像上传至 GPU
+        gpu_frame.upload(img)
 
-        # 转换颜色空间，从 BGRA 到 RGB
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
+        # 在 GPU 上进行颜色空间转换（BGR -> RGB）
+        gpu_rgb = cv2.cuda.cvtColor(gpu_frame, cv2.COLOR_BGR2RGB)
+
+        # 下载回 CPU（用于共享内存传递给其他进程）
+        frame = gpu_rgb.download()
 
         # 将视频帧放入共享内存
         np.copyto(shared_frame, frame)
         frame_available_event.set()
 
-        # 计算已用时间
+        # 控制帧率
         frame_end_time = time.time()
         elapsed_time = frame_end_time - frame_start_time
-
-        # 计算剩余时间
         remaining_time = frame_interval - elapsed_time
         if remaining_time > 0:
             time.sleep(remaining_time)
         else:
-            # 如果处理时间超过了帧间隔，可能需要记录或优化
-            logger.warn(
-                f"视频帧处理时间 {elapsed_time:.4f} 秒超过目标间隔 {frame_interval:.4f} 秒")
+            logger.warn(f"视频帧处理时间 {elapsed_time:.4f} 秒超过目标间隔 {frame_interval:.4f} 秒")
 
 
 def screen_capture_and_yolo_processing(processedVideo_queue, videoSignal_stop_queue, YoloSignal_queue, pipe_parent,
@@ -582,15 +582,25 @@ def YOLO_process_frame(
             YOLO_process_frame.last_put_data = None
 
         # 发送 Trigger_conditions 到队列，避免重复数据
-        if new_trigger_conditions != YOLO_process_frame.last_put_data:
+        new_data = ("Trigger_conditions", new_trigger_conditions)
+
+        if new_data != YOLO_process_frame.last_put_data:
             try:
                 accessibilityProcessSignal_queue.put(
                     ("Trigger_conditions", False), timeout=0.1
                 )
-                YOLO_process_frame.last_put_data = new_trigger_conditions
-                logger.debug(f"放入队列的数据: ('Trigger_conditions', {new_trigger_conditions})")
+                YOLO_process_frame.last_put_data = new_data
+                logger.debug(f"放入队列的数据: {new_data}")
             except multiprocessing.queues.Full:
-                logger.warning("accessibilityProcessSignal_queue 已满，无法放入数据")
+                logger.warning("accessibilityProcessSignal_queue 已满，丢弃旧数据")
+                with contextlib.suppress(queue.Empty):
+                    accessibilityProcessSignal_queue.get_nowait()  # 非阻塞取出一个旧数据
+                try:
+                    accessibilityProcessSignal_queue.put(new_data, timeout=0.1)  # 再次尝试放入新数据
+                    YOLO_process_frame.last_put_data = new_data
+                    logger.debug(f"放入队列的数据(重试): {new_data}")
+                except multiprocessing.queues.Full:
+                    logger.error("队列仍然满，无法放入数据")
 
         # 将最近的 Box 坐标、距离和唯一ID写入共享内存
         if box_shm_name and box_data_event and box_lock:
@@ -839,8 +849,8 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue, acc
                     offset_target_y = center_y_relative_to_center + delta_y  # 偏移后目标点Y
 
                     # 计算偏移后的距离
-                    offset_distance = math.sqrt(
-                        offset_target_x ** 2 + offset_target_y ** 2)
+                    offset_distance =(
+                        offset_target_x ** 2 + offset_target_y ** 2)**0.5
 
                     # 自动扳机范围计算
                     box_horizontal_length = x2 - x1  # Box 的横向长度
@@ -928,7 +938,15 @@ def mouse_move_prosses(box_shm_name, box_lock, mouseMoveProssesSignal_queue, acc
                             last_put_data = new_data
                             logger.debug(f"放入队列的数据: {new_data}")
                         except multiprocessing.queues.Full:
-                            logger.warning("accessibilityProcessSignal_queue 已满，无法放入数据")
+                            logger.warning("accessibilityProcessSignal_queue 已满，丢弃旧数据")
+                            with contextlib.suppress(queue.Empty):
+                                accessibilityProcessSignal_queue.get_nowait()  # 非阻塞取出一个旧数据
+                            try:
+                                accessibilityProcessSignal_queue.put(new_data, timeout=0.1)  # 再次尝试放入新数据
+                                YOLO_process_frame.last_put_data = new_data
+                                logger.debug(f"放入队列的数据(重试): {new_data}")
+                            except multiprocessing.queues.Full:
+                                logger.error("队列仍然满，无法放入数据")
 
                     # 判断是否发生目标切换：通过move_x_int和move_y_int的数值变化规律
                     if should_move:
@@ -2634,7 +2652,7 @@ class RookieAiAPP:  # 主进程 (UI进程)
             self.window.status_widget.display_message(
                 log_msg, bg_color="Red", text_color="black", auto_hide=6000)
 
-    async def main(self):
+    def main(self):
         """程序启动初始化"""
         '''创建管道与队列'''
         # 创建总管道，总信号传输，
@@ -2770,4 +2788,4 @@ class RookieAiAPP:  # 主进程 (UI进程)
 if __name__ == '__main__':
     multiprocessing.freeze_support()
     app = RookieAiAPP()
-    asyncio.run(app.main())
+    app.main()
