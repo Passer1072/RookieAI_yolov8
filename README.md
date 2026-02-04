@@ -11,13 +11,19 @@
 > 前言：为什么不提供直接打包成型的软件？
 >
 > 每个程序都有独立的特征码，如果大家都使用同一个程序，一旦其中一个人被BAN其他人会被联BAN。所以鼓励大家自行修改部分代码并自行打包即可避免此类情况发生。
+>
+> ~~其实不打包直接跑源码也行~~
 
 ## 版本要求
 
 | Version | Python |
 |---------|--------|
 | `2.4.3或更早`   | 3.7+   |
-| `2.4.4.2+`   | 3.10+   |
+| `2.4.4.2+`   | 3.10-3.13   |
+
+> [!warning]
+> 
+> 由于缺失依赖文件，`kmNet` 移动方式在3.14及以上版本不可用
 
 ## 使用方法
 
@@ -38,7 +44,7 @@ poetry install
 poetry run pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html --no-index
 ```
 
-2. 你还需要一个自己的模型（目前支持.pt/.engine/.onnx模型），如果没有可暂时使用ultralytics官方模型
+2. 你还需要一个自己的模型（目前支持.pt/.engine/.onnx/.trt模型），如果没有可暂时使用ultralytics官方模型
 
 3. **当未找到模型时会自动下载YOLOv8n模型**，你也可以⬇️
 
