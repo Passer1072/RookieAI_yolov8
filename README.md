@@ -102,7 +102,7 @@ V3.0预告
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Passer1072/RookieAI_yolov8)](https://star-history.com/#Passer1072/RookieAI_yolov8)
+[![Star History Chart](https://star-history.dera.page/svg?repos=Passer1072/RookieAI_yolov8)](https://star-history.dera.page/#Passer1072/RookieAI_yolov8)
 
 ### 更新日志：
 
